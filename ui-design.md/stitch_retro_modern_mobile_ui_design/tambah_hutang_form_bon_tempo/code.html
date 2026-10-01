@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+
+<html lang="id"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" name="viewport"/><meta content="mobile_stack" name="shell-type"/><link href="https://fonts.googleapis.com" rel="preconnect"/><link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/><link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&amp;family=Vollkorn:ital,wght@0,500;0,600;0,700;1,500&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/><script src="https://cdn.tailwindcss.com"></script><script id="tailwind-config">tailwind.config={darkMode:"class",theme:{extend:{colors:{"inverse-primary":"#e5bfab","on-tertiary-container":"#f36737","on-surface":"#2a170f","primary-fixed":"#ffdbca","on-surface-variant":"#4f443f","on-secondary":"#ffffff","primary":"#261207","outline-variant":"#d3c3bc","error-container":"#ffdad6","surface-bright":"#fff8f6","tertiary-container":"#551500","on-secondary-fixed":"#1f1b10","surface-tint":"#755848","on-tertiary-fixed":"#390b00","inverse-on-surface":"#ffede7","background":"#fff8f6","on-error":"#ffffff","on-tertiary":"#ffffff","on-tertiary-fixed-variant":"#842500","secondary-fixed":"#eae2d0","tertiary-fixed":"#ffdbd0","secondary":"#645e50","surface-container-lowest":"#ffffff","secondary-fixed-dim":"#cec6b5","on-primary":"#ffffff","on-error-container":"#93000a","on-secondary-container":"#6a6456","surface":"#fff8f6","on-primary-fixed":"#2b160b","on-secondary-fixed-variant":"#4b4639","inverse-surface":"#412b22","primary-fixed-dim":"#e5bfab","on-primary-fixed-variant":"#5b4132","outline":"#82746e","surface-container-highest":"#ffdbcd","surface-variant":"#ffdbcd","surface-container-low":"#fff1ec","on-background":"#2a170f","error":"#ba1a1a","secondary-container":"#eae2d0","on-primary-container":"#ae8c7a","tertiary":"#320900","primary-container":"#3d2619","surface-dim":"#f6d2c5","surface-container-high":"#ffe2d8","tertiary-fixed-dim":"#ffb59d","surface-container":"#ffe9e2"},borderRadius:{DEFAULT:"0.25rem",lg:"0.5rem",xl:"0.75rem",full:"9999px"},spacing:{"space-md":"1rem","space-lg":"1.25rem","space-xl":"1.75rem","space-sm":"0.5rem",gutter:"1rem",margin:"1rem","space-xs":"0.25rem"},fontFamily:{"label-md":["Plus Jakarta Sans"],"currency-display":["Plus Jakarta Sans"],"headline-lg":["Vollkorn"],"headline-xl":["Vollkorn"],"headline-sm":["Vollkorn"],"body-sm":["Plus Jakarta Sans"],"title-ledger":["Vollkorn"],"currency-item":["Plus Jakarta Sans"],"headline-xl-mobile":["Vollkorn"],"body-md":["Plus Jakarta Sans"],"label-sm":["Plus Jakarta Sans"],"keypad-num":["Plus Jakarta Sans"],"body-lg":["Plus Jakarta Sans"],"headline-md":["Vollkorn"]},fontSize:{"label-md":["13px",{lineHeight:"16px",letterSpacing:"0.01em",fontWeight:"600"}],"currency-display":["28px",{lineHeight:"34px",letterSpacing:"-0.03em",fontWeight:"700"}],"headline-lg":["26px",{lineHeight:"32px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-xl":["32px",{lineHeight:"38px",letterSpacing:"-0.02em",fontWeight:"700"}],"headline-sm":["18px",{lineHeight:"24px",fontWeight:"500"}],"body-sm":["12px",{lineHeight:"16px",fontWeight:"400"}],"title-ledger":["16px",{lineHeight:"22px",fontWeight:"600"}],"currency-item":["16px",{lineHeight:"20px",letterSpacing:"-0.01em",fontWeight:"600"}],"headline-xl-mobile":["28px",{lineHeight:"34px",letterSpacing:"-0.02em",fontWeight:"700"}],"body-md":["14px",{lineHeight:"20px",fontWeight:"400"}],"label-sm":["11px",{lineHeight:"14px",letterSpacing:"0.04em",fontWeight:"600"}],"keypad-num":["24px",{lineHeight:"28px",fontWeight:"500"}],"body-lg":["16px",{lineHeight:"24px",fontWeight:"400"}],"headline-md":["20px",{lineHeight:"26px",fontWeight:"600"}]}}}};</script><style>@layer base{html,body{width:100%;margin:0;padding:0;}body{overscroll-behavior-y:none;-webkit-tap-highlight-color:transparent;}.pb-safe{padding-bottom:env(safe-area-inset-bottom,0px);}.pt-safe{padding-top:env(safe-area-inset-top,0px);}main>:first-child{margin-top:0!important;}main>:last-child{margin-bottom:0!important;}}::-webkit-scrollbar{display:none;}</style><style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+</head><body class="bg-surface text-on-surface font-body-md min-h-screen flex flex-col antialiased selection:bg-tertiary-fixed-dim"><header class="fixed top-0 w-full z-50 bg-surface/90 backdrop-blur-xl shadow-[0_1px_8px_rgba(43,24,16,0.05)] pt-safe"><div class="h-16 px-margin flex items-center justify-between"><div class="flex items-center gap-space-sm min-w-0"><button aria-label="Kembali" class="w-11 h-11 -ml-2 flex items-center justify-center rounded-full text-on-surface hover:bg-surface-container active:scale-95 transition-all" onclick="history.back()" type="button"><span class="material-symbols-outlined text-[24px]">arrow_back</span></button><div class="flex flex-col min-w-0"><h1 class="font-title-ledger text-title-ledger text-on-surface font-semibold tracking-tight truncate">Tambah Barang Masuk</h1><span class="font-label-sm text-label-sm text-on-surface-variant truncate">BukuToko Sentosa</span></div></div><div class="flex items-center gap-2 shrink-0"><button aria-label="Bantuan atau Simpan Cepat" class="h-10 px-3 rounded-xl bg-surface-container text-on-surface font-label-md text-label-md flex items-center gap-1.5 hover:bg-surface-container-high active:scale-95 transition-all shadow-[0_1px_2px_rgba(43,24,16,0.04)]" type="button"><span class="material-symbols-outlined text-[18px]">check_circle</span><span>Simpan</span></button></div></div></header><main class="flex-1 w-full bg-surface pt-16 pb-safe"><div class="flex flex-col w-full pb-28">
+<div class="px-margin pt-4 pb-2">
+<div class="p-1 rounded-2xl bg-surface-container-high shadow-inner flex items-center gap-1">
+<button class="flex-1 py-3 px-2 rounded-xl text-center transition-all duration-200 flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface" id="type-hutang" onclick="switchType('hutang')" type="button">
+<span class="material-symbols-outlined text-[18px]">outbox</span>
+<span class="font-label-md text-label-md">Hutang Saya</span>
+</button>
+<button class="flex-1 py-3 px-2 rounded-xl text-center bg-primary text-on-primary shadow-md transition-all duration-200 flex items-center justify-center gap-1.5" id="type-piutang" onclick="switchType('piutang')" type="button">
+<span class="material-symbols-outlined text-[18px]" style="font-variation-settings: 'FILL' 1;">assignment_returned</span>
+<span class="font-label-md text-label-md">Piutang Bon</span>
+</button>
+</div>
+</div>
+<div class="px-margin my-3">
+<div class="relative overflow-hidden rounded-2xl bg-surface-container-lowest shadow-sm p-space-md">
+<div class="flex items-center justify-between mb-1">
+<span class="font-label-sm text-label-sm uppercase tracking-wider text-on-surface-variant flex items-center gap-1">
+<span class="w-1.5 h-1.5 rounded-full bg-on-tertiary-container"></span>
+          Nominal Bon / Hutang (IDR)
+        </span>
+<span class="px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm" id="badge-type">
+          Piutang Pelanggan
+        </span>
+</div>
+<div class="flex items-baseline gap-1 my-2">
+<span class="font-headline-sm text-headline-sm text-on-surface-variant">Rp</span>
+<span class="font-currency-display text-currency-display text-primary tracking-tight" id="display-nominal">250.000</span>
+</div>
+<div class="flex items-center gap-1.5 overflow-x-auto pt-2 pb-1 no-scrollbar">
+<button class="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm active:scale-95 transition-all" onclick="addAmount(20000)" type="button">
+          +20.000
+        </button>
+<button class="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm active:scale-95 transition-all" onclick="addAmount(50000)" type="button">
+          +50.000
+        </button>
+<button class="shrink-0 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm shadow-sm active:scale-95 transition-all" onclick="addAmount(100000)" type="button">
+          +100.000
+        </button>
+<button class="shrink-0 px-3 py-1.5 rounded-lg bg-secondary-container text-on-secondary-container font-label-sm text-label-sm shadow-sm active:scale-95 transition-all" onclick="addAmount(250000)" type="button">
+          +250.000
+        </button>
+<button aria-label="Reset nominal" class="shrink-0 p-1.5 rounded-lg bg-surface-container-low text-on-surface-variant hover:text-error active:scale-95 transition-all" onclick="resetAmount()" type="button">
+<span class="material-symbols-outlined text-[18px]">backspace</span>
+</button>
+</div>
+</div>
+</div>
+<div class="px-margin space-y-space-md">
+<div class="rounded-2xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between pb-1">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container">person_pin</span>
+          Identitas Pelanggan
+        </h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant font-medium">Buku Pelanggan</span>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Nama Lengkap / Warung</label>
+<div class="flex items-center gap-2">
+<div class="relative flex-1">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-on-surface-variant">person</span>
+<input class="w-full pl-10 pr-3 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none shadow-inner" placeholder="Tulis nama pelanggan..." type="text" value="Bu Siti (Warung Sebelah)"/>
+</div>
+<button aria-label="Buka kontak pelanggan" class="h-12 w-12 rounded-xl bg-surface-container flex items-center justify-center text-on-surface hover:bg-surface-container-high shadow-sm active:scale-95 transition-transform" type="button">
+<span class="material-symbols-outlined text-[22px]">contacts</span>
+</button>
+</div>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Nomor WhatsApp (Kirim Tagihan)</label>
+<div class="relative">
+<span class="absolute left-3 top-1/2 -translate-y-1/2 material-symbols-outlined text-[20px] text-on-tertiary-container">chat</span>
+<input class="w-full pl-10 pr-10 py-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none shadow-inner" placeholder="Contoh: 08123456789" type="tel" value="0812-3456-7890"/>
+<button aria-label="Kirim pesan WhatsApp" class="absolute right-2.5 top-1/2 -translate-y-1/2 text-on-tertiary-container hover:opacity-80 p-1" type="button">
+<span class="material-symbols-outlined text-[20px]">send</span>
+</button>
+</div>
+</div>
+</div>
+<div class="rounded-2xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container">receipt_long</span>
+          Rincian Bon Barang
+        </h2>
+<div class="px-2 py-0.5 rounded-md bg-surface-container-high text-on-surface-variant font-label-sm text-label-sm">
+          #BON-20241024-05
+        </div>
+</div>
+<div class="space-y-1.5">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Daftar Barang yang Diambil</label>
+<textarea class="w-full p-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none shadow-inner resize-none" placeholder="Tuliskan barang atau rincian hutang..." rows="3">Minyak Goreng Kita 2L (2 btl), Gula Pasir 1kg (2 bks)</textarea>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-low flex items-center justify-between">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">inventory_2</span>
+<span class="font-body-sm text-body-sm text-on-surface-variant">Potong stok otomatis dari warung?</span>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-surface-container-highest peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-surface-container-lowest after:border-surface-variant after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<div class="rounded-2xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container">calendar_month</span>
+          Tanggal &amp; Waktu Tempo
+        </h2>
+</div>
+<div class="grid grid-cols-2 gap-2">
+<div class="p-3 rounded-xl bg-surface-container-low space-y-1">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase block">Tanggal Bon</span>
+<div class="flex items-center justify-between text-on-surface">
+<span class="font-title-ledger text-title-ledger">24 Okt 2024</span>
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">edit_calendar</span>
+</div>
+</div>
+<div class="p-3 rounded-xl bg-surface-container-high space-y-1">
+<span class="font-label-sm text-label-sm text-tertiary uppercase block">Jatuh Tempo</span>
+<div class="flex items-center justify-between text-tertiary">
+<span class="font-title-ledger text-title-ledger" id="tempo-date">31 Okt 2024</span>
+<span class="material-symbols-outlined text-[18px]">event_upcoming</span>
+</div>
+</div>
+</div>
+<div class="space-y-1.5">
+<span class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider block">Pilih Tempo Pembayaran Cepat</span>
+<div class="flex items-center gap-1.5 flex-wrap">
+<button class="tempo-pill px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-all" onclick="setTempo(this, '3 Hari', '27 Okt 2024')" type="button">
+            3 Hari
+          </button>
+<button class="tempo-pill px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm shadow-sm transition-all" onclick="setTempo(this, '7 Hari', '31 Okt 2024')" type="button">
+            7 Hari
+          </button>
+<button class="tempo-pill px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-all" onclick="setTempo(this, '14 Hari', '07 Nov 2024')" type="button">
+            14 Hari
+          </button>
+<button class="tempo-pill px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-all" onclick="setTempo(this, '1 Bulan', '24 Nov 2024')" type="button">
+            1 Bulan
+          </button>
+<button class="tempo-pill px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-all" onclick="setTempo(this, 'Tanpa Tempo', 'Kapan saja')" type="button">
+            Tanpa Tempo
+          </button>
+</div>
+</div>
+</div>
+<div class="rounded-2xl bg-surface-container-lowest p-space-md shadow-sm space-y-space-md">
+<div class="flex items-center justify-between">
+<h2 class="font-headline-sm text-headline-sm text-primary flex items-center gap-2">
+<span class="material-symbols-outlined text-[20px] text-on-tertiary-container">camera_alt</span>
+          Foto Kertas Bon &amp; Bukti Fisik
+        </h2>
+<span class="font-label-sm text-label-sm text-on-surface-variant">Opsional</span>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<div class="relative rounded-xl overflow-hidden aspect-[4/3] bg-surface-container-low shadow-inner">
+<img class="w-full h-full object-cover" data-alt="Close up photograph of a vintage handwritten shop paper receipt in a small Indonesian warung store with handwritten Indonesian product names in blue ink on yellowish rough ledger paper with warm sunlight" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCsL9sltPksWP_voz3xi9ovt4M-0grQ8raxuuZ-HW-cV7SaItcfBdh7BUXepIV-WAnCmduacoCbFDqDmMGhVzykhQwljGQJmIc2CtcXLhac22_s2dSLaouuUMq7LBGZasXbN1-t0T6m3TpP2cfTYi_JF0K7D7q0xrbrFQit-YkZJnjwnOu2_mbn9zy-tD0bTUGu6ruy7TGKV9cPxMvQfDq2iFyvrJB4S8ngCDmRQu6qf1skm3t0Y-o7yA"/>
+<button aria-label="Hapus foto" class="absolute top-1.5 right-1.5 p-1 rounded-full bg-primary/80 text-on-primary hover:bg-primary shadow" type="button">
+<span class="material-symbols-outlined text-[16px]">close</span>
+</button>
+</div>
+<button class="flex flex-col items-center justify-center gap-2 rounded-xl bg-surface-container-low hover:bg-surface-container-high text-on-surface-variant p-4 aspect-[4/3] transition-all" type="button">
+<span class="material-symbols-outlined text-[28px] text-on-tertiary-container">photo_camera</span>
+<span class="font-label-sm text-label-sm text-center font-semibold text-on-surface">Foto Kertas Bon</span>
+<span class="font-body-sm text-body-sm text-center text-on-surface-variant scale-90 -mt-1">Tanda tangan pembeli</span>
+</button>
+</div>
+</div>
+<div class="rounded-2xl bg-surface-container-lowest p-space-md shadow-sm space-y-2">
+<label class="font-label-sm text-label-sm text-on-surface-variant uppercase tracking-wider flex items-center gap-1.5">
+<span class="material-symbols-outlined text-[16px] text-on-tertiary-container">sticky_note_2</span>
+        Catatan Khusus Bon
+      </label>
+<input class="w-full p-3 rounded-xl bg-surface-container-low text-on-surface font-body-md text-body-md focus:bg-surface-container-lowest focus:outline-none shadow-inner" placeholder="Tambahkan catatan khusus..." type="text" value="Janji bayar saat arisan RT hari jumat"/>
+</div>
+</div>
+<div class="fixed bottom-0 left-0 right-0 z-40 bg-surface/95 backdrop-blur-md shadow-[0_-4px_20px_rgba(43,24,16,0.08)] pb-safe">
+<div class="px-margin py-3 flex items-center justify-between gap-3">
+<div class="flex flex-col min-w-0">
+<span class="font-label-sm text-label-sm text-on-surface-variant truncate uppercase">Total Piutang Bon</span>
+<span class="font-currency-item text-currency-item text-primary font-bold" id="footer-nominal">Rp 250.000</span>
+</div>
+<div class="flex items-center gap-2">
+<button class="h-12 px-4 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-label-md transition-all active:scale-95" onclick="history.back()" type="button">
+          Batal
+        </button>
+<button class="h-12 px-5 rounded-xl bg-primary hover:bg-primary-container text-on-primary font-label-md text-label-md shadow-md flex items-center gap-2 active:scale-95 transition-all" onclick="simpanData()" type="button">
+<span class="material-symbols-outlined text-[20px]" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span>Catat Buku</span>
+</button>
+</div>
+</div>
+</div>
+</div>
+<script>
+  let currentNominal = 250000;
+
+  function updateDisplays() {
+    const formatted = currentNominal.toLocaleString('id-ID');
+    document.getElementById('display-nominal').innerText = formatted;
+    document.getElementById('footer-nominal').innerText = 'Rp ' + formatted;
+  }
+
+  function addAmount(val) {
+    currentNominal += val;
+    updateDisplays();
+  }
+
+  function resetAmount() {
+    currentNominal = 0;
+    updateDisplays();
+  }
+
+  function switchType(type) {
+    const hutangBtn = document.getElementById('type-hutang');
+    const piutangBtn = document.getElementById('type-piutang');
+    const badge = document.getElementById('badge-type');
+
+    if (type === 'hutang') {
+      hutangBtn.className = "flex-1 py-3 px-2 rounded-xl text-center bg-primary text-on-primary shadow-md transition-all duration-200 flex items-center justify-center gap-1.5";
+      piutangBtn.className = "flex-1 py-3 px-2 rounded-xl text-center transition-all duration-200 flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface";
+      badge.className = "px-2 py-0.5 rounded-full bg-error-container text-on-error-container font-label-sm text-label-sm";
+      badge.innerText = "Hutang Saya (Suplier)";
+    } else {
+      piutangBtn.className = "flex-1 py-3 px-2 rounded-xl text-center bg-primary text-on-primary shadow-md transition-all duration-200 flex items-center justify-center gap-1.5";
+      hutangBtn.className = "flex-1 py-3 px-2 rounded-xl text-center transition-all duration-200 flex items-center justify-center gap-1.5 text-on-surface-variant hover:text-on-surface";
+      badge.className = "px-2 py-0.5 rounded-full bg-tertiary-fixed text-on-tertiary-fixed font-label-sm text-label-sm";
+      badge.innerText = "Piutang Pelanggan";
+    }
+  }
+
+  function setTempo(btn, label, dateStr) {
+    document.querySelectorAll('.tempo-pill').forEach(el => {
+      el.className = "tempo-pill px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface font-label-sm text-label-sm transition-all";
+    });
+    btn.className = "tempo-pill px-3 py-1.5 rounded-lg bg-primary text-on-primary font-label-sm text-label-sm shadow-sm transition-all";
+    document.getElementById('tempo-date').innerText = dateStr;
+  }
+
+  function simpanData() {
+    alert('Catatan berhasil dibukukan ke BukuToko!');
+  }
+</script></main></body></html>

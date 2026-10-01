@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover"/>
+  <meta name="theme-color" content="#000000"/>
+  <title>Kas Juara Sepatu — Buku Kas Toko Retro</title>
+  <link rel="icon" type="image/png" href="/assets/logo-juara.png"/>
+  <link rel="apple-touch-icon" href="/assets/logo-juara.png"/>
+  
+  <!-- Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com"/>
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin=""/>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;1,400&family=Vollkorn:ital,wght@0,500;0,600;0,700;1,500&display=swap" rel="stylesheet"/>
+  <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet"/>
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script id="tailwind-config">
+    tailwind.config = {
+      darkMode: "class",
+      theme: {
+        extend: {
+          colors: {
+            "inverse-primary": "#e5bfab",
+            "on-tertiary-container": "#f36737",
+            "on-surface": "#2a170f",
+            "primary-fixed": "#ffdbca",
+            "on-surface-variant": "#4f443f",
+            "on-secondary": "#ffffff",
+            "primary": "#261207",
+            "outline-variant": "#d3c3bc",
+            "error-container": "#ffdad6",
+            "surface-bright": "#fff8f6",
+            "tertiary-container": "#551500",
+            "on-secondary-fixed": "#1f1b10",
+            "surface-tint": "#755848",
+            "on-tertiary-fixed": "#390b00",
+            "inverse-on-surface": "#ffede7",
+            "background": "#fff8f6",
+            "on-error": "#ffffff",
+            "on-tertiary": "#ffffff",
+            "on-tertiary-fixed-variant": "#842500",
+            "secondary-fixed": "#eae2d0",
+            "tertiary-fixed": "#ffdbd0",
+            "secondary": "#645e50",
+            "surface-container-lowest": "#ffffff",
+            "secondary-fixed-dim": "#cec6b5",
+            "on-primary": "#ffffff",
+            "on-error-container": "#93000a",
+            "on-secondary-container": "#6a6456",
+            "surface": "#fff8f6",
+            "on-primary-fixed": "#2b160b",
+            "on-secondary-fixed-variant": "#4b4639",
+            "inverse-surface": "#412b22",
+            "primary-fixed-dim": "#e5bfab",
+            "on-primary-fixed-variant": "#5b4132",
+            "outline": "#82746e",
+            "surface-container-highest": "#ffdbcd",
+            "surface-variant": "#ffdbcd",
+            "surface-container-low": "#fff1ec",
+            "on-background": "#2a170f",
+            "error": "#ba1a1a",
+            "secondary-container": "#eae2d0",
+            "on-primary-container": "#ae8c7a",
+            "tertiary": "#320900",
+            "primary-container": "#3d2619",
+            "surface-dim": "#f6d2c5",
+            "surface-container-high": "#ffe2d8",
+            "tertiary-fixed-dim": "#ffb59d",
+            "surface-container": "#ffe9e2",
+            "parchment": "#FAF6EE",
+            "leather": "#3D2619",
+            "cognac": "#5C3A21"
+          },
+          borderRadius: {
+            DEFAULT: "0.25rem",
+            lg: "0.5rem",
+            xl: "0.75rem",
+            "2xl": "1rem",
+            "3xl": "1.5rem",
+            full: "9999px"
+          },
+          spacing: {
+            "space-md": "1rem",
+            "space-lg": "1.25rem",
+            "space-xl": "1.75rem",
+            "space-sm": "0.5rem",
+            gutter: "1rem",
+            margin: "1rem",
+            "space-xs": "0.25rem"
+          },
+          fontFamily: {
+            "label-md": ["Plus Jakarta Sans", "sans-serif"],
+            "currency-display": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-lg": ["Vollkorn", "serif"],
+            "headline-xl": ["Vollkorn", "serif"],
+            "headline-sm": ["Vollkorn", "serif"],
+            "body-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "title-ledger": ["Vollkorn", "serif"],
+            "currency-item": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-xl-mobile": ["Vollkorn", "serif"],
+            "body-md": ["Plus Jakarta Sans", "sans-serif"],
+            "label-sm": ["Plus Jakarta Sans", "sans-serif"],
+            "keypad-num": ["Plus Jakarta Sans", "sans-serif"],
+            "body-lg": ["Plus Jakarta Sans", "sans-serif"],
+            "headline-md": ["Vollkorn", "serif"]
+          },
+          fontSize: {
+            "label-md": ["13px", { lineHeight: "16px", letterSpacing: "0.01em", fontWeight: "600" }],
+            "currency-display": ["28px", { lineHeight: "34px", letterSpacing: "-0.03em", fontWeight: "700" }],
+            "headline-lg": ["26px", { lineHeight: "32px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-xl": ["32px", { lineHeight: "38px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "headline-sm": ["18px", { lineHeight: "24px", fontWeight: "500" }],
+            "body-sm": ["12px", { lineHeight: "16px", fontWeight: "400" }],
+            "title-ledger": ["16px", { lineHeight: "22px", fontWeight: "600" }],
+            "currency-item": ["16px", { lineHeight: "20px", letterSpacing: "-0.01em", fontWeight: "600" }],
+            "headline-xl-mobile": ["28px", { lineHeight: "34px", letterSpacing: "-0.02em", fontWeight: "700" }],
+            "body-md": ["14px", { lineHeight: "20px", fontWeight: "400" }],
+            "label-sm": ["11px", { lineHeight: "14px", letterSpacing: "0.04em", fontWeight: "600" }],
+            "keypad-num": ["24px", { lineHeight: "28px", fontWeight: "500" }],
+            "body-lg": ["16px", { lineHeight: "24px", fontWeight: "400" }],
+            "headline-md": ["20px", { lineHeight: "26px", fontWeight: "600" }]
+          }
+        }
+      }
+    };
+  </script>
+
+  <link rel="stylesheet" href="/src/styles/app.css"/>
+</head>
+<body class="bg-[#e8decb] text-on-surface font-body-md antialiased selection:bg-tertiary-fixed-dim min-h-screen flex items-center justify-center p-0 sm:p-4">
+  <!-- Mobile Container / Frame -->
+  <div id="phone-frame" class="w-full max-w-[430px] h-[100dvh] sm:h-[880px] sm:max-h-[920px] bg-surface relative flex flex-col overflow-hidden sm:rounded-[36px] sm:shadow-[0_25px_60px_rgba(43,24,16,0.35),0_0_0_12px_#3d2619,0_0_0_14px_#d8c7af]">
+    
+    <!-- Top Notch / Status bar for mobile aesthetics (visible on larger screens) -->
+    <div class="hidden sm:flex items-center justify-between px-6 pt-3 pb-1 text-xs text-neutral-400 z-50 bg-black select-none shrink-0 border-b border-neutral-900">
+      <span id="live-clock" class="font-semibold text-[13px] text-white">09:41</span>
+      <div class="w-20 h-4 bg-neutral-900 border border-neutral-800 rounded-full mx-auto"></div>
+      <div class="flex items-center gap-1.5 text-neutral-400">
+        <span class="material-symbols-outlined text-[14px]">signal_cellular_4_bar</span>
+        <span class="material-symbols-outlined text-[14px]">wifi</span>
+        <span class="material-symbols-outlined text-[16px]">battery_full</span>
+      </div>
+    </div>
+
+    <!-- Main Dynamic View Container (Scrollable) -->
+    <div id="app" class="flex-1 flex flex-col overflow-y-auto overflow-x-hidden relative"></div>
+
+    <!-- Global Frozen Bottom Navigation (Always pinned at the bottom, never scrolls) -->
+    <div id="global-bottom-nav" class="shrink-0 z-40 bg-black" style="background-color: #000000 !important;"></div>
+
+    <!-- Global Toast Container -->
+    <div id="toast-container" class="fixed sm:absolute bottom-24 left-1/2 -translate-x-1/2 z-[100] flex flex-col items-center gap-2 pointer-events-none w-11/12 max-w-[390px]"></div>
+  </div>
+
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>

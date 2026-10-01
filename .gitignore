@@ -1,0 +1,38 @@
+# Dependencies
+node_modules/
+
+# Production build
+dist/
+dist-ssr/
+
+# Local Environment Variables
+.env
+.env.local
+.env.*.local
+
+# Editor / IDE directories
+.vscode/*
+!.vscode/extensions.json
+.idea/
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# OS generated files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Google Service Account Private Key — JANGAN PERNAH DIUPLOAD KE PUBLIK!
+src/config/service-account.json
+
+# Gemini / Scratch artifacts
+.agents/
+scratch/

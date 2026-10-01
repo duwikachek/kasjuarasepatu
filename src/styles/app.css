@@ -1,0 +1,110 @@
+@layer base {
+  html, body {
+    width: 100%;
+    margin: 0;
+    padding: 0;
+  }
+  body {
+    overscroll-behavior-y: none;
+    -webkit-tap-highlight-color: transparent;
+  }
+  .pb-safe {
+    padding-bottom: env(safe-area-inset-bottom, 0px);
+  }
+  .pt-safe {
+    padding-top: env(safe-area-inset-top, 0px);
+  }
+}
+
+/* Hide scrollbar for clean mobile experience */
+::-webkit-scrollbar {
+  display: none;
+  width: 0;
+  height: 0;
+}
+* {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Enforce tabular digits for all currency and numbers */
+.font-tabular {
+  font-variant-numeric: tabular-nums lining-nums;
+}
+
+/* Tactile 3D Buttons (Warm Vintage Ledger style) */
+.bevel-primary {
+  box-shadow: 0 3px 0 #20130B;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bevel-primary:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #20130B;
+}
+
+.bevel-accent {
+  box-shadow: 0 3px 0 #A83A14;
+  transition: all 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+}
+.bevel-accent:active {
+  transform: translateY(2px);
+  box-shadow: 0 1px 0 #A83A14;
+}
+
+.bevel-light {
+  box-shadow: 0 2px 0 #D4C3AC;
+  transition: all 0.12s ease;
+}
+.bevel-light:active {
+  transform: translateY(1.5px);
+  box-shadow: 0 0.5px 0 #D4C3AC;
+}
+
+/* Ledger paper stitch border */
+.stitch-border {
+  border-top: 3px solid #5C3A21;
+}
+
+.stitch-dashed {
+  border-bottom: 1px dashed #C9BBA5;
+}
+
+/* Smooth page transitions */
+.page-fade-in {
+  animation: fadeIn 0.22s ease-out forwards;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Toast animations */
+.toast-enter {
+  animation: toastSlideUp 0.3s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+@keyframes toastSlideUp {
+  from {
+    opacity: 0;
+    transform: translateY(16px) scale(0.95);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* Header and Footer solid black guarantee */
+header.app-header,
+#global-bottom-nav,
+#global-bottom-nav nav {
+  background-color: #000000 !important;
+}
+
