@@ -386,6 +386,15 @@ export function renderPengaturanPage(store) {
 
           <button 
             type="button" 
+            id="btn-force-update"
+            class="w-full py-2.5 rounded-xl border border-primary/30 bg-surface-container text-primary hover:bg-surface-container-high font-label-md text-xs font-bold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <span class="material-symbols-outlined text-[16px]">sync</span>
+            <span>Perbarui Aplikasi & Bersihkan Cache</span>
+          </button>
+
+          <button 
+            type="button" 
             id="btn-reset-data"
             class="w-full py-2.5 rounded-xl border border-rose-300 text-rose-800 hover:bg-rose-50 font-label-md text-xs font-semibold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
           >
@@ -544,6 +553,19 @@ export function initPengaturanPage(router, store) {
         store.resetToDefault();
         showToast('Data telah disetel ulang ke data awal.', 'info');
         router.navigate('dashboard');
+      }
+    });
+  }
+
+  // Force App Update & Clear Cache
+  const btnForceUpdate = document.getElementById('btn-force-update');
+  if (btnForceUpdate) {
+    btnForceUpdate.addEventListener('click', async () => {
+      showToast('Memperbarui & membersihkan cache aplikasi...', 'info');
+      if (typeof window.forceAppUpdate === 'function') {
+        await window.forceAppUpdate();
+      } else {
+        window.location.reload(true);
       }
     });
   }

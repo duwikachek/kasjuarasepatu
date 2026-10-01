@@ -169,16 +169,51 @@
 
   <script type="module" src="/src/main.js"></script>
 
-  <!-- Register Service Worker for PWA / Offline Support -->
+  <!-- Register Service Worker for PWA / Offline Support with Auto-Update -->
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
         const swPath = new URL('sw.js', window.location.href).pathname;
-        navigator.serviceWorker.register(swPath)
-          .then((reg) => console.log('[PWA] Service Worker registered:', reg.scope))
-          .catch((err) => console.warn('[PWA] Service Worker failed:', err));
+        navigator.serviceWorker.register(swPath).then((reg) => {
+          console.log('[PWA] Service Worker registered:', reg.scope);
+          reg.update();
+          reg.addEventListener('updatefound', () => {
+            const installing = reg.installing;
+            if (installing) {
+              installing.addEventListener('statechange', () => {
+                if (installing.state === 'installed' && navigator.serviceWorker.controller) {
+                  installing.postMessage({ type: 'SKIP_WAITING' });
+                }
+              });
+            }
+          });
+          if (reg.waiting) {
+            reg.waiting.postMessage({ type: 'SKIP_WAITING' });
+          }
+        }).catch((err) => console.warn('[PWA] Service Worker failed:', err));
+
+        let refreshing = false;
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          if (!refreshing) {
+            refreshing = true;
+            window.location.reload();
+          }
+        });
       });
     }
+
+    // Global helper to clear cache and update app
+    window.forceAppUpdate = async function() {
+      if ('caches' in window) {
+        const keys = await caches.keys();
+        await Promise.all(keys.map(k => caches.delete(k)));
+      }
+      if ('serviceWorker' in navigator) {
+        const regs = await navigator.serviceWorker.getRegistrations();
+        await Promise.all(regs.map(r => r.unregister()));
+      }
+      window.location.reload(true);
+    };
   </script>
 </body>
 </html>
