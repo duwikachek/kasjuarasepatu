@@ -8,13 +8,17 @@ let tokenExpiry = 0;
  * Convert PEM RSA private key string to ArrayBuffer for Web Crypto API
  */
 function pemToArrayBuffer(pem) {
-  const b64 = pem.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
-  const binary = atob(b64);
-  const bytes = new Uint8Array(binary.length);
-  for (let i = 0; i < binary.length; i++) {
-    bytes[i] = binary.charCodeAt(i);
+  try {
+    const b64 = pem.replace(/-----[^\n]+-----/g, '').replace(/\s+/g, '');
+    const binary = atob(b64);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return bytes.buffer;
+  } catch (err) {
+    throw new Error('Kunci Service Account tidak valid atau belum diunggah. Silakan unggah file service-account.json Anda di Pengaturan.');
   }
-  return bytes.buffer;
 }
 
 /**
@@ -64,8 +68,14 @@ export async function getAccessToken(store) {
   }
 
   const creds = getCredentials(store);
-  if (!creds || !creds.client_email || !creds.private_key) {
-    throw new Error('Kredensial Service Account Google tidak valid atau belum diisi.');
+  if (
+    !creds ||
+    !creds.client_email ||
+    !creds.private_key ||
+    creds.client_email.includes('your-service-account') ||
+    creds.private_key.includes('YOUR_PRIVATE_KEY_HERE')
+  ) {
+    throw new Error('Kunci Service Account belum dipasang di browser ini. Silakan unggah file service-account.json Anda di menu Pengaturan.');
   }
 
   const keyBuffer = pemToArrayBuffer(creds.private_key);
