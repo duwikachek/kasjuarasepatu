@@ -222,6 +222,72 @@ export function renderPengaturanPage(store) {
             </p>
           </div>
 
+          <!-- Kredensial Service Account JSON / Key Box -->
+          <div class="bg-surface-container-low border border-surface-container-high rounded-xl p-3 flex flex-col gap-2">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'text-emerald-600' : 'text-amber-500')}">
+                  ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'verified_user' : 'warning')}
+                </span>
+                Kunci Service Account (Google Cloud)
+              </span>
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800')}">
+                ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'Aktif' : 'Perlu Diisi')}
+              </span>
+            </div>
+
+            <p class="text-[11px] text-on-surface-variant leading-tight">
+              ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) 
+                ? 'File kunci service-account.json sudah aktif di perangkat ini. Data siap disinkronkan ke Google Spreadsheet toko.' 
+                : 'Di versi online, unggah atau tempel file <code>service-account.json</code> toko Anda agar sinkronisasi Google Sheets dapat berjalan.')}
+            </p>
+
+            <div class="flex items-center gap-2 mt-1">
+              <label class="flex-1 cursor-pointer py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs">
+                <input type="file" id="input-upload-sa-json" accept=".json" class="hidden"/>
+                <span class="material-symbols-outlined text-[15px]">upload_file</span>
+                <span>Unggah service-account.json</span>
+              </label>
+
+              <button 
+                type="button" 
+                id="btn-toggle-sa-paste" 
+                class="py-2 px-3 rounded-lg border border-surface-container-high bg-surface-container text-on-surface text-xs font-bold hover:bg-surface-container-highest active:scale-95 transition-all"
+              >
+                Tempel Teks
+              </button>
+
+              ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().serviceAccountJson) ? `
+                <button 
+                  type="button" 
+                  id="btn-clear-sa-json" 
+                  class="py-2 px-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold active:scale-95 transition-all" 
+                  title="Hapus Kunci Tersimpan"
+                >
+                  <span class="material-symbols-outlined text-[15px]">delete</span>
+                </button>
+              ` : ''}
+            </div>
+
+            <!-- Paste Box Area -->
+            <div id="box-paste-sa" class="hidden flex flex-col gap-2 mt-2 pt-2 border-t border-surface-container-high">
+              <textarea 
+                id="textarea-sa-json" 
+                rows="4" 
+                class="w-full p-2.5 rounded-lg bg-surface-container-lowest font-mono text-[11px] text-on-surface border border-surface-container-high focus:outline-emerald-600" 
+                placeholder="Tempel seluruh isi file service-account.json di sini..."
+              ></textarea>
+              <button 
+                type="button" 
+                id="btn-save-pasted-sa" 
+                class="py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
+              >
+                <span class="material-symbols-outlined text-[14px]">save</span>
+                <span>Simpan Kunci</span>
+              </button>
+            </div>
+          </div>
+
           <!-- Input Spreadsheet ID / URL -->
           <div class="flex flex-col gap-1.5">
             <label class="font-label-sm text-xs text-on-surface font-semibold flex items-center justify-between">
@@ -483,6 +549,76 @@ export function initPengaturanPage(router, store) {
   }
 
   // ── Google Sheets Integration Handlers ──
+  // Upload JSON File
+  const inputUploadSa = document.getElementById('input-upload-sa-json');
+  if (inputUploadSa) {
+    inputUploadSa.addEventListener('change', (e) => {
+      const file = e.target.files && e.target.files[0];
+      if (!file) return;
+
+      const reader = new FileReader();
+      reader.onload = (event) => {
+        try {
+          const content = event.target.result;
+          const parsed = JSON.parse(content);
+          if (!parsed.client_email || !parsed.private_key) {
+            throw new Error('File JSON tidak memiliki client_email atau private_key yang valid.');
+          }
+          store.saveGoogleSheetsConfig({ serviceAccountJson: content });
+          showToast(`Kunci Service Account berhasil dipasang! (${parsed.client_email})`, 'success', 4000);
+          router.navigate('pengaturan');
+        } catch (err) {
+          showToast(`File tidak valid: ${err.message}`, 'error', 4000);
+        }
+      };
+      reader.readAsText(file);
+    });
+  }
+
+  // Toggle Paste Box
+  const btnTogglePaste = document.getElementById('btn-toggle-sa-paste');
+  const boxPaste = document.getElementById('box-paste-sa');
+  if (btnTogglePaste && boxPaste) {
+    btnTogglePaste.addEventListener('click', () => {
+      boxPaste.classList.toggle('hidden');
+    });
+  }
+
+  // Save Pasted JSON
+  const btnSavePasted = document.getElementById('btn-save-pasted-sa');
+  const textareaSa = document.getElementById('textarea-sa-json');
+  if (btnSavePasted && textareaSa) {
+    btnSavePasted.addEventListener('click', () => {
+      const val = textareaSa.value.trim();
+      if (!val) {
+        showToast('Tempel teks JSON service-account terlebih dahulu.', 'error');
+        return;
+      }
+      try {
+        const parsed = JSON.parse(val);
+        if (!parsed.client_email || !parsed.private_key) {
+          throw new Error('JSON tidak memiliki client_email atau private_key.');
+        }
+        store.saveGoogleSheetsConfig({ serviceAccountJson: val });
+        showToast(`Kunci Service Account tersimpan! (${parsed.client_email})`, 'success', 4000);
+        router.navigate('pengaturan');
+      } catch (err) {
+        showToast(`Format JSON salah: ${err.message}`, 'error', 4000);
+      }
+    });
+  }
+
+  // Clear Custom Key
+  const btnClearSa = document.getElementById('btn-clear-sa-json');
+  if (btnClearSa) {
+    btnClearSa.addEventListener('click', () => {
+      if (confirm('Hapus kunci Service Account kustom yang tersimpan di browser ini?')) {
+        store.saveGoogleSheetsConfig({ serviceAccountJson: '' });
+        showToast('Kunci kustom dihapus.', 'info');
+        router.navigate('pengaturan');
+      }
+    });
+  }
   const btnCopyEmail = document.getElementById('btn-copy-service-email');
   const textEmail = document.getElementById('text-service-email');
   if (btnCopyEmail && textEmail) {
