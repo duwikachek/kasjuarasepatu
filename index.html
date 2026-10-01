@@ -6,16 +6,16 @@
   <meta name="theme-color" content="#b45309"/>
   <meta name="description" content="Aplikasi Buku Kas Digital untuk Toko Sepatu — Catat pemasukan, pengeluaran, stok, dan pengiriman dengan mudah."/>
   <title>Kas Juara Sepatu — Buku Kas Toko</title>
-  <link rel="icon" type="image/png" href="/assets/logo-juara.png"/>
+  <link rel="icon" type="image/png" href="./assets/logo-juara.png"/>
 
   <!-- PWA Manifest -->
-  <link rel="manifest" href="/manifest.json"/>
+  <link rel="manifest" href="./manifest.json"/>
 
   <!-- iOS / Safari PWA Support -->
   <meta name="apple-mobile-web-app-capable" content="yes"/>
   <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent"/>
   <meta name="apple-mobile-web-app-title" content="Kas Juara"/>
-  <link rel="apple-touch-icon" href="/assets/logo-juara.png"/>
+  <link rel="apple-touch-icon" href="./assets/logo-juara.png"/>
 
   <!-- Android / Chrome PWA -->
   <meta name="mobile-web-app-capable" content="yes"/>
@@ -173,7 +173,8 @@
   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', () => {
-        navigator.serviceWorker.register('/sw.js')
+        const swPath = new URL('sw.js', window.location.href).pathname;
+        navigator.serviceWorker.register(swPath)
           .then((reg) => console.log('[PWA] Service Worker registered:', reg.scope))
           .catch((err) => console.warn('[PWA] Service Worker failed:', err));
       });

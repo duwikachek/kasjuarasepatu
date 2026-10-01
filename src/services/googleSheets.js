@@ -1,4 +1,4 @@
-import defaultCredentials from '../config/service-account.json';
+import defaultCredentials from '@service-account';
 
 // Cache access token in memory with expiry
 let cachedToken = null;

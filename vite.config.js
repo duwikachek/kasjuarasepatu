@@ -1,8 +1,17 @@
 import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
+import fs from 'fs';
+import path from 'path';
 
 export default defineConfig({
   base: '/kasjuarasepatu/', // ← Penting untuk GitHub Pages
+  resolve: {
+    alias: {
+      '@service-account': fs.existsSync(path.resolve(__dirname, 'src/config/service-account.json'))
+        ? path.resolve(__dirname, 'src/config/service-account.json')
+        : path.resolve(__dirname, 'src/config/service-account.example.json')
+    }
+  },
   server: {
     port: 5173,
     host: true,

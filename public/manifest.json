@@ -12,13 +12,13 @@
   "lang": "id",
   "icons": [
     {
-      "src": "/assets/logo-juara.png",
+      "src": "./assets/logo-juara.png",
       "sizes": "192x192",
       "type": "image/png",
       "purpose": "any maskable"
     },
     {
-      "src": "/assets/logo-juara.png",
+      "src": "./assets/logo-juara.png",
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "any maskable"
