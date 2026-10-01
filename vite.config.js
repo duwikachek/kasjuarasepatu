@@ -2,6 +2,7 @@ import { defineConfig } from 'vite';
 import { VitePWA } from 'vite-plugin-pwa';
 
 export default defineConfig({
+  base: '/kasjuarasepatu/', // ← Penting untuk GitHub Pages
   server: {
     port: 5173,
     host: true,
