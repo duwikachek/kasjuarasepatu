@@ -356,7 +356,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                     </span>
                   ` : ''}
 
-                  <span class="text-on-surface-variant/70 text-[10px]">${trx.time}</span>
+                  <span class="text-on-surface-variant/70 text-[10px]">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' \u2022 '; } catch(e) { return trx.date + ' \u2022 '; } })() : ''}${trx.time}</span>
                 </div>
 
                 ${trx.note ? `
@@ -573,9 +573,10 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
 
     if (filtered.length === 0) {
       popup.innerHTML = `
-        <div class="p-3 text-center text-xs text-on-surface-variant flex flex-col items-center gap-1">
+        <div class="p-3 text-center text-xs text-on-surface-variant flex flex-col items-center gap-1.5">
           <span class="material-symbols-outlined text-lg text-on-surface-variant/50">inventory_2</span>
-          <span>${query ? 'Tidak ada sepatu di stok yang cocok dengan "' + searchQuery + '"' : 'Tidak ada sepatu yang tersedia di stok toko'}</span>
+          <span class="font-semibold text-on-surface">${query ? 'Tidak ada sepatu di stok cocok dengan "' + searchQuery + '"' : 'Belum ada stok sepatu dengan barcode'}</span>
+          ${!query ? '<span class="text-[10px] text-on-surface-variant/70 leading-relaxed">Tambahkan sepatu melalui menu<br/><strong class="text-primary">+ Tambah Barang Masuk</strong></span>' : ''}
         </div>
       `;
       popup.classList.remove('hidden');

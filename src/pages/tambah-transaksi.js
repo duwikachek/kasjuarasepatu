@@ -118,6 +118,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
   const defaultCategory = existingTrx ? (existingTrx.category || KATEGORI_KELUAR[0].label) : KATEGORI_KELUAR[0].label;
   const defaultNominalKeluar = (existingTrx && existingTrx.type === 'keluar') ? formatRupiah(existingTrx.amount, '') : '';
   const defaultPhoto = existingTrx ? (existingTrx.photo || '') : '';
+  const defaultDate = existingTrx ? (existingTrx.date || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0];
   const totalItemsPrice = initialItems.reduce((s, it) => s + (Number(it.price) || 0), 0);
 
   return `
@@ -140,6 +141,24 @@ export function renderTambahTransaksiPage(store, params = {}) {
 
         <!-- KAS MASUK -->
         <div id="masuk-wrapper" class="${initialType === 'masuk' ? 'flex' : 'hidden'} flex-col gap-4">
+          <!-- TANGGAL TRANSAKSI KAS MASUK -->
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="input-trx-date-masuk" class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
+                <span>Tanggal Transaksi</span>
+              </label>
+              <span class="font-label-sm text-[10px] text-on-surface-variant">Tanggal Kas Masuk</span>
+            </div>
+            <input 
+              type="date" 
+              id="input-trx-date-masuk" 
+              value="${defaultDate}" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
+              required
+            />
+          </div>
+
           <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">person</span><span>Nama Pembeli</span></label>
@@ -203,6 +222,24 @@ export function renderTambahTransaksiPage(store, params = {}) {
 
         <!-- KAS KELUAR -->
         <div id="keluar-wrapper" class="${initialType === 'keluar' ? 'flex' : 'hidden'} flex-col gap-4">
+          <!-- TANGGAL TRANSAKSI KAS KELUAR -->
+          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+            <div class="flex items-center justify-between">
+              <label for="input-trx-date-keluar" class="font-label-md text-xs text-rose-950 font-bold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-rose-700 text-[18px]">calendar_today</span>
+                <span>Tanggal Transaksi</span>
+              </label>
+              <span class="font-label-sm text-[10px] text-on-surface-variant">Tanggal Kas Keluar</span>
+            </div>
+            <input 
+              type="date" 
+              id="input-trx-date-keluar" 
+              value="${defaultDate}" 
+              class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all" 
+              required
+            />
+          </div>
+
           <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-rose-950 font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-rose-700 text-[18px]">category</span><span>Kategori Pengeluaran</span></label>
@@ -333,23 +370,41 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   const keluarWrapper = document.getElementById('keluar-wrapper');
   const btnSubmit = document.getElementById('btn-submit-trx');
   const btnSubmitText = document.getElementById('btn-submit-text');
+  const dateMasukInput = document.getElementById('input-trx-date-masuk');
+  const dateKeluarInput = document.getElementById('input-trx-date-keluar');
+
+  // Sinkronisasi input tanggal antara kas masuk dan kas keluar
+  if (dateMasukInput && dateKeluarInput) {
+    dateMasukInput.addEventListener('change', () => {
+      dateKeluarInput.value = dateMasukInput.value;
+    });
+    dateKeluarInput.addEventListener('change', () => {
+      dateMasukInput.value = dateKeluarInput.value;
+    });
+  }
 
   function updateType(type) {
     currentType = type;
     if (currentType === 'masuk') {
+      if (dateMasukInput && dateKeluarInput && dateKeluarInput.value) {
+        dateMasukInput.value = dateKeluarInput.value;
+      }
       if (btnMasuk) btnMasuk.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 bg-surface-container-lowest shadow-sm text-primary font-bold';
       if (btnKeluar) btnKeluar.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-on-surface-variant';
       if (masukWrapper) masukWrapper.classList.remove('hidden');
       if (keluarWrapper) keluarWrapper.classList.add('hidden');
       if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 bg-primary-container text-surface-bright rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md';
-      if (btnSubmitText) btnSubmitText.textContent = 'Simpan Kas Masuk';
+      if (btnSubmitText) btnSubmitText.textContent = isEditMode ? 'Simpan Perubahan' : 'Simpan Kas Masuk';
     } else {
+      if (dateMasukInput && dateKeluarInput && dateMasukInput.value) {
+        dateKeluarInput.value = dateMasukInput.value;
+      }
       if (btnKeluar) btnKeluar.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 bg-surface-container-lowest shadow-sm text-rose-800 font-bold';
       if (btnMasuk) btnMasuk.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-on-surface-variant';
       if (masukWrapper) masukWrapper.classList.add('hidden');
       if (keluarWrapper) keluarWrapper.classList.remove('hidden');
       if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 bg-rose-800 text-white rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md';
-      if (btnSubmitText) btnSubmitText.textContent = 'Simpan Kas Keluar';
+      if (btnSubmitText) btnSubmitText.textContent = isEditMode ? 'Simpan Perubahan' : 'Simpan Kas Keluar';
     }
   }
 
@@ -575,9 +630,10 @@ export function initTambahTransaksiPage(router, store, params = {}) {
 
     if (filtered.length === 0) {
       popup.innerHTML = `
-        <div class="p-3 text-center text-xs text-on-surface-variant flex flex-col items-center gap-1">
+        <div class="p-3 text-center text-xs text-on-surface-variant flex flex-col items-center gap-1.5">
           <span class="material-symbols-outlined text-xl text-on-surface-variant/50">inventory_2</span>
-          <span>${query ? 'Tidak ada sepatu di stok yang cocok dengan "' + searchQuery + '"' : 'Tidak ada sepatu yang tersedia di stok toko'}</span>
+          <span class="font-semibold text-on-surface">${query ? 'Tidak ada sepatu di stok cocok dengan "' + searchQuery + '"' : 'Belum ada stok sepatu dengan barcode'}</span>
+          ${!query ? '<span class="text-[10px] text-on-surface-variant/70 leading-relaxed">Tambahkan sepatu melalui menu<br/><strong class="text-primary">+ Tambah Barang Masuk</strong></span>' : ''}
         </div>
       `;
       popup.classList.remove('hidden');
@@ -947,6 +1003,8 @@ export function initTambahTransaksiPage(router, store, params = {}) {
           }
         }
 
+        const dateInputMasuk = document.getElementById('input-trx-date-masuk');
+        const trxDate = (dateInputMasuk && dateInputMasuk.value) ? dateInputMasuk.value : new Date().toISOString().split('T')[0];
         const buyerName = (document.getElementById('input-buyer-name') && document.getElementById('input-buyer-name').value.trim()) || '';
         const noteVal = (document.getElementById('input-notes') && document.getElementById('input-notes').value.trim()) || '';
         const ongkirRadio = document.querySelector('input[name="ongkirOption"]:checked');
@@ -964,6 +1022,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         const trxData = {
           type: 'masuk',
           category: 'Penjualan Sepatu',
+          date: trxDate,
           amount: totalAmount,
           title,
           buyer: buyerName,
@@ -993,8 +1052,24 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         const amount = parseRupiah(inputNominal ? inputNominal.value : '0');
         if (amount <= 0) { showToast('Nominal pengeluaran harus lebih dari 0', 'error'); return; }
         const keteranganKeluar = (document.getElementById('input-keluar-keterangan') && document.getElementById('input-keluar-keterangan').value.trim()) || selectedKategoriKeluar;
-        if (isEditMode) { store.updateTransaction(editId, { type: 'keluar', category: selectedKategoriKeluar, amount, title: keteranganKeluar, keterangan: keteranganKeluar, photo: keluarPhotoDataUrl || (existingTrx ? existingTrx.photo : null) }); showToast('Perubahan pengeluaran berhasil disimpan!', 'success'); }
-        else { store.addTransaction({ type: 'keluar', category: selectedKategoriKeluar, amount, title: keteranganKeluar, keterangan: keteranganKeluar, photo: keluarPhotoDataUrl }); showToast('Pengeluaran [' + selectedKategoriKeluar + '] berhasil dicatat!', 'success'); }
+        const dateInputKeluar = document.getElementById('input-trx-date-keluar');
+        const trxDate = (dateInputKeluar && dateInputKeluar.value) ? dateInputKeluar.value : new Date().toISOString().split('T')[0];
+        const keluarData = {
+          type: 'keluar',
+          category: selectedKategoriKeluar,
+          date: trxDate,
+          amount,
+          title: keteranganKeluar,
+          keterangan: keteranganKeluar,
+          photo: keluarPhotoDataUrl || (existingTrx ? existingTrx.photo : null)
+        };
+        if (isEditMode) {
+          store.updateTransaction(editId, keluarData);
+          showToast('Perubahan pengeluaran berhasil disimpan!', 'success');
+        } else {
+          store.addTransaction(keluarData);
+          showToast('Pengeluaran [' + selectedKategoriKeluar + '] berhasil dicatat!', 'success');
+        }
       }
       setTimeout(() => { router.navigate('transaksi'); }, 200);
     } catch (err) {

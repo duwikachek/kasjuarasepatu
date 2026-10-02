@@ -316,6 +316,7 @@ class Store {
   }
 
   // Available In-Stock Products (excluding already sold items)
+  // Hanya dari entri Barang Masuk (supplies) - bukan dari katalog produk
   getAvailableProducts(excludeTrxId = null) {
     const transactions = this.getTransactions();
     const soldSet = new Set();
@@ -333,31 +334,12 @@ class Store {
 
     const resultMap = new Map();
 
-    // 1. From catalog products
-    const products = this.getProducts();
-    products.forEach((p) => {
-      if (p.barcode) {
-        const clean = p.barcode.toString().trim().toUpperCase();
-        if (!soldSet.has(clean)) {
-          resultMap.set(clean, {
-            barcode: p.barcode,
-            name: p.name,
-            kondisi: p.kondisi || 'Bagus',
-            sellPrice: p.sellPrice || (p.buyPrice ? Math.round(Number(p.buyPrice) * 1.3) : 0),
-            buyPrice: p.buyPrice || 0,
-            photo: p.photo || null,
-            supplier: p.supplier || ''
-          });
-        }
-      }
-    });
-
-    // 2. From supply entries (Barang Masuk)
+    // HANYA dari entri Barang Masuk (supplies) yang punya barcode
     const supplies = this.getSupplies();
     supplies.forEach((sup) => {
       if (sup.items && Array.isArray(sup.items)) {
         sup.items.forEach((it) => {
-          if (it.barcode) {
+          if (it.barcode && it.barcode.trim()) {
             const clean = it.barcode.toString().trim().toUpperCase();
             if (!soldSet.has(clean) && !resultMap.has(clean)) {
               resultMap.set(clean, {
