@@ -1,12 +1,13 @@
 import { showToast } from '../components/toast.js';
+import logoJuara from '../assets/logo-juara.png';
 
 export function renderPinLoginPage() {
   return `
     <div class="page-fade-in flex-1 flex flex-col justify-between px-6 pt-10 pb-8 min-h-screen bg-surface">
       <!-- Brand & Header -->
       <div class="flex flex-col items-center text-center mt-2">
-        <div class="w-48 h-20 rounded-2xl bg-black flex items-center justify-center p-3 shadow-lg mb-4 border border-neutral-800">
-          <img src="/assets/logo-juara.png" alt="Juara Sepatu" class="w-full h-full object-contain" />
+        <div class="w-52 h-24 rounded-2xl bg-black flex items-center justify-center p-3 shadow-lg mb-4 border border-neutral-800">
+          <img src="${logoJuara}" alt="Juara Sepatu" class="w-full h-full object-contain" />
         </div>
         <h1 class="font-headline-lg text-2xl font-bold text-on-surface">Kas Juara Sepatu</h1>
         <p class="font-body-md text-sm text-on-surface-variant mt-1">Buku Kas & Stok Sepatu Retro Modern</p>

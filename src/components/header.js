@@ -1,5 +1,6 @@
 // App Header Component
 import { showToast } from './toast.js';
+import logoJuara from '../assets/logo-juara.png';
 
 export function renderHeader({
   title = 'Kas Juara',
@@ -24,7 +25,7 @@ export function renderHeader({
             </button>
           ` : `
             <div class="h-10 px-2 rounded-xl bg-neutral-900 border border-neutral-800 flex items-center justify-center shadow-xs shrink-0 overflow-hidden cursor-pointer hover:border-neutral-700 transition-all" data-nav="dashboard" title="Juara Sepatu">
-              <img src="/assets/logo-juara.png" alt="Juara Sepatu" class="h-6.5 w-auto max-w-[68px] object-contain" />
+              <img src="${logoJuara}" alt="Juara Sepatu" class="h-7 w-auto max-w-[72px] object-contain" />
             </div>
           `}
           
