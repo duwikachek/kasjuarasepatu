@@ -96,6 +96,8 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
   let currentFilter = initialFilter;
   let searchQuery = '';
+  // Nota yang sedang dibuka rinciannya (agar tetap terbuka saat pencarian/filter berubah)
+  const expandedSupplies = new Set();
 
   const addBtn = document.getElementById('btn-goto-tambah-pasok');
   if (addBtn) {
@@ -171,6 +173,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
     container.innerHTML = list.map((supply) => {
       const isLunas = supply.status === 'lunas';
+      const isOpen = expandedSupplies.has(supply.id);
       return `
         <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
           <!-- Top Row: ID Belanja & Status Badge -->
@@ -190,9 +193,30 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
             <span>${supply.date}</span>
           </div>
 
-          <!-- Items preview with Barcode, Photo & Condition -->
+          <!-- Breakdown Toggle: klik untuk buka/tutup rincian barang nota ini -->
+          <button
+            type="button"
+            class="pasok-breakdown-btn w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-surface-container-high/60 active:scale-[0.99] transition-all"
+            data-target="detail-${supply.id}"
+            data-supply-id="${supply.id}"
+            aria-expanded="${isOpen ? 'true' : 'false'}"
+            aria-controls="detail-${supply.id}"
+          >
+            <span class="flex items-center gap-1.5 min-w-0">
+              <span class="material-symbols-outlined text-[16px] text-primary">receipt_long</span>
+              <span class="font-bold text-primary">Breakdown</span>
+              <span class="text-on-surface-variant truncate">• ${supply.itemsCount || 1} Pasang • ${supply.paymentMethod || 'Tunai'}</span>
+            </span>
+            <span class="flex items-center gap-1 shrink-0">
+              <span class="text-on-surface-variant">Total:</span>
+              <span class="font-currency-item text-base font-bold text-primary font-tabular">${formatRupiah(supply.totalAmount)}</span>
+              <span class="pasok-breakdown-chevron material-symbols-outlined text-[18px] text-on-surface-variant">${isOpen ? 'expand_less' : 'expand_more'}</span>
+            </span>
+          </button>
+
+          <!-- Rincian Barang (tersembunyi sampai tombol Breakdown diklik) -->
           ${supply.items && supply.items.length > 0 ? `
-            <div class="bg-surface-container-low/70 rounded-xl p-2.5 flex flex-col gap-2 text-xs">
+            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} bg-surface-container-low/70 rounded-xl p-2.5 flex flex-col gap-2 text-xs">
               ${supply.items.map((it) => `
                 <div class="flex items-start gap-2.5">
                   ${it.photo ? `
@@ -229,22 +253,12 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 </div>
               `).join('')}
             </div>
-          ` : ''}
+          ` : `
+            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} text-xs text-on-surface-variant italic px-1 pt-1">Tidak ada rincian barang pada nota ini.</div>
+          `}
 
-          <!-- Footer: Info, Actions (Edit/Hapus) & Total -->
-          <div class="flex flex-col gap-2 pt-1 border-t border-surface-container-high/60">
-            <div class="flex items-center justify-between text-xs">
-              <span class="text-on-surface-variant font-medium">${supply.itemsCount || 1} Pasang • ${supply.paymentMethod || 'Tunai'}</span>
-              <div class="flex items-baseline gap-1">
-                <span class="text-xs text-on-surface-variant">Total:</span>
-                <span class="font-currency-item text-base font-bold text-primary font-tabular">
-                  ${formatRupiah(supply.totalAmount)}
-                </span>
-              </div>
-            </div>
-
-            <!-- Action Buttons: + Tambah Barang, Edit & Hapus -->
-            <div class="flex items-center justify-end gap-2 pt-1 flex-wrap">
+          <!-- Action Buttons: + Tambah Barang, Edit & Hapus -->
+          <div class="flex items-center justify-end gap-2 pt-1 border-t border-surface-container-high/60 flex-wrap">
               <button 
                 type="button" 
                 data-action="add-item-supply" 
@@ -275,7 +289,6 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 <span>Hapus</span>
               </button>
             </div>
-          </div>
         </div>
       `;
     }).join('');
@@ -309,6 +322,28 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
           showToast(`Data belanja ${invoiceNo} berhasil dihapus!`, 'info');
           updateKpi();
           renderItems();
+        }
+      });
+    });
+
+    // Bind Breakdown toggle: buka/tutup rincian barang per nota belanja
+    container.querySelectorAll('.pasok-breakdown-btn').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const targetId = btn.getAttribute('data-target');
+        const detail = targetId ? document.getElementById(targetId) : null;
+        if (!detail) return;
+
+        const nowHidden = detail.classList.toggle('hidden');
+        btn.setAttribute('aria-expanded', nowHidden ? 'false' : 'true');
+
+        const chevron = btn.querySelector('.pasok-breakdown-chevron');
+        if (chevron) chevron.textContent = nowHidden ? 'expand_more' : 'expand_less';
+
+        const supplyId = btn.getAttribute('data-supply-id');
+        if (supplyId) {
+          if (nowHidden) expandedSupplies.delete(supplyId);
+          else expandedSupplies.add(supplyId);
         }
       });
     });
