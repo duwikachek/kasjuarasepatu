@@ -22,11 +22,19 @@ export default defineConfig({
   },
   plugins: [
     VitePWA({
-      registerType: 'autoUpdate',
+      registerType: 'prompt',
       injectRegister: false, // kita register manual di index.html
       manifest: false,       // kita pakai manifest.json manual di public/
       workbox: {
         globPatterns: ['**/*.{js,css,html,png,jpg,svg,ico}'],
+        // --- Mode pembaruan "prompt" (sopan) ---
+        // SW baru TIDAK langsung aktif (skipWaiting: false). Aplikasi menampilkan
+        // notifikasi "Versi baru tersedia" dan menunggu pengguna menekan "Muat Ulang",
+        // baru kemudian mengirim pesan SKIP_WAITING ke service worker.
+        skipWaiting: false,
+        clientsClaim: false,
+        // Bersihkan cache versi lama agar tidak menyajikan aset yang sudah usang.
+        cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.(googleapis|gstatic)\.com\/.*/i,
