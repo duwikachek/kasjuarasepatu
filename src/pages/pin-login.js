@@ -4,15 +4,16 @@ import logoJuara from '../assets/logo-juara.png';
 export function renderPinLoginPage() {
   return `
     <div class="page-fade-in flex-1 flex flex-col justify-between px-6 pt-10 pb-8 min-h-screen bg-surface">
-      <!-- Brand & Header -->
+      <!-- Logo -->
       <div class="flex flex-col items-center text-center mt-2">
-        <div class="w-52 h-24 rounded-2xl bg-black flex items-center justify-center p-3 shadow-lg mb-4 border border-neutral-800">
+        <div class="w-52 h-24 rounded-2xl bg-black flex items-center justify-center p-3 shadow-lg border border-neutral-800">
           <img src="${logoJuara}" alt="Juara Sepatu" class="w-full h-full object-contain" />
         </div>
-        <h1 class="font-headline-lg text-2xl font-bold text-on-surface">Kas Juara Sepatu</h1>
-        <p class="font-body-md text-sm text-on-surface-variant mt-1">Buku Kas & Stok Sepatu Retro Modern</p>
-        
-        <div class="mt-8 flex flex-col items-center">
+      </div>
+
+      <!-- PIN Input & Numpad (grup PIN didekatkan ke tombol angka) -->
+      <div class="w-full max-w-[320px] mx-auto my-4">
+        <div class="flex flex-col items-center mb-6">
           <span class="font-label-md text-sm font-semibold text-primary uppercase tracking-wider">Buka Buku Kas</span>
           <p class="font-body-sm text-xs text-on-surface-variant mt-0.5">Masukkan 6 Digit PIN Kasir / Pemilik</p>
           
@@ -27,10 +28,7 @@ export function renderPinLoginPage() {
           </div>
           <span id="pin-error-msg" class="text-xs text-error font-medium mt-2 h-4 transition-all"></span>
         </div>
-      </div>
 
-      <!-- Tactile Numpad -->
-      <div class="w-full max-w-[320px] mx-auto my-4">
         <div class="grid grid-cols-3 gap-3">
           ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `
             <button 
