@@ -220,7 +220,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
     ? store.getSupplyById(params.appendSupplyId) 
     : (isEdit ? store.getSupplyById(params.editId) : null);
 
-  const defaultSupplier = targetSupply ? targetSupply.supplierName : 'CV Juara Footwear Bandung';
+  const defaultSupplier = targetSupply ? targetSupply.supplierName : '';
   const defaultDate = targetSupply ? targetSupply.date : new Date().toISOString().split('T')[0];
   const defaultStatus = targetSupply ? targetSupply.status : 'lunas';
 
@@ -318,7 +318,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
               <input 
                 type="text" 
                 id="input-suplier-name" 
-                placeholder="Contoh: CV Juara Footwear Bandung / Grosir Cibaduyut" 
+                placeholder="Isi nama suplier" 
                 value="${defaultSupplier}"
                 class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
                 required
@@ -384,7 +384,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
                 <span class="material-symbols-outlined text-[20px]">schedule</span>
                 <div class="flex flex-col">
                   <span class="font-label-md text-xs font-bold">Tempo / Bon</span>
-                  <span class="text-[10px] text-on-surface-variant">Catat ke hutang toko</span>
+                  <span class="text-[10px] text-on-surface-variant">Bayar nanti ke supplier</span>
                 </div>
               </label>
             </div>
@@ -1008,16 +1008,6 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       totalAmount: totalAmount,
       items: cleanItems
     });
-
-    if (status === 'tempo') {
-      store.addDebt({
-        type: 'hutang',
-        personName: `${suplier} (${belanjaNota})`,
-        phone: '0812-9999-8888',
-        totalAmount: totalAmount,
-        notes: `Belanja ${totalCount} pasang sepatu (${belanjaNota})`
-      });
-    }
 
     showToast(`Data belanja ${belanjaNota} (${totalCount} pasang) berhasil disimpan!`, 'success');
     setTimeout(() => router.navigate('pasok'), 200);

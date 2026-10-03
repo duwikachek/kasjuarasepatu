@@ -18,6 +18,8 @@ class Store {
         }
         // Migrate: rename 'Kulakan Barang' -> 'Belanja Barang' in existing data
         this._migrateKulakan(parsed);
+        // Migrate: default branch name 'Cabang Veteran Bandung' -> 'Cengkareng Jakarta Barat'
+        this._migrateShopBranch(parsed);
         return parsed;
       }
     } catch (e) {
@@ -42,18 +44,6 @@ class Store {
         }
       });
     }
-    if (data.debts && Array.isArray(data.debts)) {
-      data.debts.forEach((d) => {
-        if (d.notes && d.notes.toLowerCase().includes('kulakan')) {
-          d.notes = d.notes.replace(/[Kk]ulakan/g, 'Belanja');
-          changed = true;
-        }
-        if (d.personName && d.personName.toLowerCase().includes('kulakan')) {
-          d.personName = d.personName.replace(/[Kk]ulakan/g, 'Belanja');
-          changed = true;
-        }
-      });
-    }
     if (data.investors && Array.isArray(data.investors)) {
       data.investors.forEach((inv) => {
         if (inv.notes && inv.notes.toLowerCase().includes('kulakan')) {
@@ -63,6 +53,15 @@ class Store {
       });
     }
     if (changed) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  _migrateShopBranch(data) {
+    if (data && data.shop && data.shop.subName === 'Cabang Veteran Bandung') {
+      data.shop.subName = 'Cengkareng Jakarta Barat';
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch (e) { /* ignore */ }
@@ -291,12 +290,6 @@ class Store {
         paymentMethod: existing.paymentMethod || 'Tunai (Laci)',
         nota: existing.invoiceNo
       });
-    } else if (existing.status === 'tempo') {
-      const debt = this.state.debts.find((d) => d.personName && d.personName.includes(existing.invoiceNo));
-      if (debt) {
-        debt.totalAmount = totalAmount;
-        debt.notes = `Belanja ${itemsCount} pasang (${existing.supplierName})`;
-      }
     }
 
     return updated;
@@ -441,83 +434,6 @@ class Store {
     return product;
   }
 
-  // Debts & Piutang
-  getDebts() {
-    return this.state.debts || [];
-  }
-
-  addDebt(debt) {
-    const newDebt = {
-      id: `DEBT-${Date.now()}`,
-      date: debt.date || new Date().toISOString().split('T')[0],
-      remainingAmount: debt.remainingAmount !== undefined ? debt.remainingAmount : debt.totalAmount,
-      paidAmount: debt.paidAmount || 0,
-      status: 'belum_lunas',
-      ...debt
-    };
-    this.state.debts.unshift(newDebt);
-    this.notify();
-    return newDebt;
-  }
-
-  payDebt(debtId, paymentAmount, paymentMethod = 'Tunai (Laci)') {
-    const debt = this.state.debts.find((d) => d.id === debtId);
-    if (!debt) return false;
-
-    const pay = Math.min(debt.remainingAmount, Number(paymentAmount));
-    debt.paidAmount = (debt.paidAmount || 0) + pay;
-    debt.remainingAmount = Math.max(0, debt.totalAmount - debt.paidAmount);
-    
-    if (debt.remainingAmount === 0) {
-      debt.status = 'lunas';
-    }
-
-    // Auto record cash flow
-    if (debt.type === 'piutang') {
-      // Customer paid us: Kas Masuk
-      this.addTransaction({
-        type: 'masuk',
-        category: 'Pelunasan Piutang',
-        amount: pay,
-        title: `Pelunasan Bon: ${debt.personName}`,
-        paymentMethod: paymentMethod,
-        nota: `#BON-LUNAS-${Math.floor(100 + Math.random() * 900)}`
-      });
-    } else {
-      // We paid supplier: Kas Keluar
-      this.addTransaction({
-        type: 'keluar',
-        category: 'Pelunasan Hutang Toko',
-        amount: pay,
-        title: `Bayar Hutang: ${debt.personName}`,
-        paymentMethod: paymentMethod,
-        nota: `#HTG-BAYAR-${Math.floor(100 + Math.random() * 900)}`
-      });
-    }
-
-    this.notify();
-    return debt;
-  }
-
-  getDebtById(id) {
-    return this.state.debts.find((d) => d.id === id) || null;
-  }
-
-  updateDebt(id, updatedData) {
-    const idx = this.state.debts.findIndex((d) => d.id === id);
-    if (idx !== -1) {
-      this.state.debts[idx] = { ...this.state.debts[idx], ...updatedData };
-      this.notify();
-      return this.state.debts[idx];
-    }
-    return null;
-  }
-
-  deleteDebt(id) {
-    this.state.debts = this.state.debts.filter((d) => d.id !== id);
-    this.notify();
-  }
-
   // Inventory
   getInventory() {
     return this.state.inventory || [];
@@ -545,25 +461,12 @@ class Store {
     const initialTotal = (this.state.shop.initialBalanceLaci || 0) + (this.state.shop.initialBalanceBank || 0);
     const currentBalance = initialTotal + totalMasuk - totalKeluar;
 
-    // Piutang (receivables: others owe us)
-    const debts = this.getDebts();
-    const totalPiutang = debts
-      .filter((d) => d.type === 'piutang' && d.status !== 'lunas')
-      .reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0);
-
-    // Hutang (payables: we owe suppliers)
-    const totalHutang = debts
-      .filter((d) => d.type === 'hutang' && d.status !== 'lunas')
-      .reduce((sum, d) => sum + (Number(d.remainingAmount) || 0), 0);
-
     return {
       currentBalance,
       totalMasuk,
       totalKeluar,
       countMasuk,
       countKeluar,
-      totalPiutang,
-      totalHutang,
       netProfit: totalMasuk - totalKeluar
     };
   }

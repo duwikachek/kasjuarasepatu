@@ -3,7 +3,7 @@
 export const INITIAL_DATA = {
   shop: {
     name: "Kas Juara Sepatu",
-    subName: "Cabang Veteran Bandung",
+    subName: "Cengkareng Jakarta Barat",
     owner: "Pak Hendra",
     phone: "081234567890",
     address: "Jl. Veteran No. 45, Bandung",
@@ -174,75 +174,6 @@ export const INITIAL_DATA = {
       items: [
         { name: "Piero Jogger Premium Grey", qty: 12, buyPrice: 180000, sellPrice: 289000 }
       ]
-    }
-  ],
-
-  // Hutang & Piutang
-  debts: [
-    {
-      id: "DEBT-01",
-      type: "piutang", // Kita mengutangi orang lain
-      personName: "Mas Doni (Pelanggan Langganan)",
-      phone: "081234567890",
-      totalAmount: 550000,
-      remainingAmount: 250000,
-      paidAmount: 300000,
-      date: "2024-10-15",
-      dueDate: "2024-10-28",
-      notes: "Bon Sepatu Compass Size 42 (Sudah bayar DP 300rb)",
-      status: "belum_lunas"
-    },
-    {
-      id: "DEBT-02",
-      type: "piutang",
-      personName: "Toko Sandal Berkah",
-      phone: "082198765431",
-      totalAmount: 650000,
-      remainingAmount: 650000,
-      paidAmount: 0,
-      date: "2024-10-10",
-      dueDate: "2024-10-25", // Besok jatuh tempo!
-      notes: "Konsinyasi 5 pasang sandal slop pria kulit",
-      status: "belum_lunas"
-    },
-    {
-      id: "DEBT-03",
-      type: "piutang",
-      personName: "Pak RT Wawan",
-      phone: "085211335577",
-      totalAmount: 420000,
-      remainingAmount: 420000,
-      paidAmount: 0,
-      date: "2024-10-19",
-      dueDate: "2024-11-03",
-      notes: "Sepatu Safety Boot Cokelat Size 43",
-      status: "belum_lunas"
-    },
-    {
-      id: "DEBT-04",
-      type: "hutang", // Toko kita hutang ke supplier
-      personName: "Sentosa Shoes Cibaduyut (Faktur #098)",
-      phone: "087811223344",
-      totalAmount: 2800000,
-      remainingAmount: 2800000,
-      paidAmount: 0,
-      date: "2024-10-22",
-      dueDate: "2024-10-30",
-      notes: "Pembelian 23 pasang sandal slop kulit & pantofel",
-      status: "belum_lunas"
-    },
-    {
-      id: "DEBT-05",
-      type: "hutang",
-      personName: "Pabrik Dus Boxindo Cimahi",
-      phone: "081900112233",
-      totalAmount: 350000,
-      remainingAmount: 350000,
-      paidAmount: 0,
-      date: "2024-10-12",
-      dueDate: "2024-10-26",
-      notes: "Pemesanan 100 pcs Kardus Sepatu Polos Sablon",
-      status: "belum_lunas"
     }
   ],
 
