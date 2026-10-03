@@ -69,9 +69,12 @@
   border-bottom: 1px dashed #C9BBA5;
 }
 
-/* Smooth page transitions */
+/* Smooth page transitions + latar foto aplikasi */
 .page-fade-in {
   animation: fadeIn 0.22s ease-out forwards;
+  /* Halaman dibuat semi-transparan agar foto latar (di #phone-frame) terlihat,
+     tetap cukup terang supaya teks & kartu mudah dibaca. */
+  background-color: rgba(255, 248, 246, 0.82) !important;
 }
 
 @keyframes fadeIn {
