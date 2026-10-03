@@ -69,22 +69,6 @@ export function renderPinLoginPage() {
         </div>
       </div>
 
-      <!-- Quick Biometrics & Footer -->
-      <div class="flex flex-col items-center gap-3 text-center mb-2">
-        <button 
-          type="button" 
-          id="btn-biometric"
-          class="flex items-center gap-2 px-5 py-2.5 bg-surface-container hover:bg-surface-container-high rounded-full text-on-surface shadow-sm active:scale-95 transition-all border border-surface-container-high"
-        >
-          <span class="material-symbols-outlined text-xl text-on-tertiary-container">fingerprint</span>
-          <span class="font-label-md text-sm font-semibold">Masuk dengan Sidik Jari</span>
-        </button>
-
-        <div class="flex items-center justify-center gap-1.5 text-on-surface-variant/80 text-xs">
-          <span class="material-symbols-outlined text-[14px]">lock</span>
-          <span>PIN Bawaan: <strong class="text-on-surface">123456</strong></span>
-        </div>
-      </div>
     </div>
   `;
 }
@@ -150,20 +134,10 @@ export function initPinLoginPage(router, store) {
     });
   }
 
-  const bioBtn = document.getElementById('btn-biometric');
-  if (bioBtn) {
-    bioBtn.addEventListener('click', () => {
-      showToast('Sidik jari terverifikasi!', 'success');
-      setTimeout(() => {
-        router.navigate('dashboard');
-      }, 250);
-    });
-  }
-
   const forgotBtn = document.getElementById('btn-forgot-pin');
   if (forgotBtn) {
     forgotBtn.addEventListener('click', () => {
-      showToast(`Petunjuk: Gunakan PIN bawaan: ${expectedPin}`, 'info', 4000);
+      showToast('Lupa PIN? Silakan hubungi pemilik toko untuk mengatur ulang PIN.', 'info', 4000);
     });
   }
 }
