@@ -605,9 +605,60 @@ class Store {
     };
   }
 
-  // Reset / Backup
-  resetToDefault() {
-    this.state = JSON.parse(JSON.stringify(INITIAL_DATA));
+  // Reset / Bersihkan Data
+  /**
+   * Hapus HANYA record contoh (dummy) bawaan aplikasi, berdasarkan ID/barcode persis.
+   * Data asli pengguna tidak disentuh. Mengembalikan jumlah yang dihapus.
+   */
+  purgeSampleData() {
+    const SAMPLE_TRX_IDS = ['TRX-101', 'TRX-102', 'TRX-103', 'TRX-104', 'TRX-105', 'TRX-106', 'TRX-107', 'TRX-108', 'TRX-109', 'TRX-110'];
+    const SAMPLE_SUPPLY_IDS = ['PASOK-01', 'PASOK-02', 'PASOK-03'];
+    const SAMPLE_INVESTOR_IDS = ['INV-1711000001', 'INV-1711000002'];
+    // Produk contoh hanya dihapus bila barcode DAN namanya sama persis (agar aman)
+    const SAMPLE_PRODUCTS = [
+      { barcode: 'SP-2024-0089', name: 'Compass Gazelle Low Retro Size 40-43' },
+      { barcode: 'VENTELA-41', name: 'Ventela Public Low Black Natural Size 41' },
+      { barcode: 'PIERO-JGR', name: 'Piero Jogger Premium Grey Size 42' },
+      { barcode: 'SLOP-KLT', name: 'Sandal Slop Kulit Pria Asli Sentosa Size 41' }
+    ];
+
+    const counts = {};
+    const filterOut = (list, isSample) => {
+      const before = (list || []).length;
+      const after = (list || []).filter((x) => !isSample(x));
+      counts.removed = (counts.removed || 0) + (before - after.length);
+      return after;
+    };
+
+    this.state.transactions = filterOut(this.state.transactions, (t) => SAMPLE_TRX_IDS.includes(t.id));
+    this.state.supplies = filterOut(this.state.supplies, (s) => SAMPLE_SUPPLY_IDS.includes(s.id));
+    this.state.investors = filterOut(this.state.investors, (i) => SAMPLE_INVESTOR_IDS.includes(i.id));
+    this.state.products = filterOut(this.state.products, (p) => {
+      const bc = (p.barcode || '').toString().trim().toUpperCase();
+      const nm = (p.name || '').toString().trim();
+      return SAMPLE_PRODUCTS.some((s) => s.barcode === bc && s.name === nm);
+    });
+
+    const removed = counts.removed || 0;
+    this.saveState();
+    this.notify();
+    return removed;
+  }
+
+  /** Kosongkan semua data transaksi & master (mulai baru), pengaturan toko tetap disimpan. */
+  resetToEmpty() {
+    const keptShop = this.state.shop ? JSON.parse(JSON.stringify(this.state.shop)) : JSON.parse(JSON.stringify(INITIAL_DATA.shop));
+    const keptSheets = this.state.googleSheets ? JSON.parse(JSON.stringify(this.state.googleSheets)) : null;
+
+    this.state = {
+      shop: keptShop,
+      transactions: [],
+      supplies: [],
+      products: [],
+      investors: []
+    };
+    if (keptSheets) this.state.googleSheets = keptSheets;
+
     this.saveState();
     this.notify();
   }

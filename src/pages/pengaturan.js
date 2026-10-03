@@ -395,11 +395,20 @@ export function renderPengaturanPage(store) {
 
           <button 
             type="button" 
+            id="btn-purge-sample"
+            class="w-full py-2.5 rounded-xl border border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100 font-label-md text-xs font-semibold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 shadow-xs"
+          >
+            <span class="material-symbols-outlined text-[16px]">cleaning_services</span>
+            <span>Hapus Data Contoh (Dummy)</span>
+          </button>
+
+          <button 
+            type="button" 
             id="btn-reset-data"
             class="w-full py-2.5 rounded-xl border border-rose-300 text-rose-800 hover:bg-rose-50 font-label-md text-xs font-semibold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
           >
-            <span class="material-symbols-outlined text-[16px]">restart_alt</span>
-            <span>Reset ke Data Awal (Dummy)</span>
+            <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
+            <span>Kosongkan Semua Data</span>
           </button>
         </section>
 
@@ -545,13 +554,28 @@ export function initPengaturanPage(router, store) {
     });
   }
 
-  // Reset to default dummy
+  // Hapus data contoh (dummy) — hanya record contoh, data asli tetap aman
+  const btnPurgeSample = document.getElementById('btn-purge-sample');
+  if (btnPurgeSample) {
+    btnPurgeSample.addEventListener('click', () => {
+      if (!confirm('Hapus semua data CONTOH (dummy) bawaan aplikasi?\n\nHanya record contoh yang dihapus berdasarkan ID/barcode-nya. Data asli Anda tidak disentuh.')) return;
+      const removed = store.purgeSampleData();
+      if (removed === 0) {
+        showToast('Tidak ada data contoh yang tersisa.', 'info');
+      } else {
+        showToast(`${removed} data contoh berhasil dihapus.`, 'success', 4500);
+      }
+      router.navigate('dashboard');
+    });
+  }
+
+  // Kosongkan semua data (mulai baru dari nol)
   const btnReset = document.getElementById('btn-reset-data');
   if (btnReset) {
     btnReset.addEventListener('click', () => {
-      if (confirm('Kembalikan semua data ke setelan awal (dummy data)? Semua perubahan Anda akan disetel ulang.')) {
-        store.resetToDefault();
-        showToast('Data telah disetel ulang ke data awal.', 'info');
+      if (confirm('KOSONGKAN semua data (transaksi, belanja/stok, produk, investor)?\n\nPengaturan toko & koneksi Google Sheets tetap disimpan. Disarankan lakukan "Cadangkan Data (JSON)" terlebih dahulu.')) {
+        store.resetToEmpty();
+        showToast('Semua data telah dikosongkan.', 'info');
         router.navigate('dashboard');
       }
     });
