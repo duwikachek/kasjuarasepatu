@@ -6,8 +6,8 @@ export function renderDashboardPage(store) {
   const shop = store.getShop();
   const summary = store.getBalanceSummary();
   const recentTransactions = store.getTransactions().slice(0, 4);
-  const inventory = store.getInventory();
-  const criticalItems = inventory.filter((i) => i.isCritical);
+  // Stok menipis dihitung dari data NYATA (Barang Masuk yang belum terjual)
+  const lowStockItems = store.getLowStockItems ? store.getLowStockItems() : [];
   const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
   const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
 
@@ -190,16 +190,16 @@ export function renderDashboardPage(store) {
 
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
         <section class="flex flex-col gap-2">
-          ${criticalItems.length > 0 ? `
+          ${lowStockItems.length > 0 ? `
             <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
               <span class="material-symbols-outlined text-amber-700 text-[20px] shrink-0 mt-0.5">warning</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="font-label-md text-xs font-bold text-amber-900">Perhatian: Stok Menipis</span>
-                  <span class="font-label-sm text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">${criticalItems.length} Produk</span>
+                  <span class="font-label-sm text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">${lowStockItems.length} Produk</span>
                 </div>
                 <p class="font-body-sm text-xs text-amber-800 mt-0.5">
-                  ${criticalItems.map((c) => `${c.name} (sisa ${c.stock})`).join(', ')}. Segera agendakan belanja stock!
+                  ${lowStockItems.map((c) => `${c.name} (sisa ${c.stock})`).join(', ')}. Segera agendakan belanja stock!
                 </p>
               </div>
             </div>

@@ -29,6 +29,8 @@ class Store {
         this._migrateKulakan(parsed);
         // Migrate: default branch name 'Cabang Veteran Bandung' -> 'Cengkareng Jakarta Barat'
         this._migrateShopBranch(parsed);
+        // Migrate: hapus data contoh 'inventory' lama (alert stok kini pakai data nyata)
+        this._migrateRemoveDummyInventory(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -74,6 +76,17 @@ class Store {
   _migrateShopBranch(data) {
     if (data && data.shop && data.shop.subName === 'Cabang Veteran Bandung') {
       data.shop.subName = 'Cengkareng Jakarta Barat';
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  _migrateRemoveDummyInventory(data) {
+    // `inventory` adalah data contoh lama yang tidak pernah diubah/diisi aplikasi.
+    // Dihapus agar alert "Stok Menipis" memakai perhitungan dari data nyata.
+    if (data && Object.prototype.hasOwnProperty.call(data, 'inventory')) {
+      delete data.inventory;
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch (e) { /* ignore */ }
@@ -465,11 +478,6 @@ class Store {
       }
     }
 
-    // 3. Search in inventory
-    const inv = this.getInventory();
-    const invItem = inv.find((i) => i.barcode && i.barcode.toString().trim().toUpperCase() === clean);
-    if (invItem) return invItem;
-
     return null;
   }
 
@@ -488,9 +496,25 @@ class Store {
     return product;
   }
 
-  // Inventory
-  getInventory() {
-    return this.state.inventory || [];
+  // Inventory / Stok
+  /**
+   * Daftar produk dengan stok menipis, dihitung dari DATA NYATA:
+   * item Barang Masuk yang belum terjual, dikelompokkan per nama produk.
+   * @param {number} threshold - sisa stok yang dianggap menipis (default 2)
+   */
+  getLowStockItems(threshold = 2) {
+    const available = this.getAvailableProducts();
+    const byName = new Map();
+
+    available.forEach((p) => {
+      const key = (p.name || 'Tanpa Nama').toString().trim();
+      if (!byName.has(key)) byName.set(key, { name: key, stock: 0 });
+      byName.get(key).stock += 1;
+    });
+
+    return Array.from(byName.values())
+      .filter((p) => p.stock <= threshold)
+      .sort((a, b) => a.stock - b.stock);
   }
 
   // Financial Calculations & Aggregates

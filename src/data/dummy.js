@@ -177,15 +177,6 @@ export const INITIAL_DATA = {
     }
   ],
 
-  // Data Stok Sepatu (untuk alert di dashboard & form)
-  inventory: [
-    { id: "INV-01", barcode: "COMPASS-42", name: "Compass Gazelle Low Black 42", stock: 2, minStock: 5, price: 438000, buyPrice: 320000, kondisi: "Bagus", isCritical: true },
-    { id: "INV-02", barcode: "AERO-41", name: "Aerostreet Massive High White 41", stock: 1, minStock: 4, price: 149000, buyPrice: 105000, kondisi: "Minus", catatanMinus: "Box sedikit penyok", isCritical: true },
-    { id: "INV-03", barcode: "VENTELA-40", name: "Ventela Public Low Black Natural 40", stock: 14, minStock: 5, price: 269000, buyPrice: 185000, kondisi: "Bagus", isCritical: false },
-    { id: "INV-04", barcode: "SLOP-41", name: "Sandal Slop Pria Kulit Asli 41", stock: 18, minStock: 6, price: 145000, buyPrice: 90000, kondisi: "Bagus", isCritical: false },
-    { id: "INV-05", barcode: "CLEANER-100", name: "Shoe Cleaner Juara Foam 100ml", stock: 22, minStock: 10, price: 45000, buyPrice: 22000, kondisi: "Bagus", isCritical: false }
-  ],
-
   // Master Katalog Produk Barcode (Stiker Code 39 Excel)
   products: [
     {
