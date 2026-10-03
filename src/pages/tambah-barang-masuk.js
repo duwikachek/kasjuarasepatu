@@ -158,15 +158,15 @@ function renderItemCardHtml(item, index, totalItems) {
           <span class="font-label-sm text-[10px] text-on-surface-variant">Dokumentasi Fisik</span>
         </div>
 
-        <input type="file" class="input-photo-file hidden" accept="image/*" capture="environment" data-item-id="${item.id}" />
+        <input type="file" id="photo-input-${item.id}" class="input-photo-file hidden" accept="image/*" data-item-id="${item.id}" />
 
-        <div class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-primary/50 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]" data-item-id="${item.id}">
+        <label for="photo-input-${item.id}" class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-primary/50 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
           <div class="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
             <span class="material-symbols-outlined text-2xl">add_a_photo</span>
           </div>
           <span class="font-label-md text-xs font-bold text-on-surface mt-1">Ambil Foto dengan Kamera HP</span>
           <span class="font-body-sm text-[10px] text-on-surface-variant">Ketuk untuk membuka kamera atau pilih galeri</span>
-        </div>
+        </label>
 
         <div class="photo-preview-box ${item.photo ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-surface-container-high bg-black/5 shadow-sm" data-item-id="${item.id}">
           <img class="photo-preview-img w-full h-44 object-cover object-center" src="${item.photo || ''}" alt="Foto Sepatu" />
@@ -176,7 +176,7 @@ function renderItemCardHtml(item, index, totalItems) {
               <span>Foto Terlampir</span>
             </span>
             <div class="flex items-center gap-1.5">
-              <button type="button" class="btn-retake-photo px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-semibold active:scale-95" data-item-id="${item.id}">Ganti</button>
+              <label for="photo-input-${item.id}" class="btn-retake-photo cursor-pointer px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-semibold active:scale-95 select-none">Ganti</label>
               <button type="button" class="btn-remove-photo p-1 rounded-lg bg-rose-600/80 hover:bg-rose-700 text-white active:scale-95" data-item-id="${item.id}" title="Hapus Foto">
                 <span class="material-symbols-outlined text-[16px]">delete</span>
               </button>
@@ -719,15 +719,9 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     const photoPlaceholder = cardEl.querySelector('.photo-placeholder-box');
     const photoPreviewBox = cardEl.querySelector('.photo-preview-box');
     const photoPreviewImg = cardEl.querySelector('.photo-preview-img');
-    const btnRetake = cardEl.querySelector('.btn-retake-photo');
     const btnRemovePhoto = cardEl.querySelector('.btn-remove-photo');
 
-    if (photoPlaceholder && photoInput) {
-      photoPlaceholder.addEventListener('click', () => photoInput.click());
-    }
-    if (btnRetake && photoInput) {
-      btnRetake.addEventListener('click', () => photoInput.click());
-    }
+    // Foto: dibuka secara native lewat <label for="photo-input-..."> agar andal di browser HP / WebView
     if (btnRemovePhoto) {
       btnRemovePhoto.addEventListener('click', () => {
         item.photo = null;
@@ -752,6 +746,8 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
           showToast('Foto sepatu berhasil disimpan!', 'success');
         };
         reader.readAsDataURL(file);
+        // Reset value agar memilih foto yang sama lagi tetap memicu event change
+        photoInput.value = '';
       });
     }
 

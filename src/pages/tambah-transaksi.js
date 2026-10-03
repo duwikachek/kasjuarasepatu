@@ -280,17 +280,17 @@ export function renderTambahTransaksiPage(store, params = {}) {
               <span class="font-label-sm text-[10px] text-on-surface-variant">Screenshot / Struk</span>
             </div>
             <input type="file" id="input-keluar-photo" accept="image/*" class="hidden" />
-            <div id="keluar-photo-placeholder" class="${defaultPhoto ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-rose-400 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
+            <label for="input-keluar-photo" id="keluar-photo-placeholder" class="${defaultPhoto ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-rose-400 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
               <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center shadow-inner"><span class="material-symbols-outlined text-2xl">add_photo_alternate</span></div>
               <span class="font-label-md text-xs font-bold text-on-surface mt-1">Unggah Screenshot / Foto Bukti Transfer</span>
               <span class="font-body-sm text-[11px] text-on-surface-variant">Ketuk untuk memilih screenshot m-banking atau foto struk</span>
-            </div>
+            </label>
             <div id="keluar-photo-preview-box" class="${defaultPhoto ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-surface-container-high bg-black/5 shadow-sm">
               <img id="keluar-photo-preview-img" src="${defaultPhoto}" alt="Bukti Transfer" class="w-full h-44 object-cover object-center" />
               <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between p-2 rounded-xl bg-black/60 backdrop-blur-md text-white">
                 <span class="font-label-sm text-[11px] font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-emerald-400">check_circle</span><span>SS Transfer Terlampir</span></span>
                 <div class="flex items-center gap-1.5">
-                  <button type="button" id="btn-retake-keluar-photo" class="px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-semibold active:scale-95">Ganti</button>
+                  <label for="input-keluar-photo" id="btn-retake-keluar-photo" class="cursor-pointer px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-semibold active:scale-95 select-none">Ganti</label>
                   <button type="button" id="btn-remove-keluar-photo" class="p-1 rounded-lg bg-rose-600/80 hover:bg-rose-700 text-white active:scale-95"><span class="material-symbols-outlined text-[16px]">delete</span></button>
                 </div>
               </div>
@@ -856,9 +856,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   const keluarPlaceholder = document.getElementById('keluar-photo-placeholder');
   const keluarPreviewBox = document.getElementById('keluar-photo-preview-box');
   const keluarPreviewImg = document.getElementById('keluar-photo-preview-img');
-  if (keluarPlaceholder && keluarPhotoInput) keluarPlaceholder.addEventListener('click', () => keluarPhotoInput.click());
-  const btnRetakeKP = document.getElementById('btn-retake-keluar-photo');
-  if (btnRetakeKP && keluarPhotoInput) btnRetakeKP.addEventListener('click', () => keluarPhotoInput.click());
+  // Foto dibuka native via <label for="input-keluar-photo"> agar andal di browser HP / WebView
   const btnRemoveKP = document.getElementById('btn-remove-keluar-photo');
   if (btnRemoveKP) {
     btnRemoveKP.addEventListener('click', () => {
@@ -883,6 +881,8 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         showToast('Bukti transfer berhasil dilampirkan!', 'success');
       };
       reader.readAsDataURL(file);
+      // Reset value agar memilih file yang sama lagi tetap memicu event change
+      keluarPhotoInput.value = '';
     });
   }
 
