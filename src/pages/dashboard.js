@@ -1,6 +1,7 @@
 import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
+import logoJuara from '../assets/logo-juara.png';
 
 export function renderDashboardPage(store) {
   const shop = store.getShop();
@@ -51,9 +52,17 @@ export function renderDashboardPage(store) {
           </div>
         </section>
 
-        <!-- Main Ledger Card (Retro Warm Vintage) -->
-        <section class="rounded-2xl bg-primary-container text-surface-container-lowest p-4 shadow-md relative overflow-hidden border border-on-tertiary-container/30">
-          <div class="absolute -right-6 -bottom-6 w-28 h-28 rounded-full bg-on-tertiary-container/10 pointer-events-none"></div>
+        <!-- Main Ledger Card (Retro Warm Vintage + Logo Watermark) -->
+        <section class="rounded-2xl bg-primary-container text-surface-container-lowest p-4 shadow-md relative overflow-hidden border border-on-tertiary-container/30 isolate">
+          <!-- Lapisan sinematik: gradasi + watermark logo penuh (dekoratif, di bawah konten) -->
+          <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-tr from-black/35 via-black/5 to-white/10"></div>
+          <img
+            src="${logoJuara}"
+            alt=""
+            aria-hidden="true"
+            class="pointer-events-none select-none absolute -right-10 -bottom-10 w-60 max-w-none opacity-[0.18] -z-10"
+          />
+          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-on-tertiary-container/10 pointer-events-none"></div>
           <div class="absolute top-0 left-0 right-0 h-1 bg-on-tertiary-container/80"></div>
           
           <div class="flex items-center justify-between mb-1">
