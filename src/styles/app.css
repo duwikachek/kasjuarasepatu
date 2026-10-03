@@ -72,9 +72,11 @@
 /* Smooth page transitions + latar foto aplikasi */
 .page-fade-in {
   animation: fadeIn 0.22s ease-out forwards;
-  /* Halaman dibuat semi-transparan agar foto latar (di #phone-frame) terlihat,
-     tetap cukup terang supaya teks & kartu mudah dibaca. */
-  background-color: rgba(255, 248, 246, 0.82) !important;
+  /* Halaman dibuat semi-transparan agar foto latar (di #phone-frame) lebih jelas
+     terlihat. Nilai = 1 - tingkat foto yang tampak.
+     0.82 -> foto 18% terlihat ( terlalu tertutup)
+     0.52 -> foto 48% terlihat ( +30 poin, foto jelas namun teks tetap terbaca ) */
+  background-color: rgba(255, 248, 246, 0.52) !important;
 }
 
 @keyframes fadeIn {
