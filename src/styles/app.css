@@ -113,3 +113,126 @@ header.app-header,
   background-color: #000000 !important;
 }
 
+/* ============================================================
+   GLASSMORPHISM CARD SYSTEM
+   Dipakai di halaman Dashboard agar kartu menyatu dengan foto
+   latar. Class ditulis ganda (mis. .glass-card.glass-card)
+   agar spesifikasi mengalahkan utility class Tailwind CDN.
+   ============================================================ */
+
+/* --- Glass terang (dasar) --- */
+.glass-card.glass-card {
+  background-color: rgba(255, 255, 255, 0.42);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow:
+    0 8px 24px rgba(43, 24, 16, 0.16),
+    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+}
+
+/* --- Glass gelap (kartu Saldo Kas) --- */
+.glass-dark.glass-dark {
+  background-color: rgba(38, 18, 7, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(150%);
+  backdrop-filter: blur(18px) saturate(150%);
+  border: 1px solid rgba(255, 214, 190, 0.28);
+  box-shadow:
+    0 10px 30px rgba(20, 10, 4, 0.42),
+    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+}
+
+/* --- Varian bernuansa (tombol cepat) --- */
+.glass-primary.glass-primary {
+  background-color: rgba(224, 90, 43, 0.62);
+  -webkit-backdrop-filter: blur(16px) saturate(170%);
+  backdrop-filter: blur(16px) saturate(170%);
+  border: 1px solid rgba(255, 190, 160, 0.55);
+  box-shadow:
+    0 6px 18px rgba(224, 90, 43, 0.34),
+    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+
+.glass-rose.glass-rose {
+  background-color: rgba(255, 228, 230, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  box-shadow: 0 6px 18px rgba(43, 24, 16, 0.12);
+}
+
+.glass-neutral.glass-neutral {
+  background-color: rgba(255, 252, 248, 0.46);
+  -webkit-backdrop-filter: blur(16px) saturate(150%);
+  backdrop-filter: blur(16px) saturate(150%);
+  border: 1px solid rgba(255, 255, 255, 0.68);
+  box-shadow: 0 6px 18px rgba(43, 24, 16, 0.13);
+}
+
+.glass-amber.glass-amber {
+  background-color: rgba(253, 230, 138, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 6px 18px rgba(180, 83, 9, 0.16);
+}
+
+.glass-blue.glass-blue {
+  background-color: rgba(191, 219, 254, 0.5);
+  -webkit-backdrop-filter: blur(16px) saturate(160%);
+  backdrop-filter: blur(16px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.62);
+  box-shadow: 0 6px 18px rgba(30, 64, 175, 0.14);
+}
+
+/* --- Kilau tipis di tepi atas (efek kaca) --- */
+.glass-sheen::before {
+  content: '';
+  position: absolute;
+  inset: 0 0 auto 0;
+  height: 42%;
+  border-radius: inherit;
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+  pointer-events: none;
+}
+
+/* --- State interaksi tombol glass --- */
+.glass-btn.glass-btn {
+  transition: background-color 0.18s ease, box-shadow 0.18s ease, transform 0.12s ease;
+}
+
+.glass-btn.glass-btn:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 24px rgba(43, 24, 16, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.7);
+}
+
+.glass-btn.glass-btn:active {
+  transform: scale(0.97) translateY(0);
+}
+
+.glass-primary.glass-primary:hover { background-color: rgba(214, 78, 33, 0.72); }
+.glass-rose.glass-rose:hover      { background-color: rgba(255, 220, 224, 0.68); }
+.glass-neutral.glass-neutral:hover{ background-color: rgba(255, 255, 255, 0.62); }
+.glass-amber.glass-amber:hover    { background-color: rgba(253, 224, 110, 0.62); }
+.glass-blue.glass-blue:hover      { background-color: rgba(180, 214, 255, 0.62); }
+
+/* Baris di dalam list玻璃: hover tetap terasa di atas kaca */
+.glass-row:hover {
+  background-color: rgba(255, 255, 255, 0.42);
+}
+
+/* Fallback: browser tanpa dukungan backdrop-filter tetap rapi */
+@supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
+  .glass-card.glass-card,
+  .glass-neutral.glass-neutral,
+  .glass-rose.glass-rose,
+  .glass-amber.glass-amber,
+  .glass-blue.glass-blue {
+    background-color: rgba(255, 252, 248, 0.94);
+  }
+  .glass-dark.glass-dark,
+  .glass-primary.glass-primary {
+    background-color: rgba(38, 18, 7, 0.92);
+  }
+}
+

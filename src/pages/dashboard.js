@@ -52,17 +52,17 @@ export function renderDashboardPage(store) {
           </div>
         </section>
 
-        <!-- Main Ledger Card (Retro Warm Vintage + Logo Watermark) -->
-        <section class="rounded-2xl bg-primary-container text-surface-container-lowest p-4 shadow-md relative overflow-hidden border border-on-tertiary-container/30 isolate">
+        <!-- Main Ledger Card (Glassmorphism + Logo Watermark) -->
+        <section class="glass-dark glass-sheen rounded-2xl text-surface-container-lowest p-4 relative overflow-hidden isolate">
           <!-- Lapisan sinematik: gradasi + watermark logo penuh (dekoratif, di bawah konten) -->
-          <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-tr from-black/35 via-black/5 to-white/10"></div>
+          <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-tr from-black/45 via-black/15 to-white/10"></div>
           <img
             src="${logoJuara}"
             alt=""
             aria-hidden="true"
-            class="pointer-events-none select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 max-w-[85%] opacity-[0.2] -z-10"
+            class="pointer-events-none select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 max-w-[85%] opacity-[0.22] -z-10"
           />
-          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-on-tertiary-container/10 pointer-events-none"></div>
+          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-on-tertiary-container/15 pointer-events-none"></div>
           <div class="absolute top-0 left-0 right-0 h-1 bg-on-tertiary-container/80"></div>
           
           <div class="flex items-center justify-between mb-1">
@@ -90,7 +90,7 @@ export function renderDashboardPage(store) {
           <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-3">Tercatat di pembukuan lokal hari ini</p>
 
           <!-- Sub Stats -->
-          <div class="grid grid-cols-2 gap-2 pt-2.5 rounded-xl bg-primary/40 p-2.5">
+          <div class="grid grid-cols-2 gap-2 pt-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-2.5">
             <!-- Pemasukan -->
             <div class="flex flex-col min-w-0 pr-2 border-r border-surface-container-high/20">
               <div class="flex items-center gap-1 text-emerald-300 mb-0.5">
@@ -122,7 +122,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="tambah-masuk"
-            class="h-14 rounded-xl bg-[#E05A2B] hover:bg-[#c94d22] text-white font-label-md text-sm font-bold flex items-center justify-center gap-2 bevel-accent active:scale-[0.98] transition-all"
+            class="glass-primary glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-white font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
             <span>+ Kas Masuk</span>
@@ -131,7 +131,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="tambah-keluar"
-            class="h-14 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-md text-sm font-bold flex items-center justify-center gap-2 bevel-light active:scale-[0.98] transition-all border border-surface-container-highest"
+            class="glass-rose glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-primary font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-[20px]">remove_circle</span>
             <span>- Kas Keluar</span>
@@ -140,7 +140,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="tambah-pasok"
-            class="h-12 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm border border-surface-container-high active:scale-[0.98] transition-all"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-12 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-[18px] text-primary">inventory_2</span>
             <span>+ Belanja Stock Sepatu</span>
@@ -149,7 +149,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="lihat-pengiriman"
-            class="h-12 rounded-xl bg-surface-container-lowest hover:bg-surface-container text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 shadow-sm border border-surface-container-high active:scale-[0.98] transition-all"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-12 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-[18px] text-primary">local_shipping</span>
             <span>Kelola Pengiriman</span>
@@ -158,23 +158,23 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="lihat-investor"
-            class="col-span-2 h-11 rounded-xl bg-amber-50/80 hover:bg-amber-100/90 text-amber-950 font-label-md text-xs font-bold flex items-center justify-between px-3.5 shadow-xs border border-amber-200 active:scale-[0.98] transition-all"
+            class="glass-amber glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-amber-950 font-label-md text-xs font-bold flex items-center justify-between px-3.5 active:scale-[0.98]"
           >
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-[19px] text-amber-700">account_balance_wallet</span>
               <span>Kelola Investor & Modal Usaha</span>
             </div>
             <div class="flex items-center gap-1 text-[11px] text-amber-800">
-              <span class="bg-amber-200/70 text-amber-900 px-2 py-0.5 rounded-full text-[10px] font-bold">${invSummary.countAktif || 0} Aktif</span>
+              <span class="bg-white/50 text-amber-900 border border-white/60 px-2 py-0.5 rounded-full text-[10px] font-bold">${invSummary.countAktif || 0} Aktif</span>
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </div>
           </button>
         </section>
 
         <!-- Google Sheets Quick Sync Bar -->
-        <section class="bg-surface-container-lowest rounded-xl p-2.5 px-3 flex items-center justify-between border border-surface-container-high shadow-xs">
+        <section class="glass-card glass-sheen relative overflow-hidden rounded-xl p-2.5 px-3 flex items-center justify-between">
           <div class="flex items-center gap-2 min-w-0">
-            <div class="w-7 h-7 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+            <div class="w-7 h-7 rounded-lg bg-emerald-100/70 border border-white/60 text-emerald-800 flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[17px]">table_chart</span>
             </div>
             <div class="flex flex-col min-w-0">
@@ -200,12 +200,12 @@ export function renderDashboardPage(store) {
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
         <section class="flex flex-col gap-2">
           ${lowStockItems.length > 0 ? `
-            <div class="bg-amber-50 border border-amber-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+            <div class="glass-amber glass-sheen relative overflow-hidden rounded-xl p-3 flex items-start gap-2.5">
               <span class="material-symbols-outlined text-amber-700 text-[20px] shrink-0 mt-0.5">warning</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
                   <span class="font-label-md text-xs font-bold text-amber-900">Perhatian: Stok Menipis</span>
-                  <span class="font-label-sm text-[10px] bg-amber-200 text-amber-900 px-1.5 py-0.5 rounded font-bold">${lowStockItems.length} Produk</span>
+                  <span class="font-label-sm text-[10px] bg-white/55 border border-white/60 text-amber-900 px-1.5 py-0.5 rounded font-bold">${lowStockItems.length} Produk</span>
                 </div>
                 <p class="font-body-sm text-xs text-amber-800 mt-0.5">
                   ${lowStockItems.map((c) => `${c.name} (sisa ${c.stock})`).join(', ')}. Segera agendakan belanja stock!
@@ -215,7 +215,7 @@ export function renderDashboardPage(store) {
           ` : ''}
 
           ${(shipSummary.countKemas + shipSummary.countKirim) > 0 ? `
-            <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2.5 shadow-sm">
+            <div class="glass-blue glass-sheen relative overflow-hidden rounded-xl p-3 flex items-start gap-2.5">
               <span class="material-symbols-outlined text-blue-700 text-[20px] shrink-0 mt-0.5">local_shipping</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
@@ -239,15 +239,15 @@ export function renderDashboardPage(store) {
             </button>
           </div>
 
-          <div class="bg-surface-container-lowest rounded-2xl shadow-sm border border-surface-container-high divide-y divide-surface-container-low overflow-hidden">
+          <div class="glass-card glass-sheen relative overflow-hidden rounded-2xl divide-y divide-white/50">
             ${recentTransactions.length === 0 ? `
               <div class="p-6 text-center text-on-surface-variant text-sm">Belum ada transaksi tercatat.</div>
             ` : recentTransactions.map((trx) => {
               const isMasuk = trx.type === 'masuk';
               return `
-                <div class="flex items-center justify-between p-3.5 hover:bg-surface-container-low/60 transition-colors">
+                <div class="glass-row flex items-center justify-between p-3.5 transition-colors">
                   <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl ${isMasuk ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center shrink-0 shadow-sm">
+                    <div class="w-10 h-10 rounded-xl ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
                       <span class="material-symbols-outlined text-[20px]">${isMasuk ? 'point_of_sale' : 'shopping_bag'}</span>
                     </div>
                     <div class="flex flex-col min-w-0">
@@ -274,7 +274,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-nav="transaksi"
-            class="w-full py-3 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-md text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-sm border border-surface-container-highest mt-1"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden w-full py-3 px-4 rounded-xl text-primary font-label-md text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.99] mt-1"
           >
             <span class="material-symbols-outlined text-[18px]">history_edu</span>
             <span>Buka Buku Kas Selengkapnya</span>
