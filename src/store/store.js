@@ -1,6 +1,9 @@
 import { INITIAL_DATA } from '../data/dummy.js';
+import { showToast } from '../components/toast.js';
 
 const STORAGE_KEY = 'kas_juara_sepatu_data_v1';
+// Salinan darurat bila data tersimpan rusak / gagal diparse
+const BACKUP_KEY = 'kas_juara_sepatu_data_v1__backup';
 
 class Store {
   constructor() {
@@ -9,9 +12,15 @@ class Store {
   }
 
   loadState() {
+    let stored = null;
     try {
-      const stored = localStorage.getItem(STORAGE_KEY);
-      if (stored) {
+      stored = localStorage.getItem(STORAGE_KEY);
+    } catch (e) {
+      console.error('Tidak dapat membaca penyimpanan browser', e);
+    }
+
+    if (stored) {
+      try {
         const parsed = JSON.parse(stored);
         if (!parsed.investors) {
           parsed.investors = JSON.parse(JSON.stringify(INITIAL_DATA.investors || []));
@@ -21,10 +30,13 @@ class Store {
         // Migrate: default branch name 'Cabang Veteran Bandung' -> 'Cengkareng Jakarta Barat'
         this._migrateShopBranch(parsed);
         return parsed;
+      } catch (e) {
+        // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
+        console.error('Data tersimpan rusak; salinan mentah disimpan ke key backup', e);
+        try { localStorage.setItem(BACKUP_KEY, stored); } catch (e2) { /* ignore */ }
       }
-    } catch (e) {
-      console.warn('Failed to parse state from localStorage, initializing fresh', e);
     }
+
     const fresh = JSON.parse(JSON.stringify(INITIAL_DATA));
     this.saveState(fresh);
     return fresh;
@@ -68,12 +80,54 @@ class Store {
     }
   }
 
+  /**
+   * Simpan state ke localStorage.
+   * Mengembalikan true bila berhasil. Bila kuota browser penuh, otomatis
+   * mencoba menyimpan versi ringkas (tanpa foto) supaya data transaksi & stok
+   * tidak hilang, lalu memberi peringatan kepada pengguna.
+   */
   saveState(newState) {
+    const data = newState || this.state;
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(newState || this.state));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      this._saveErrorShown = false;
+      return true;
     } catch (e) {
-      console.error('Failed to save to localStorage', e);
+      console.error('Gagal menyimpan ke localStorage', e);
+
+      // Fallback: simpan tanpa foto agar data penting tetap tersimpan
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(this._stripPhotos(data)));
+        this._warnSaveOnce('Penyimpanan browser penuh. Foto tidak ikut tersimpan, tetapi data transaksi & stok tetap aman.');
+        return false;
+      } catch (e2) {
+        console.error('Gagal menyimpan versi ringkas', e2);
+      }
+
+      this._warnSaveOnce('GAGAL menyimpan data ke browser! Segera lakukan Backup (Ekspor JSON) atau sinkronkan ke Google Sheets.');
+      return false;
     }
+  }
+
+  _warnSaveOnce(message) {
+    if (this._saveErrorShown) return;
+    this._saveErrorShown = true;
+    try { showToast(message, 'error', 6000); } catch (e) { /* ignore */ }
+  }
+
+  /** Salinan state tanpa data foto (fallback saat kuota penyimpanan penuh). */
+  _stripPhotos(data) {
+    const clone = JSON.parse(JSON.stringify(data || {}));
+    const stripItem = (it) => { if (it && typeof it === 'object' && it.photo) delete it.photo; };
+    (clone.transactions || []).forEach((t) => {
+      stripItem(t);
+      if (Array.isArray(t.items)) t.items.forEach(stripItem);
+    });
+    (clone.supplies || []).forEach((s) => {
+      if (Array.isArray(s.items)) s.items.forEach(stripItem);
+    });
+    (clone.products || []).forEach(stripItem);
+    return clone;
   }
 
   notify() {

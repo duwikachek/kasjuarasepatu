@@ -238,6 +238,20 @@
 
         if (reloadBtn) {
           reloadBtn.addEventListener('click', () => {
+            // Pengaman: pastikan data terakhir benar-benar tersimpan sebelum memuat ulang
+            const store = window.__APP_STORE__;
+            if (store && typeof store.saveState === 'function') {
+              const saved = store.saveState();
+              if (!saved) {
+                const proceed = window.confirm(
+                  'Data terakhir belum berhasil disimpan ke penyimpanan browser.\n\n' +
+                  'Memuat ulang sekarang berisiko menghilangkan data yang baru diisi.\n\n' +
+                  'Tetap muat ulang?'
+                );
+                if (!proceed) return;
+              }
+            }
+
             if (waitingWorker) {
               waitingWorker.postMessage({ type: 'SKIP_WAITING' });
               // Fallback: bila event 'controllerchange' tidak terpicu, muat ulang manual

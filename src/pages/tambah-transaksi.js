@@ -1,6 +1,7 @@
 import { parseRupiah, formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
+import { compressImageFile } from '../utils/image.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 const KATEGORI_KELUAR = [
@@ -872,17 +873,20 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     keluarPhotoInput.addEventListener('change', (e) => {
       const file = e.target.files && e.target.files[0];
       if (!file) return;
-      const reader = new FileReader();
-      reader.onload = (event) => {
-        keluarPhotoDataUrl = event.target.result;
+      // Reset value agar memilih file yang sama lagi tetap memicu event change
+      keluarPhotoInput.value = '';
+
+      // Kompres foto agar tidak melampaui kuota penyimpanan browser
+      compressImageFile(file).then((dataUrl) => {
+        keluarPhotoDataUrl = dataUrl;
         if (keluarPreviewImg) keluarPreviewImg.src = keluarPhotoDataUrl;
         if (keluarPlaceholder) keluarPlaceholder.classList.add('hidden');
         if (keluarPreviewBox) keluarPreviewBox.classList.remove('hidden');
         showToast('Bukti transfer berhasil dilampirkan!', 'success');
-      };
-      reader.readAsDataURL(file);
-      // Reset value agar memilih file yang sama lagi tetap memicu event change
-      keluarPhotoInput.value = '';
+      }).catch((err) => {
+        console.warn('Gagal memproses foto', err);
+        showToast('Foto gagal diproses. Coba pilih foto lain.', 'error');
+      });
     });
   }
 

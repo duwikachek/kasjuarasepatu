@@ -1,6 +1,7 @@
 import { parseRupiah, formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
+import { compressImageFile } from '../utils/image.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
 function createNewItem(defaultValues = {}) {
@@ -736,18 +737,20 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       photoInput.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
+        // Reset value agar memilih foto yang sama lagi tetap memicu event change
+        photoInput.value = '';
 
-        const reader = new FileReader();
-        reader.onload = (event) => {
-          item.photo = event.target.result;
+        // Kompres foto agar tidak melampaui kuota penyimpanan browser
+        compressImageFile(file).then((dataUrl) => {
+          item.photo = dataUrl;
           if (photoPreviewImg) photoPreviewImg.src = item.photo;
           if (photoPlaceholder) photoPlaceholder.classList.add('hidden');
           if (photoPreviewBox) photoPreviewBox.classList.remove('hidden');
           showToast('Foto sepatu berhasil disimpan!', 'success');
-        };
-        reader.readAsDataURL(file);
-        // Reset value agar memilih foto yang sama lagi tetap memicu event change
-        photoInput.value = '';
+        }).catch((err) => {
+          console.warn('Gagal memproses foto', err);
+          showToast('Foto gagal diproses. Coba pilih foto lain.', 'error');
+        });
       });
     }
 
