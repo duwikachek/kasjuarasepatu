@@ -60,7 +60,7 @@ export function renderDashboardPage(store) {
             src="${logoJuara}"
             alt=""
             aria-hidden="true"
-            class="pointer-events-none select-none absolute -right-10 -bottom-10 w-60 max-w-none opacity-[0.18] -z-10"
+            class="pointer-events-none select-none absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-56 max-w-[85%] opacity-[0.2] -z-10"
           />
           <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-on-tertiary-container/10 pointer-events-none"></div>
           <div class="absolute top-0 left-0 right-0 h-1 bg-on-tertiary-container/80"></div>
