@@ -230,3 +230,48 @@ export function enhanceVideoElement(readerId) {
     if (p && typeof p.catch === 'function') p.catch(() => { /* abaikan autoplay ditolak */ });
   }
 }
+
+/**
+ * Mainkan suara "bip" pendek saat barcode berhasil terbaca.
+ * Menggunakan Web Audio API — tidak perlu file audio eksternal.
+ *
+ * @param {'success'|'double'} type
+ *   'success' = satu bip singkat (default)
+ *   'double'  = dua bip cepat (untuk konfirmasi)
+ */
+export function playBeep(type = 'success') {
+  try {
+    const ctx = new (window.AudioContext || window.webkitAudioContext)();
+
+    const beep = (startTime, freq = 1800, duration = 0.08, volume = 0.4) => {
+      const osc = ctx.createOscillator();
+      const gain = ctx.createGain();
+
+      osc.connect(gain);
+      gain.connect(ctx.destination);
+
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(freq, startTime);
+
+      gain.gain.setValueAtTime(0, startTime);
+      gain.gain.linearRampToValueAtTime(volume, startTime + 0.005);
+      gain.gain.exponentialRampToValueAtTime(0.001, startTime + duration);
+
+      osc.start(startTime);
+      osc.stop(startTime + duration + 0.01);
+    };
+
+    const now = ctx.currentTime;
+    if (type === 'double') {
+      beep(now, 1800, 0.07);
+      beep(now + 0.12, 2200, 0.07);
+    } else {
+      beep(now, 1800, 0.1);
+    }
+
+    // Tutup AudioContext setelah selesai agar tidak bocor memory
+    setTimeout(() => { try { ctx.close(); } catch (_) { /* abaikan */ } }, 500);
+  } catch (_) {
+    // Browser tidak mendukung Web Audio API — abaikan diam-diam
+  }
+}

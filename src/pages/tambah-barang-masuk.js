@@ -9,7 +9,8 @@ import {
   createScanDebouncer,
   enhanceVideoElement,
   checkCameraSupport,
-  describeCameraError
+  describeCameraError,
+  playBeep
 } from '../utils/barcode-scanner-config.js';
 
 function createNewItem(defaultValues = {}) {
@@ -926,6 +927,8 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
 
     const onSuccess = (decodedText) => {
       if (!scanDebouncer(decodedText)) return;
+
+      playBeep('success'); // Suara bip saat barcode terbaca
 
       const lastRead = document.getElementById('scanner-last-read');
       if (lastRead) {

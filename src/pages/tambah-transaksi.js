@@ -3,6 +3,7 @@ import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { playBeep } from '../utils/barcode-scanner-config.js';
 
 const KATEGORI_KELUAR = [
   { label: 'BIAYA FO SHP', desc: 'Free Ongkir Shopee', icon: 'local_shipping' },
@@ -931,6 +932,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     ];
 
     const onSuccess = (decodedText) => {
+      playBeep('success'); // Suara bip saat barcode terbaca
       if (activeScanItemId) {
         const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
         if (barcodeInput) {
