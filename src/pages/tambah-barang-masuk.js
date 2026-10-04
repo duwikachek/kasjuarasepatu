@@ -6,7 +6,6 @@ import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { createPhotoSourceSheet } from '../components/photo-source-sheet.js';
 import {
   buildScannerConfig1D,
-  buildCameraConstraints,
   createScanDebouncer,
   enhanceVideoElement,
   checkCameraSupport,
@@ -977,14 +976,15 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
 
     const baseConfig = buildScannerConfig1D();
     const facing = useFrontCamera ? 'user' : 'environment';
-    const highResConstraint = buildCameraConstraints();
 
-    // PERCOBAAN 1: constraint resolusi tinggi (paling tajam)
-    tryStart(highResConstraint, baseConfig, 'resolusi tinggi')
-      // PERCOBAAN 2: constraint minimal + fps 15 (paling kompatibel)
-      .catch(() => tryStart({ facingMode: { ideal: facing } }, { ...baseConfig, fps: 15 }, 'minimal'))
-      // PERCOBAAN 3: tanpa facingMode (desktop / kamera tunggal)
-      .catch(() => tryStart({}, { ...baseConfig, fps: 10 }, 'tanpa facingMode'))
+    // PERCOBAAN 1: facingMode ideal (paling kompatibel, 1 key sesuai spec html5-qrcode)
+    tryStart({ facingMode: { ideal: facing } }, baseConfig, 'facingMode ideal')
+      // PERCOBAAN 2: facingMode exact
+      .catch(() => tryStart({ facingMode: facing }, { ...baseConfig, fps: 15 }, 'facingMode exact'))
+      // PERCOBAAN 3: fallback ke kamera environment tanpa constraint (string = camera id fallback)
+      .catch(() => tryStart({ facingMode: 'environment' }, { ...baseConfig, fps: 10 }, 'environment fallback'))
+      // PERCOBAAN 4: kamera manapun yang tersedia (kamera tunggal / desktop)
+      .catch(() => tryStart({ facingMode: 'user' }, { ...baseConfig, fps: 10 }, 'user fallback'))
       .catch((err) => {
         console.error('[scanner] kamera tidak dapat dibuka', err);
         setScannerStatus(describeCameraError(err), 'error');

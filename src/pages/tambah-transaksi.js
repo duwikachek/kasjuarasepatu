@@ -921,21 +921,53 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   function openSaleScanner() {
     if (!saleScannerModal) return;
     saleScannerModal.classList.remove('hidden');
-    try {
-      html5SaleScanner = new Html5Qrcode('sale-qr-reader', { formatsToSupport: [Html5QrcodeSupportedFormats.CODE_39, Html5QrcodeSupportedFormats.CODE_128, Html5QrcodeSupportedFormats.EAN_13, Html5QrcodeSupportedFormats.UPC_A], verbose: false });
-      html5SaleScanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: { width: 280, height: 160 } },
-        (decodedText) => {
-          if (activeScanItemId) {
-            const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
-            if (barcodeInput) {
-              barcodeInput.value = decodedText.trim();
-              barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
-            }
-          }
-          closeSaleScanner();
-        }, () => {}
-      ).catch((err) => { console.warn('Camera err', err); showToast('Kamera tidak dapat diakses. Ketik barcode secara manual.', 'info', 3500); });
-    } catch (e) { console.error(e); }
+
+    const scannerConfig = { fps: 10, qrbox: { width: 280, height: 160 } };
+    const formatsToSupport = [
+      Html5QrcodeSupportedFormats.CODE_39,
+      Html5QrcodeSupportedFormats.CODE_128,
+      Html5QrcodeSupportedFormats.EAN_13,
+      Html5QrcodeSupportedFormats.UPC_A
+    ];
+
+    const onSuccess = (decodedText) => {
+      if (activeScanItemId) {
+        const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
+        if (barcodeInput) {
+          barcodeInput.value = decodedText.trim();
+          barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
+        }
+      }
+      closeSaleScanner();
+    };
+
+    const tryStartSale = (constraint, label) => {
+      if (html5SaleScanner) {
+        try { html5SaleScanner.clear(); } catch (_) { /* abaikan */ }
+        html5SaleScanner = null;
+      }
+      const scanner = new Html5Qrcode('sale-qr-reader', { formatsToSupport, verbose: false });
+      html5SaleScanner = scanner;
+      return scanner.start(constraint, scannerConfig, onSuccess, () => {})
+        .catch((err) => {
+          console.warn(`[sale-scanner] gagal (${label}):`, err);
+          try { scanner.clear(); } catch (_) { /* abaikan */ }
+          if (html5SaleScanner === scanner) html5SaleScanner = null;
+          throw err;
+        });
+    };
+
+    // PERCOBAAN 1: kamera belakang (environment)
+    tryStartSale({ facingMode: { ideal: 'environment' } }, 'environment ideal')
+      // PERCOBAAN 2: kamera belakang exact
+      .catch(() => tryStartSale({ facingMode: 'environment' }, 'environment exact'))
+      // PERCOBAAN 3: kamera depan (user) sebagai fallback
+      .catch(() => tryStartSale({ facingMode: 'user' }, 'user fallback'))
+      .catch((err) => {
+        console.warn('[sale-scanner] kamera tidak dapat dibuka:', err);
+        showToast('Kamera tidak dapat diakses. Ketik barcode secara manual.', 'info', 3500);
+        closeSaleScanner();
+      });
   }
 
   function closeSaleScanner() {
