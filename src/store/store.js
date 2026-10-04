@@ -25,6 +25,9 @@ class Store {
         if (!parsed.investors) {
           parsed.investors = JSON.parse(JSON.stringify(INITIAL_DATA.investors || []));
         }
+        if (!parsed.opnameRecords) {
+          parsed.opnameRecords = [];
+        }
         // Migrate: rename 'Kulakan Barang' -> 'Belanja Barang' in existing data
         this._migrateKulakan(parsed);
         // Migrate: default branch name 'Cabang Veteran Bandung' -> 'Cengkareng Jakarta Barat'
@@ -863,6 +866,51 @@ class Store {
     this.state.googleSheets.lastSync = timeStr;
     this.saveState();
     // Do NOT call this.notify() here to prevent infinite auto-sync loop
+  }
+
+  // =====================
+  // Stock Opname Records
+  // =====================
+
+  /** Ambil semua riwayat opname, terbaru di atas. */
+  getOpnameRecords() {
+    if (!this.state.opnameRecords || !Array.isArray(this.state.opnameRecords)) {
+      this.state.opnameRecords = [];
+    }
+    return this.state.opnameRecords;
+  }
+
+  /** Simpan sesi opname baru. */
+  addOpnameRecord(record) {
+    if (!this.state.opnameRecords) this.state.opnameRecords = [];
+    const newRecord = {
+      id: `OPNAME-${Date.now()}`,
+      createdAt: new Date().toISOString(),
+      ...record
+    };
+    this.state.opnameRecords.unshift(newRecord);
+    this.saveState();
+    this.notify();
+    return newRecord;
+  }
+
+  /** Update riwayat opname (mis. status). */
+  updateOpnameRecord(id, data) {
+    if (!this.state.opnameRecords) return null;
+    const idx = this.state.opnameRecords.findIndex((r) => r.id === id);
+    if (idx === -1) return null;
+    this.state.opnameRecords[idx] = { ...this.state.opnameRecords[idx], ...data };
+    this.saveState();
+    this.notify();
+    return this.state.opnameRecords[idx];
+  }
+
+  /** Hapus riwayat opname. */
+  deleteOpnameRecord(id) {
+    if (!this.state.opnameRecords) return;
+    this.state.opnameRecords = this.state.opnameRecords.filter((r) => r.id !== id);
+    this.saveState();
+    this.notify();
   }
 }
 

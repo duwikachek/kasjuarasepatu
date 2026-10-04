@@ -8,6 +8,9 @@ import { renderPengirimanPage, initPengirimanPage } from './pages/pengiriman.js'
 import { renderInvestorPage, initInvestorPage } from './pages/investor.js';
 import { renderLaporanPage, initLaporanPage } from './pages/laporan.js';
 import { renderPengaturanPage, initPengaturanPage } from './pages/pengaturan.js';
+import { renderStockOpnamePage, initStockOpnamePage } from './pages/stock-opname.js';
+import { renderTambahOpnamePage, initTambahOpnamePage } from './pages/tambah-opname.js';
+import { renderDetailOpnamePage, initDetailOpnamePage } from './pages/detail-opname.js';
 import { renderBottomNav, bindBottomNavEvents } from './components/bottom-nav.js';
 
 export class Router {
@@ -73,6 +76,9 @@ export class Router {
       'investor': 'dashboard',
       'laporan': 'laporan',
       'pengaturan': 'pengaturan',
+      'stock-opname': 'pasok',
+      'tambah-opname': 'pasok',
+      'detail-opname': 'pasok',
     };
 
     const targetRoute = navRoutes[this.currentRoute];
@@ -151,6 +157,21 @@ export class Router {
       case 'pengaturan':
         this.container.innerHTML = renderPengaturanPage(this.store);
         initPengaturanPage(this, this.store);
+        break;
+
+      case 'stock-opname':
+        this.container.innerHTML = renderStockOpnamePage(this.store);
+        initStockOpnamePage(this, this.store);
+        break;
+
+      case 'tambah-opname':
+        this.container.innerHTML = renderTambahOpnamePage(this.store);
+        initTambahOpnamePage(this, this.store);
+        break;
+
+      case 'detail-opname':
+        this.container.innerHTML = renderDetailOpnamePage(this.store, this.params);
+        initDetailOpnamePage(this, this.store, this.params);
         break;
 
       default:

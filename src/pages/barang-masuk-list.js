@@ -46,15 +46,25 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
           </div>
         </section>
 
-        <!-- Button Catat Belanja Baru -->
-        <button 
-          type="button" 
-          id="btn-goto-tambah-pasok"
-          class="glass-primary glass-btn glass-sheen w-full h-12 text-primary-btn rounded-xl flex items-center justify-center gap-2 font-label-md text-sm active:scale-[0.99]"
-        >
-          <span class="material-symbols-outlined text-[20px]">add_box</span>
-          <span class="font-bold">+ Catat Belanja / Stock Baru</span>
-        </button>
+        <!-- Action Buttons: Belanja Baru & Stock Opname -->
+        <div class="grid grid-cols-2 gap-2.5">
+          <button 
+            type="button" 
+            id="btn-goto-tambah-pasok"
+            class="glass-primary glass-btn glass-sheen h-12 text-primary-btn rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm active:scale-[0.99]"
+          >
+            <span class="material-symbols-outlined text-[19px]">add_box</span>
+            <span class="font-bold">+ Belanja Baru</span>
+          </button>
+          <button 
+            type="button" 
+            id="btn-goto-stock-opname"
+            class="glass-card glass-sheen h-12 border border-neutral-700/60 hover:border-neutral-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm text-neutral-200 active:scale-[0.99]"
+          >
+            <span class="material-symbols-outlined text-[19px] text-emerald-400">fact_check</span>
+            <span class="font-bold">Stock Opname</span>
+          </button>
+        </div>
 
         <!-- Search Bar -->
         <div class="relative w-full">
@@ -102,6 +112,11 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
   const addBtn = document.getElementById('btn-goto-tambah-pasok');
   if (addBtn) {
     addBtn.addEventListener('click', () => router.navigate('tambah-pasok'));
+  }
+
+  const opnameBtn = document.getElementById('btn-goto-stock-opname');
+  if (opnameBtn) {
+    opnameBtn.addEventListener('click', () => router.navigate('stock-opname'));
   }
 
   const searchInput = document.getElementById('pasok-search-input');

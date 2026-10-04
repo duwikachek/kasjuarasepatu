@@ -157,6 +157,21 @@ export function renderDashboardPage(store) {
 
           <button 
             type="button" 
+            data-action="lihat-opname"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-between px-3.5 active:scale-[0.98]"
+          >
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[19px] text-emerald-400">fact_check</span>
+              <span>Stock Opname (Cek Fisik Sepatu)</span>
+            </div>
+            <div class="flex items-center gap-1 text-[11px] text-emerald-400 font-bold">
+              <span>Buka</span>
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </div>
+          </button>
+
+          <button 
+            type="button" 
             data-action="lihat-investor"
             class="glass-amber glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-amber-950 font-label-md text-xs font-bold flex items-center justify-between px-3.5 active:scale-[0.98]"
           >
@@ -308,6 +323,11 @@ export function initDashboardPage(router, store) {
   const btnPengiriman = document.querySelector('[data-action="lihat-pengiriman"]');
   if (btnPengiriman) {
     btnPengiriman.addEventListener('click', () => router.navigate('pengiriman'));
+  }
+
+  const btnOpname = document.querySelector('[data-action="lihat-opname"]');
+  if (btnOpname) {
+    btnOpname.addEventListener('click', () => router.navigate('stock-opname'));
   }
 
   const btnInvestor = document.querySelector('[data-action="lihat-investor"]');
