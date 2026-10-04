@@ -30,23 +30,40 @@ export const SUPPORTED_FORMATS = [
 
 /**
  * Kotak pindai untuk barcode 1D.
- * Lebar ~94% dan tinggi ~22% -> area pindai lebar dan tipis, ideal
- * untuk bar/bar pada stiker label kardus yang kecil.
- * Nilai tinggi sengaja tidak terlalu besar agar bar barcode mudah
- * difokuskan dan tidak terpotong kamera.
+ *
+ * PENTING: qrbox TIDAK boleh lebih besar dari elemen container (#qr-reader),
+ * jika tidak html5-qrcode akan men-crop video dan area pindai berada di luar
+ * layar sehingga kamera tampak hitam.
+ *
+ * Area pindai dibuat lebar dan tipis (rasio sekitar 3:1) yang ideal untuk
+ * bar/bar pada stiker label kardus.
  */
 export function getQrbox1D() {
+  // Ukur container bila sudah ter-render,fallback ke window
+  const readerEl = document.getElementById('qr-reader');
+  const containerW = readerEl && readerEl.clientWidth
+    ? readerEl.clientWidth
+    : window.innerWidth;
+  const containerH = readerEl && readerEl.clientHeight
+    ? readerEl.clientHeight
+    : window.innerHeight;
+
   return {
-    width: Math.min(480, Math.round(window.innerWidth * 0.94)),
-    height: Math.min(170, Math.round(window.innerHeight * 0.22))
+    // Sisakan margin kecil agar tidak menyentuh tepi container
+    width: Math.max(120, Math.min(460, Math.round(containerW * 0.92))),
+    height: Math.max(60, Math.min(150, Math.round(containerH * 0.42)))
   };
 }
 
-/** Area pindai untuk QR Code / matrix (lebih tinggi). */
+/** Area pindai untuk QR Code / matrix (lebih tinggi,Opsional). */
 export function getQrbox2D() {
+  const readerEl = document.getElementById('qr-reader');
+  const containerW = readerEl && readerEl.clientWidth ? readerEl.clientWidth : window.innerWidth;
+  const containerH = readerEl && readerEl.clientHeight ? readerEl.clientHeight : window.innerHeight;
+
   return {
-    width: Math.min(340, Math.round(window.innerWidth * 0.78)),
-    height: Math.min(300, Math.round(window.innerHeight * 0.4))
+    width: Math.max(140, Math.min(320, Math.round(containerW * 0.8))),
+    height: Math.max(140, Math.min(280, Math.round(containerH * 0.82)))
   };
 }
 
@@ -117,14 +134,32 @@ export function createScanDebouncer(delayMs = 1500) {
 
 /**
  * Memperjelas tampilan video kamera agar barcode lebih mudah dibaca.
+ *
+ * CATATAN: html5-qrcode v2.3.8 menyisipkan <video> LANGSUNG sebagai anak
+ * dari #qr-reader (tidak dibungkus video_wrapper), dan pada beberapa
+ * perangkat elemen itu baru muncul setelah start() selesai.
+ *
  * Dipanggil setelah scanner start.
  */
 export function enhanceVideoElement(readerId) {
   const reader = document.getElementById(readerId);
   if (!reader) return;
-  const video = reader.querySelector('video');
+
+  // Cari <video> di dalam reader, atau cari langsung bila/library beda struktur
+  let video = reader.querySelector('video');
+  if (!video) video = document.querySelector(`#${readerId} video`);
   if (!video) return;
+
   const { contrast, brightness, saturate } = VIDEO_ENHANCE_STYLE;
   video.style.filter = `contrast(${contrast}) brightness(${brightness}) saturate(${saturate})`;
   video.style.objectFit = 'cover';
+  video.style.width = '100%';
+  video.style.height = '100%';
+  video.style.display = 'block';
+
+  // Pastikan video benar-benar mulai displaying frame
+  if (video.paused) {
+    const p = video.play();
+    if (p && typeof p.catch === 'function') p.catch(() => { /* abaikan autoplay ditolak */ });
+  }
 }

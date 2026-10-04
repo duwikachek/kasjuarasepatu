@@ -448,10 +448,10 @@ export function renderTambahBarangMasukPage(store, params = {}) {
 
         <!-- Viewfinder: DI ATAS, langsung di bawah header -->
         <div class="w-full max-w-[460px] flex flex-col items-center pt-3 shrink-0">
-          <div class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden relative border-2 border-emerald-400/80 shadow-2xl bg-black">
+          <div class="relative isolate w-full h-48 sm:h-56 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-2xl bg-black">
             <div id="qr-reader" class="w-full h-full"></div>
-            <!-- Overlay kotak bidik + garis laser -->
-            <div class="absolute inset-0 pointer-events-none">
+            <!-- Overlay kotak bidik + garis laser (pointer-events-none agar tidak menghalangi) -->
+            <div class="absolute inset-0 z-10 pointer-events-none">
               <!-- Sudut bidik -->
               <div class="absolute left-4 top-4 w-8 h-8 border-l-3 border-t-3 border-emerald-300 rounded-tl-md"></div>
               <div class="absolute right-4 top-4 w-8 h-8 border-r-3 border-t-3 border-emerald-300 rounded-tr-md"></div>
@@ -894,62 +894,97 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   function openScanner() {
     if (!barcodeModal) return;
     barcodeModal.classList.remove('hidden');
+    setScannerStatus('Meminta izin kamera...', 'info');
 
     // Reset state zoom & kamera
     scannerZoom = 1;
-    useFrontCamera = !useFrontCamera && scannerStartedOnce ? !useFrontCamera : false;
+    useFrontCamera = scannerStartedOnce ? !useFrontCamera : false;
 
-    try {
-      html5Scanner = new Html5Qrcode('qr-reader');
+    const onSuccess = (decodedText) => {
+      if (!scanDebouncer(decodedText)) return;
 
-      // Konfigurasi barcode 1D: fps 30 + qrbox lebar & tipis (lihat utils/barcode-scanner-config.js)
-      const config = buildScannerConfig1D();
+      const lastRead = document.getElementById('scanner-last-read');
+      if (lastRead) {
+        lastRead.textContent = decodedText;
+        lastRead.classList.remove('hidden');
+      }
+      if (activeScanItemId) onBarcodeScanned(activeScanItemId, decodedText);
+    };
+    const onError = () => { /* frame tanpa barcode */ };
 
-      const cameraConstraint = buildCameraConstraints();
-      if (useFrontCamera) cameraConstraint.facingMode = { ideal: 'user' };
-
-      html5Scanner.start(
-        cameraConstraint,
-        config,
-        (decodedText) => {
-          // Debounce: cegah callback berulang dari frame yang sama
-          if (!scanDebouncer(decodedText)) return;
-
-          const lastRead = document.getElementById('scanner-last-read');
-          if (lastRead) {
-            lastRead.textContent = decodedText;
-            lastRead.classList.remove('hidden');
-          }
-
-          if (activeScanItemId) {
-            onBarcodeScanned(activeScanItemId, decodedText);
-          }
-        },
-        () => { /* scanning */ }
-      ).then(() => {
-        scannerStartedOnce = true;
-        // Perjelas preview kamera agar barcode kontras & mudah terbaca
+    // Helper: nyalakan video preview setelah kamera benar-benar jalan
+    const afterStart = () => {
+      scannerStartedOnce = true;
+      // Beri jeda agar <video> benar-benar ter-render sebelum di-style
+      setTimeout(() => {
         enhanceVideoElement('qr-reader');
-        // Coba nyalakan torch otomatis jika perangkat mendukung
-        setTimeout(() => applyTorch(true), 350);
-      }).catch((err) => {
-        // Kamera tidak tersedia / ditolak -> kembalikan constraint sederhana
-        console.warn('Scanner start dengan constraint tinggi gagal, mencoba fallback', err);
-        html5Scanner.start(
-          { facingMode: 'environment' },
-          config,
-          (decodedText) => {
-            if (!scanDebouncer(decodedText)) return;
-            if (activeScanItemId) onBarcodeScanned(activeScanItemId, decodedText);
-          },
-          () => {}
-        ).then(() => {
-          scannerStartedOnce = true;
-          enhanceVideoElement('qr-reader');
-        }).catch(() => {});
+        applyTorch(true);
+        setScannerStatus('', null);
+      }, 120);
+    };
+
+    /**
+     * Coba start scanner dengan constraint tertentu.
+     * Setiap percobaan memakai instance Html5Qrcode BARU karena
+     * html5-qrcode tidak mengizinkan start() dua kali pada instance sama.
+     */
+    const tryStart = (cameraConstraint, config, label) => {
+      // Buang instance sebelumnya bila ada
+      if (html5Scanner) {
+        try { html5Scanner.clear(); } catch (_) { /* abaikan */ }
+        html5Scanner = null;
+      }
+
+      const scanner = new Html5Qrcode('qr-reader', {
+        verbose: false,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
       });
-    } catch {
-      // Ignored
+      html5Scanner = scanner;
+
+      return scanner.start(cameraConstraint, config, onSuccess, onError)
+        .then(() => { afterStart(); })
+        .catch((err) => {
+          console.warn(`[scanner] gagal start (${label}):`, err);
+          try { scanner.clear(); } catch (_) { /* abaikan */ }
+          if (html5Scanner === scanner) html5Scanner = null;
+          throw err;
+        });
+    };
+
+    const baseConfig = buildScannerConfig1D();
+    const facing = useFrontCamera ? 'user' : 'environment';
+    const highResConstraint = buildCameraConstraints();
+
+    // PERCOBAAN 1: constraint resolusi tinggi (paling tajam)
+    tryStart(highResConstraint, baseConfig, 'resolusi tinggi')
+      // PERCOBAAN 2: constraint minimal + fps 15 (paling kompatibel)
+      .catch(() => tryStart({ facingMode: { ideal: facing } }, { ...baseConfig, fps: 15 }, 'minimal'))
+      // PERCOBAAN 3: tanpa facingMode (desktop / kamera tunggal)
+      .catch(() => tryStart({}, { ...baseConfig, fps: 10 }, 'tanpa facingMode'))
+      .catch((err) => {
+        console.error('[scanner] kamera tidak dapat dibuka', err);
+        const msg = (err && err.name === 'NotAllowedError')
+          ? 'Izin kamera ditolak. Aktifkan izin kamera pada browser lalu coba lagi.'
+          : 'Kamera tidak dapat dibuka. Pastikan tidak ada aplikasi lain yang memakai kamera.';
+        setScannerStatus(msg, 'error');
+        showToast(msg, 'error', 4500);
+      });
+  }
+
+  /** Menampilkan pesan status di dalam modal scanner. */
+  function setScannerStatus(text, type) {
+    const hint = document.getElementById('scanner-hint');
+    if (!hint) return;
+    if (!text) {
+      hint.textContent = 'Geser barcode ke dalam kotak sampai terkunci';
+      hint.className = 'text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium';
+      return;
+    }
+    hint.textContent = text;
+    if (type === 'error') {
+      hint.className = 'text-xs text-rose-300 text-center mt-2.5 px-4 leading-snug font-semibold';
+    } else {
+      hint.className = 'text-xs text-white/80 text-center mt-2.5 px-5 leading-snug font-medium';
     }
   }
 
@@ -961,13 +996,13 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       const track = video.srcObject.getVideoTracks()[0];
       if (!track) return;
       const caps = track.getCapabilities ? track.getCapabilities() : {};
-      if (!caps.torch) return;
+      if (!caps.torch) return; // perangkat tidak punya torch
       await track.applyConstraints({ advanced: [{ torch: on }] });
       torchOn = on;
       const btn = document.getElementById('btn-scanner-torch');
       if (btn) btn.classList.toggle('bg-amber-500/70', on);
     } catch (e) {
-      // Perangkat tidak mendukung torch
+      // Perangkat tidak mendukung torch — abaikan diam-diam
     }
   }
 
@@ -1000,24 +1035,36 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     }
   }
 
-  /** Berganti kamera depan <-> belakang. */
+  /** Berganti kamera depan <-> belakang dengan instance scanner baru. */
   function switchCamera() {
     useFrontCamera = !useFrontCamera;
-    // Restart scanner dengan kamera baru
-    if (html5Scanner) {
-      html5Scanner.stop().then(() => { html5Scanner.clear(); html5Scanner = null; }).catch(() => {});
+
+    // Stop scanner lama dengan rapi sebelum membuka ulang
+    const oldScanner = html5Scanner;
+    html5Scanner = null;
+    if (oldScanner) {
+      oldScanner.stop()
+        .then(() => { try { oldScanner.clear(); } catch (_) {} })
+        .catch(() => { try { oldScanner.clear(); } catch (_) {} })
+        .then(() => setTimeout(openScanner, 180));
+    } else {
+      setTimeout(openScanner, 180);
     }
-    setTimeout(openScanner, 220);
   }
 
   function closeScanner() {
     if (!barcodeModal) return;
     barcodeModal.classList.add('hidden');
     applyTorch(false);
-    if (html5Scanner) {
-      html5Scanner.stop().then(() => html5Scanner.clear()).catch(() => {});
-      html5Scanner = null;
+
+    const oldScanner = html5Scanner;
+    html5Scanner = null;
+    if (oldScanner) {
+      oldScanner.stop()
+        .then(() => { try { oldScanner.clear(); } catch (_) {} })
+        .catch(() => {});
     }
+
     activeScanItemId = null;
     scannerStartedOnce = false;
     const lastRead = document.getElementById('scanner-last-read');
