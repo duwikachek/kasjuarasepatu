@@ -4,6 +4,12 @@ import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { createPhotoSourceSheet } from '../components/photo-source-sheet.js';
+import {
+  buildScannerConfig1D,
+  buildCameraConstraints,
+  createScanDebouncer,
+  enhanceVideoElement
+} from '../utils/barcode-scanner-config.js';
 
 function createNewItem(defaultValues = {}) {
   const uniqueId = `item-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -416,43 +422,78 @@ export function renderTambahBarangMasukPage(store, params = {}) {
       </form>
 
       <!-- Fullscreen Barcode Camera Scanner Modal -->
-      <div id="barcode-scanner-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-between p-4">
+      <!-- justify-start + wrapper flex-1 agar viewfinder berada di bagian ATAS,
+           bukan terdorong ke bawah oleh justify-between. -->
+      <div id="barcode-scanner-modal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-start p-3 pt-safe">
         <!-- Top Bar -->
-        <div class="w-full max-w-[400px] flex items-center justify-between text-white pt-4 px-2">
+        <div class="w-full max-w-[400px] flex items-center justify-between text-white pt-3 px-2 shrink-0">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-amber-400 text-2xl">qr_code_scanner</span>
+            <span class="material-symbols-outlined text-emerald-300 text-2xl">qr_code_scanner</span>
             <div>
-              <h3 class="font-headline-sm text-base font-bold">Scan Barcode Code 39</h3>
-              <p class="text-[11px] text-white/70">Arahkan kamera ke stiker barcode Excel</p>
+              <h3 class="font-headline-sm text-base font-bold">Scan Barcode Barang</h3>
+              <p class="text-[11px] text-white/70">Code 128 / Code 39 / EAN / QR</p>
             </div>
           </div>
-          <button type="button" id="btn-close-scanner" class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white active:scale-95">
-            <span class="material-symbols-outlined text-2xl">close</span>
-          </button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-scanner-torch"
+              class="p-2 rounded-full bg-white/15 hover:bg-white/25 text-white active:scale-95 transition-all"
+              title="Nyalakan lampu kilat">
+              <span class="material-symbols-outlined text-xl">flashlight_on</span>
+            </button>
+            <button type="button" id="btn-close-scanner" class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white active:scale-95">
+              <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Viewfinder Box -->
-        <div class="w-full max-w-[340px] flex flex-col items-center my-auto">
-          <div class="w-full h-64 rounded-2xl overflow-hidden relative border-2 border-amber-400/80 shadow-2xl bg-black">
+        <!-- Viewfinder: DI ATAS, langsung di bawah header -->
+        <div class="w-full max-w-[460px] flex flex-col items-center pt-3 shrink-0">
+          <div class="w-full h-48 sm:h-56 rounded-2xl overflow-hidden relative border-2 border-emerald-400/80 shadow-2xl bg-black">
             <div id="qr-reader" class="w-full h-full"></div>
-            <!-- Laser Animation Line -->
-            <div class="absolute inset-x-4 top-1/2 h-0.5 bg-rose-500 shadow-[0_0_8px_#f43f5e] animate-pulse pointer-events-none"></div>
+            <!-- Overlay kotak bidik + garis laser -->
+            <div class="absolute inset-0 pointer-events-none">
+              <!-- Sudut bidik -->
+              <div class="absolute left-4 top-4 w-8 h-8 border-l-3 border-t-3 border-emerald-300 rounded-tl-md"></div>
+              <div class="absolute right-4 top-4 w-8 h-8 border-r-3 border-t-3 border-emerald-300 rounded-tr-md"></div>
+              <div class="absolute left-4 bottom-4 w-8 h-8 border-l-3 border-b-3 border-emerald-300 rounded-bl-md"></div>
+              <div class="absolute right-4 bottom-4 w-8 h-8 border-r-3 border-b-3 border-emerald-300 rounded-br-md"></div>
+              <!-- Garis laser horizontal -->
+              <div class="absolute inset-x-6 top-1/2 h-0.5 bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse"></div>
+            </div>
           </div>
-          <p class="text-xs text-white/80 text-center mt-3 px-4">
-            Posisikan garis merah tepat di sepanjang garis-garis barcode Code 39
+
+          <!-- Panduan dinamis -->
+          <p id="scanner-hint" class="text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium">
+            Geser barcode ke dalam kotak sampai terkunci
           </p>
+
+          <!-- Info format barcode terakhir -->
+          <div id="scanner-last-read" class="hidden mt-2 px-3 py-1.5 rounded-full glass-chip text-[11px] text-white font-mono"></div>
         </div>
 
-        <!-- Bottom Controls -->
-        <div class="w-full max-w-[400px] pb-6 flex flex-col items-center gap-2.5">
-          <div class="flex items-center gap-3">
-            <button type="button" id="btn-sample-code39" class="px-4 py-2 rounded-full bg-white/20 hover:bg-white/30 text-white text-xs font-semibold active:scale-95">
-              Contoh Barcode Excel
+        <!-- Bottom Controls: mt-auto -> terdorong ke paling bawah -->
+        <div class="w-full max-w-[420px] mt-auto pt-4 pb-4 flex flex-col items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-2 flex-wrap justify-center">
+            <button type="button" id="btn-sample-code39" class="px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold active:scale-95">
+              Contoh Barcode
             </button>
-            <button type="button" id="btn-cancel-scanner" class="px-4 py-2 rounded-full bg-rose-600 text-white text-xs font-semibold active:scale-95">
-              Tutup Kamera
+            <button type="button" id="btn-scanner-switch-cam"
+              class="px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">cameraswitch</span>
+              Ganti Kamera
+            </button>
+            <button type="button" id="btn-scanner-zoom"
+              class="px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">zoom_in</span>
+              <span>Zoom</span>
             </button>
           </div>
+          <p class="text-[10px] text-white/50 text-center">
+            Tips: gunakan cahaya terang, posisi datar, dan jarak 15-20 cm
+          </p>
+          <button type="button" id="btn-cancel-scanner" class="px-5 py-2.5 rounded-full bg-rose-600/90 text-white text-xs font-bold active:scale-95">
+            Tutup Kamera
+          </button>
         </div>
       </div>
     </div>
@@ -490,6 +531,13 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   // Scanner modal states
   let activeScanItemId = null;
   let html5Scanner = null;
+  // State tambahan untuk pengalaman scan barcode 1D yang lebih responsif
+  let scannerZoom = 1;          // level zoom kamera saat ini
+  let torchOn = false;          // status lampu kilat
+  let useFrontCamera = false;   // false = kamera belakang (default)
+  let scannerStartedOnce = false; // scanner pernah start (untuk reset state)
+  const scanDebouncer = createScanDebouncer(1500);
+
   const barcodeModal = document.getElementById('barcode-scanner-modal');
   const btnCloseCamera = document.getElementById('btn-close-scanner');
   const btnCancelCamera = document.getElementById('btn-cancel-scanner');
@@ -847,47 +895,144 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     if (!barcodeModal) return;
     barcodeModal.classList.remove('hidden');
 
+    // Reset state zoom & kamera
+    scannerZoom = 1;
+    useFrontCamera = !useFrontCamera && scannerStartedOnce ? !useFrontCamera : false;
+
     try {
       html5Scanner = new Html5Qrcode('qr-reader');
-      const config = {
-        fps: 15,
-        qrbox: { width: 280, height: 160 },
-        formatsToSupport: [
-          Html5QrcodeSupportedFormats.CODE_39,
-          Html5QrcodeSupportedFormats.CODE_128,
-          Html5QrcodeSupportedFormats.QR_CODE
-        ]
-      };
+
+      // Konfigurasi barcode 1D: fps 30 + qrbox lebar & tipis (lihat utils/barcode-scanner-config.js)
+      const config = buildScannerConfig1D();
+
+      const cameraConstraint = buildCameraConstraints();
+      if (useFrontCamera) cameraConstraint.facingMode = { ideal: 'user' };
 
       html5Scanner.start(
-        { facingMode: 'environment' },
+        cameraConstraint,
         config,
         (decodedText) => {
+          // Debounce: cegah callback berulang dari frame yang sama
+          if (!scanDebouncer(decodedText)) return;
+
+          const lastRead = document.getElementById('scanner-last-read');
+          if (lastRead) {
+            lastRead.textContent = decodedText;
+            lastRead.classList.remove('hidden');
+          }
+
           if (activeScanItemId) {
             onBarcodeScanned(activeScanItemId, decodedText);
           }
         },
         () => { /* scanning */ }
-      ).catch(() => {
-        // Camera not available, fallback
+      ).then(() => {
+        scannerStartedOnce = true;
+        // Perjelas preview kamera agar barcode kontras & mudah terbaca
+        enhanceVideoElement('qr-reader');
+        // Coba nyalakan torch otomatis jika perangkat mendukung
+        setTimeout(() => applyTorch(true), 350);
+      }).catch((err) => {
+        // Kamera tidak tersedia / ditolak -> kembalikan constraint sederhana
+        console.warn('Scanner start dengan constraint tinggi gagal, mencoba fallback', err);
+        html5Scanner.start(
+          { facingMode: 'environment' },
+          config,
+          (decodedText) => {
+            if (!scanDebouncer(decodedText)) return;
+            if (activeScanItemId) onBarcodeScanned(activeScanItemId, decodedText);
+          },
+          () => {}
+        ).then(() => {
+          scannerStartedOnce = true;
+          enhanceVideoElement('qr-reader');
+        }).catch(() => {});
       });
     } catch {
       // Ignored
     }
   }
 
+  /** Nyalakan / matikan lampu kilat (torch) jika perangkat mendukung. */
+  async function applyTorch(on) {
+    try {
+      const video = document.querySelector('#qr-reader video');
+      if (!video || !video.srcObject) return;
+      const track = video.srcObject.getVideoTracks()[0];
+      if (!track) return;
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (!caps.torch) return;
+      await track.applyConstraints({ advanced: [{ torch: on }] });
+      torchOn = on;
+      const btn = document.getElementById('btn-scanner-torch');
+      if (btn) btn.classList.toggle('bg-amber-500/70', on);
+    } catch (e) {
+      // Perangkat tidak mendukung torch
+    }
+  }
+
+  function toggleTorch() {
+    applyTorch(!torchOn);
+  }
+
+  /** Zoom kamera untuk membaca barcode yang sangat kecil. */
+  function cycleZoom() {
+    const steps = [1, 1.5, 2, 2.5, 3];
+    const idx = steps.indexOf(scannerZoom);
+    scannerZoom = steps[(idx + 1) % steps.length];
+
+    try {
+      const video = document.querySelector('#qr-reader video');
+      if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        if (track && track.applyConstraints) {
+          track.applyConstraints({ advanced: [{ zoom: scannerZoom }] });
+        }
+      }
+    } catch (e) {
+      /* abaikan */
+    }
+
+    const btn = document.getElementById('btn-scanner-zoom');
+    if (btn) {
+      const label = btn.querySelector('span:last-child');
+      if (label) label.textContent = `Zoom ${scannerZoom}x`;
+    }
+  }
+
+  /** Berganti kamera depan <-> belakang. */
+  function switchCamera() {
+    useFrontCamera = !useFrontCamera;
+    // Restart scanner dengan kamera baru
+    if (html5Scanner) {
+      html5Scanner.stop().then(() => { html5Scanner.clear(); html5Scanner = null; }).catch(() => {});
+    }
+    setTimeout(openScanner, 220);
+  }
+
   function closeScanner() {
     if (!barcodeModal) return;
     barcodeModal.classList.add('hidden');
+    applyTorch(false);
     if (html5Scanner) {
       html5Scanner.stop().then(() => html5Scanner.clear()).catch(() => {});
       html5Scanner = null;
     }
     activeScanItemId = null;
+    scannerStartedOnce = false;
+    const lastRead = document.getElementById('scanner-last-read');
+    if (lastRead) lastRead.classList.add('hidden');
   }
 
   if (btnCloseCamera) btnCloseCamera.addEventListener('click', closeScanner);
   if (btnCancelCamera) btnCancelCamera.addEventListener('click', closeScanner);
+
+  const btnTorch = document.getElementById('btn-scanner-torch');
+  const btnZoom = document.getElementById('btn-scanner-zoom');
+  const btnSwitchCam = document.getElementById('btn-scanner-switch-cam');
+  if (btnTorch) btnTorch.addEventListener('click', toggleTorch);
+  if (btnZoom) btnZoom.addEventListener('click', cycleZoom);
+  if (btnSwitchCam) btnSwitchCam.addEventListener('click', switchCamera);
 
   if (btnSampleCode39) {
     btnSampleCode39.addEventListener('click', () => {

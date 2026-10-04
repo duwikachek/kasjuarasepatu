@@ -447,6 +447,45 @@ header.app-header,
   border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
+/* ============================================================
+   SCANNER BARCODE
+   Preview kamera diberi filter agar barcode 1D (Code 128 / Code 39)
+   lebih kontras dan mudah dibaca. Nilai filter di-set juga lewat JS
+   (VIDEO_ENHANCE_STYLE di utils/barcode-scanner-config.js) sebagai
+   cadangan bila atribut inline tidak tersedia.
+   ============================================================ */
+#qr-reader video {
+  object-fit: cover !important;
+  /* Peningkatan kontras: wajib untuk label barcode di atas tag kardus gelap */
+  filter: contrast(1.4) brightness(1.08) saturate(0.85) !important;
+}
+
+/* Pastikan reader dan videonya pas mengikuti kotak viewfinder di atas */
+#qr-reader,
+#qr-reader__scan_region {
+  border: none !important;
+  width: 100% !important;
+  height: 100% !important;
+  position: relative !important;
+  overflow: hidden;
+}
+
+/* html5-qrcode membuat video_wrapper inline-block; samakan agar penuh */
+#qr-reader video_wrapper,
+#qr-reader__video_wrapper {
+  display: block !important;
+  width: 100% !important;
+  height: 100% !important;
+  border-radius: inherit;
+  overflow: hidden;
+}
+
+/* Hilangkan elemen dekoratif/error bawaan html5-qrcode agar preview bersih */
+#qr-reader__dashboard_section,
+#qr-reader__status_span {
+  display: none !important;
+}
+
 /* Fallback: browser tanpa dukungan backdrop-filter tetap rapi */
 @supports not ((-webkit-backdrop-filter: blur(1px)) or (backdrop-filter: blur(1px))) {
   .glass-card.glass-card,
