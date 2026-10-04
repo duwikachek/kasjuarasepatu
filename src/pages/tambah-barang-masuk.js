@@ -917,9 +917,12 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     setScannerStatus('Meminta izin kamera...', 'info');
     showRetryButton(false);
 
-    // Reset state zoom & kamera
+    // Reset state zoom, kamera, dan senter
     scannerZoom = 1;
     useFrontCamera = scannerStartedOnce ? !useFrontCamera : false;
+    torchOn = false;
+    const torchBtn = document.getElementById('btn-scanner-torch');
+    if (torchBtn) torchBtn.classList.remove('bg-amber-500/70');
 
     const onSuccess = (decodedText) => {
       if (!scanDebouncer(decodedText)) return;
@@ -939,7 +942,7 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       // Beri jeda agar <video> benar-benar ter-render sebelum di-style
       setTimeout(() => {
         enhanceVideoElement('qr-reader');
-        applyTorch(true);
+        applyTorch(false); // Senter mati saat kamera pertama dibuka; nyala hanya jika user klik tombol senter
         setScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
         setScannerHint('');
         showRetryButton(false);
