@@ -6,7 +6,7 @@ export function renderPinLoginPage() {
     <div class="page-fade-in flex-1 flex flex-col justify-between px-6 pt-10 pb-8 min-h-screen bg-surface">
       <!-- Logo -->
       <div class="flex flex-col items-center text-center mt-2">
-        <div class="w-52 h-24 rounded-2xl bg-black flex items-center justify-center p-3 shadow-lg border border-neutral-800">
+        <div class="glass-dark glass-sheen w-52 h-24 rounded-2xl flex items-center justify-center p-3 shadow-lg">
           <img src="${logoJuara}" alt="Juara Sepatu" class="w-full h-full object-contain" />
         </div>
       </div>
@@ -19,12 +19,12 @@ export function renderPinLoginPage() {
           
           <!-- PIN Indicator Dots -->
           <div id="pin-indicator-group" class="flex items-center gap-3.5 mt-5">
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
-            <div class="w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
+            <div class="w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150"></div>
           </div>
           <span id="pin-error-msg" class="text-xs text-error font-medium mt-2 h-4 transition-all"></span>
         </div>
@@ -33,7 +33,7 @@ export function renderPinLoginPage() {
           ${[1, 2, 3, 4, 5, 6, 7, 8, 9].map((n) => `
             <button 
               type="button" 
-              class="pin-key h-14 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-keypad-num text-2xl font-semibold rounded-2xl shadow-sm active:translate-y-0.5 transition-all flex items-center justify-center border border-surface-container-high"
+              class="pin-key glass-card glass-btn glass-sheen h-14 text-on-surface font-keypad-num text-2xl font-semibold rounded-2xl flex items-center justify-center"
               data-val="${n}"
             >
               ${n}
@@ -43,14 +43,14 @@ export function renderPinLoginPage() {
           <button 
             type="button" 
             id="btn-forgot-pin"
-            class="h-14 bg-surface-container-low hover:bg-surface-container text-on-tertiary-container font-label-md text-xs font-semibold rounded-2xl flex items-center justify-center active:translate-y-0.5 transition-all"
+            class="h-14 glass-neutral glass-btn glass-sheen text-on-tertiary-container font-label-md text-xs font-semibold rounded-2xl flex items-center justify-center"
           >
             Lupa PIN?
           </button>
           
           <button 
             type="button" 
-            class="pin-key h-14 bg-surface-container-lowest hover:bg-surface-container text-on-surface font-keypad-num text-2xl font-semibold rounded-2xl shadow-sm active:translate-y-0.5 transition-all flex items-center justify-center border border-surface-container-high"
+            class="pin-key glass-card glass-btn glass-sheen h-14 text-on-surface font-keypad-num text-2xl font-semibold rounded-2xl flex items-center justify-center"
             data-val="0"
           >
             0
@@ -59,7 +59,7 @@ export function renderPinLoginPage() {
           <button 
             type="button" 
             id="btn-pin-backspace"
-            class="h-14 bg-surface-container-low hover:bg-surface-container text-on-surface rounded-2xl flex items-center justify-center active:translate-y-0.5 transition-all"
+            class="h-14 glass-neutral glass-btn glass-sheen text-on-surface rounded-2xl flex items-center justify-center"
             aria-label="Hapus Digit"
           >
             <span class="material-symbols-outlined text-2xl">backspace</span>
@@ -82,7 +82,7 @@ export function initPinLoginPage(router, store) {
       if (idx < pin.length) {
         dot.className = 'w-3.5 h-3.5 rounded-full bg-on-tertiary-container shadow-sm transform scale-110 transition-all duration-150';
       } else {
-        dot.className = 'w-3.5 h-3.5 rounded-full bg-surface-container-high transition-all duration-150';
+        dot.className = 'w-3.5 h-3.5 rounded-full glass-chip transition-all duration-150';
       }
     });
 

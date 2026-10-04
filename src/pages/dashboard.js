@@ -122,7 +122,7 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             data-action="tambah-masuk"
-            class="glass-primary glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-white font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
+            class="glass-primary glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-primary-btn font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
           >
             <span class="material-symbols-outlined text-[20px]">add_circle</span>
             <span>+ Kas Masuk</span>

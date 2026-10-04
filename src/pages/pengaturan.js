@@ -21,13 +21,13 @@ export function renderPengaturanPage(store) {
 
       <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-4">
         <!-- Modal / Saldo Kas Awal Toko Card -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
               <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
               <h3 class="font-title-ledger text-sm font-bold text-on-surface">Modal / Saldo Kas Awal Toko</h3>
             </div>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full bg-surface-container text-primary font-bold">Saldo Awal</span>
+            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-primary font-bold">Saldo Awal</span>
           </div>
           
           <p class="text-xs text-on-surface-variant leading-relaxed">
@@ -46,7 +46,7 @@ export function renderPengaturanPage(store) {
                   id="input-initial-laci" 
                   inputmode="numeric"
                   value="${formatRupiah(initialLaci, '')}" 
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-base font-tabular border border-surface-container-high focus:outline-primary"
+                  class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-bold text-base font-tabular focus:outline-primary"
                   placeholder="0"
                 />
               </div>
@@ -63,14 +63,14 @@ export function renderPengaturanPage(store) {
                   id="input-initial-bank" 
                   inputmode="numeric"
                   value="${formatRupiah(initialBank, '')}" 
-                  class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-base font-tabular border border-surface-container-high focus:outline-primary"
+                  class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-bold text-base font-tabular focus:outline-primary"
                   placeholder="0"
                 />
               </div>
             </div>
 
             <!-- Total Preview & Quick 0 Button -->
-            <div class="bg-surface-container-low/70 rounded-xl p-3 flex items-center justify-between border border-surface-container-high/60">
+            <div class="glass-panel rounded-xl p-3 flex items-center justify-between">
               <div class="flex flex-col">
                 <span class="text-[11px] text-on-surface-variant">Total Saldo Kas Awal</span>
                 <span id="preview-total-initial" class="text-base font-bold text-primary font-tabular">
@@ -80,7 +80,7 @@ export function renderPengaturanPage(store) {
               <button 
                 type="button" 
                 id="btn-set-zero-initial" 
-                class="px-2.5 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-semibold active:scale-95 transition-all border border-surface-container-high shadow-xs"
+                class="px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface text-xs font-semibold"
                 title="Atur modal awal menjadi 0 rupiah"
               >
                 Setel ke Rp 0
@@ -90,7 +90,7 @@ export function renderPengaturanPage(store) {
             <button 
               type="button" 
               id="btn-save-initial-balance" 
-              class="mt-1 w-full py-2.5 rounded-xl bg-primary-container text-white font-label-md text-xs font-bold active:scale-[0.99] shadow-sm flex items-center justify-center gap-1.5 bevel-primary"
+              class="mt-1 w-full py-2.5 rounded-xl glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <span class="material-symbols-outlined text-[16px]">save</span>
               <span>Simpan Saldo Kas Awal</span>
@@ -99,7 +99,7 @@ export function renderPengaturanPage(store) {
         </section>
 
         <!-- Profil Toko Form Card -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-[20px]">store</span>
             <h3 class="font-title-ledger text-sm font-bold text-on-surface">Profil Toko Sepatu</h3>
@@ -112,7 +112,7 @@ export function renderPengaturanPage(store) {
                 type="text" 
                 id="input-shop-name" 
                 value="${shop.name}" 
-                class="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high"
+                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
@@ -122,7 +122,7 @@ export function renderPengaturanPage(store) {
                 type="text" 
                 id="input-shop-owner" 
                 value="${shop.owner || 'Pak Hendra'}" 
-                class="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high"
+                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
@@ -132,14 +132,14 @@ export function renderPengaturanPage(store) {
                 type="text" 
                 id="input-shop-address" 
                 value="${shop.address || 'Jl. Veteran No. 45, Bandung'}" 
-                class="w-full px-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high"
+                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
             <button 
               type="button" 
               id="btn-save-shop-profile" 
-              class="mt-1 w-full py-2.5 rounded-xl bg-primary-container text-white font-label-md text-xs font-bold active:scale-[0.99] shadow-sm"
+              class="mt-1 w-full py-2.5 rounded-xl glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-xs font-bold"
             >
               Simpan Profil Toko
             </button>
@@ -147,13 +147,13 @@ export function renderPengaturanPage(store) {
         </section>
 
         <!-- Keamanan & PIN -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-[20px]">security</span>
             <h3 class="font-title-ledger text-sm font-bold text-on-surface">Keamanan & Akses Kasir</h3>
           </div>
 
-          <div class="flex flex-col gap-2 divide-y divide-surface-container-low">
+          <div class="flex flex-col gap-2 divide-y divide-white/45">
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
                 <span class="font-label-md text-xs font-semibold text-on-surface">PIN Masuk Toko</span>
@@ -162,7 +162,7 @@ export function renderPengaturanPage(store) {
               <button 
                 type="button" 
                 id="btn-change-pin"
-                class="px-3 py-1.5 rounded-lg bg-surface-container text-primary font-label-md text-xs font-semibold hover:bg-surface-container-high active:scale-95"
+                class="px-3 py-1.5 rounded-lg glass-chip-btn text-primary font-label-md text-xs font-semibold"
               >
                 Ubah PIN
               </button>
@@ -176,16 +176,16 @@ export function renderPengaturanPage(store) {
               <button 
                 type="button" 
                 id="btn-lock-app"
-                class="px-3 py-1.5 rounded-lg bg-rose-100 text-rose-800 font-label-md text-xs font-semibold hover:bg-rose-200 active:scale-95 flex items-center gap-1"
+                class="px-3 py-1.5 rounded-lg glass-rose text-rose-800 font-label-md text-xs font-semibold flex items-center gap-1"
             </div>
           </div>
         </section>
 
         <!-- Integrasi Google Spreadsheet Card -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-emerald-300/80 flex flex-col gap-3 relative overflow-hidden" id="section-google-sheets">
+        <section class="glass-emerald glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-google-sheets">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-xl bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0">
+              <div class="w-8 h-8 rounded-xl glass-emerald text-emerald-900 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-[20px]">table_chart</span>
               </div>
               <div>
@@ -193,13 +193,13 @@ export function renderPengaturanPage(store) {
                 <p class="text-[11px] text-on-surface-variant">Kirim & sinkronkan data kas langsung ke Google Sheets</p>
               </div>
             </div>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 font-bold border border-emerald-300">
+            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-emerald-800 font-bold">
               Google Cloud API
             </span>
           </div>
 
           <!-- Email Service Account Box -->
-          <div class="bg-emerald-50/70 border border-emerald-200/80 rounded-xl p-3 flex flex-col gap-1.5">
+          <div class="glass-emerald rounded-xl p-3 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <span class="text-[10px] text-emerald-900 font-bold uppercase tracking-wider flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">shield_person</span>
@@ -208,7 +208,7 @@ export function renderPengaturanPage(store) {
               <button 
                 type="button" 
                 id="btn-copy-service-email" 
-                class="px-2 py-0.5 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-[10px] font-bold active:scale-95 transition-all flex items-center gap-1 shadow-xs"
+                class="px-2 py-0.5 rounded-lg glass-emerald text-emerald-900 text-[10px] font-bold flex items-center gap-1"
               >
                 <span class="material-symbols-outlined text-[12px]">content_copy</span>
                 <span>Salin Email</span>
@@ -223,7 +223,7 @@ export function renderPengaturanPage(store) {
           </div>
 
           <!-- Kredensial Service Account JSON / Key Box -->
-          <div class="bg-surface-container-low border border-surface-container-high rounded-xl p-3 flex flex-col gap-2">
+          <div class="glass-panel rounded-xl p-3 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-on-surface flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'text-emerald-600' : 'text-amber-500')}">
@@ -231,7 +231,7 @@ export function renderPengaturanPage(store) {
                 </span>
                 Kunci Service Account (Google Cloud)
               </span>
-              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800')}">
+              <span class="text-[10px] font-bold px-2 py-0.5 rounded-full glass-chip ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'text-emerald-800' : 'text-amber-800')}">
                 ${((getCredentials(store) && getCredentials(store).client_email && !getCredentials(store).client_email.includes('your-service-account')) ? 'Aktif' : 'Perlu Diisi')}
               </span>
             </div>
@@ -243,7 +243,7 @@ export function renderPengaturanPage(store) {
             </p>
 
             <div class="flex items-center gap-2 mt-1">
-              <label class="flex-1 cursor-pointer py-2 px-3 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs">
+              <label class="flex-1 cursor-pointer py-2 px-3 rounded-lg glass-emerald text-emerald-900 text-xs font-bold flex items-center justify-center gap-1.5">
                 <input type="file" id="input-upload-sa-json" accept=".json" class="hidden"/>
                 <span class="material-symbols-outlined text-[15px]">upload_file</span>
                 <span>Unggah service-account.json</span>
@@ -252,7 +252,7 @@ export function renderPengaturanPage(store) {
               <button 
                 type="button" 
                 id="btn-toggle-sa-paste" 
-                class="py-2 px-3 rounded-lg border border-surface-container-high bg-surface-container text-on-surface text-xs font-bold hover:bg-surface-container-highest active:scale-95 transition-all"
+                class="py-2 px-3 rounded-lg glass-chip-btn text-on-surface text-xs font-bold"
               >
                 Tempel Teks
               </button>
@@ -261,7 +261,7 @@ export function renderPengaturanPage(store) {
                 <button 
                   type="button" 
                   id="btn-clear-sa-json" 
-                  class="py-2 px-2.5 rounded-lg border border-rose-200 bg-rose-50 text-rose-700 hover:bg-rose-100 text-xs font-bold active:scale-95 transition-all" 
+                  class="py-2 px-2.5 rounded-lg glass-rose text-rose-800 text-xs font-bold" 
                   title="Hapus Kunci Tersimpan"
                 >
                   <span class="material-symbols-outlined text-[15px]">delete</span>
@@ -270,17 +270,17 @@ export function renderPengaturanPage(store) {
             </div>
 
             <!-- Paste Box Area -->
-            <div id="box-paste-sa" class="hidden flex flex-col gap-2 mt-2 pt-2 border-t border-surface-container-high">
+            <div id="box-paste-sa" class="hidden flex flex-col gap-2 mt-2 pt-2 border-t border-white/45">
               <textarea 
                 id="textarea-sa-json" 
                 rows="4" 
-                class="w-full p-2.5 rounded-lg bg-surface-container-lowest font-mono text-[11px] text-on-surface border border-surface-container-high focus:outline-emerald-600" 
+                class="w-full p-2.5 rounded-lg glass-input font-mono text-[11px] text-on-surface focus:outline-emerald-600" 
                 placeholder="Tempel seluruh isi file service-account.json di sini..."
               ></textarea>
               <button 
                 type="button" 
                 id="btn-save-pasted-sa" 
-                class="py-2 rounded-lg bg-emerald-700 hover:bg-emerald-800 text-white text-xs font-bold active:scale-95 transition-all flex items-center justify-center gap-1"
+                class="py-2 rounded-lg glass-emerald text-emerald-900 text-xs font-bold flex items-center justify-center gap-1"
               >
                 <span class="material-symbols-outlined text-[14px]">save</span>
                 <span>Simpan Kunci</span>
@@ -298,13 +298,13 @@ export function renderPengaturanPage(store) {
               type="text" 
               id="input-spreadsheet-id"
               value="${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) || ''}"
-              class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-xs border border-surface-container-high focus:outline-emerald-600"
+              class="glass-input w-full px-3.5 py-2.5 rounded-xl text-on-surface font-body-md text-xs focus:outline-emerald-600"
               placeholder="Tempel link Google Spreadsheet (URL penuh) atau ID-nya di sini..."
             />
           </div>
 
           <!-- Toggle Auto-Sync -->
-          <div class="flex items-center justify-between p-2.5 rounded-xl bg-surface-container-low border border-surface-container-high/60">
+          <div class="flex items-center justify-between p-2.5 rounded-xl glass-panel">
             <div class="flex flex-col">
               <span class="font-bold text-xs text-on-surface">Auto-Sync Otomatis</span>
               <span class="text-[10px] text-on-surface-variant">Kirim otomatis saat ada perubahan transaksi</span>
@@ -313,7 +313,7 @@ export function renderPengaturanPage(store) {
               <input type="checkbox" id="check-auto-sync" class="sr-only peer" ${
                 (store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().autoSync) ? 'checked' : ''
               }>
-              <div class="w-11 h-6 bg-surface-container-high peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
+              <div class="w-11 h-6 bg-white/45 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-emerald-600"></div>
             </label>
           </div>
 
@@ -342,7 +342,7 @@ export function renderPengaturanPage(store) {
             <button 
               type="button" 
               id="btn-test-sheets-conn" 
-              class="py-2.5 px-3 rounded-xl border border-surface-container-highest bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-xs"
+              class="py-2.5 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <span class="material-symbols-outlined text-[16px]">sensors</span>
               <span>Tes Koneksi</span>
@@ -350,7 +350,7 @@ export function renderPengaturanPage(store) {
             <button 
               type="button" 
               id="btn-sync-sheets-now" 
-              class="py-2.5 px-3 rounded-xl bg-emerald-700 hover:bg-emerald-800 text-white font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm"
+              class="py-2.5 px-3 rounded-xl glass-emerald text-emerald-900 font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
             >
               <span class="material-symbols-outlined text-[16px]" id="icon-sync-btn">cloud_upload</span>
               <span id="text-sync-btn">Sinkronkan Sekarang</span>
@@ -359,7 +359,7 @@ export function renderPengaturanPage(store) {
         </section>
 
         <!-- Backup & Restore Data -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
           <div class="flex items-center gap-2">
             <span class="material-symbols-outlined text-primary text-[20px]">cloud_sync</span>
             <h3 class="font-title-ledger text-sm font-bold text-on-surface">Cadangan & Pemulihan Data</h3>
@@ -369,14 +369,14 @@ export function renderPengaturanPage(store) {
             <button 
               type="button" 
               id="btn-export-json"
-              class="py-3 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center active:scale-95 shadow-sm border border-surface-container-high"
+              class="py-3 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center"
             >
               <span class="material-symbols-outlined text-[20px] text-primary">download</span>
               <span>Cadangkan Data (JSON)</span>
             </button>
 
             <label 
-              class="cursor-pointer py-3 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center active:scale-95 shadow-sm border border-surface-container-high"
+              class="cursor-pointer py-3 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center"
             >
               <input type="file" id="input-import-json" accept=".json" class="hidden"/>
               <span class="material-symbols-outlined text-[20px] text-primary">upload</span>
@@ -387,7 +387,7 @@ export function renderPengaturanPage(store) {
           <button 
             type="button" 
             id="btn-force-update"
-            class="w-full py-2.5 rounded-xl border border-primary/30 bg-surface-container text-primary hover:bg-surface-container-high font-label-md text-xs font-bold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 shadow-xs"
+            class="w-full py-2.5 rounded-xl glass-primary text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
           >
             <span class="material-symbols-outlined text-[16px]">sync</span>
             <span>Perbarui Aplikasi & Bersihkan Cache</span>
@@ -396,7 +396,7 @@ export function renderPengaturanPage(store) {
           <button 
             type="button" 
             id="btn-purge-sample"
-            class="w-full py-2.5 rounded-xl border border-amber-300 text-amber-900 bg-amber-50 hover:bg-amber-100 font-label-md text-xs font-semibold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5 shadow-xs"
+            class="w-full py-2.5 rounded-xl glass-amber text-amber-900 font-label-md text-xs font-semibold flex items-center justify-center gap-1.5"
           >
             <span class="material-symbols-outlined text-[16px]">cleaning_services</span>
             <span>Hapus Data Contoh (Dummy)</span>
@@ -405,7 +405,7 @@ export function renderPengaturanPage(store) {
           <button 
             type="button" 
             id="btn-reset-data"
-            class="w-full py-2.5 rounded-xl border border-rose-300 text-rose-800 hover:bg-rose-50 font-label-md text-xs font-semibold active:scale-[0.99] transition-all flex items-center justify-center gap-1.5"
+            class="w-full py-2.5 rounded-xl glass-rose text-rose-900 font-label-md text-xs font-semibold flex items-center justify-center gap-1.5"
           >
             <span class="material-symbols-outlined text-[16px]">delete_sweep</span>
             <span>Kosongkan Semua Data</span>

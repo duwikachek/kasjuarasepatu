@@ -22,12 +22,12 @@ function renderSaleItemCard(item, index, totalItems) {
   const num = index + 1;
   const priceVal = item.price ? formatRupiah(item.price, '') : '';
   return `
-    <div class="sale-item-card bg-surface-container-lowest rounded-2xl p-3.5 shadow-sm border border-surface-container-high flex flex-col gap-2.5" data-sale-item-id="${item.id}">
-      <div class="flex items-center justify-between border-b border-surface-container-high/60 pb-2">
+ <div class="sale-item-card glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5" data-sale-item-id="${item.id}">
+      <div class="flex items-center justify-between border-b border-white/45 pb-2">
         <div class="flex items-center gap-2">
           <span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">${num}</span>
           <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Sepatu #${num}</span>
-          ${item.barcode ? `<span class="font-mono text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded">${item.barcode}</span>` : ''}
+ ${item.barcode ? `<span class="font-mono text-[10px] text-on-surface-variant glass-chip px-1.5 py-0.5 rounded">${item.barcode}</span>` : ''}
         </div>
         ${totalItems > 1 ? `<button type="button" class="btn-remove-sale-item text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-rose-50 active:scale-95 transition-all" data-sale-item-id="${item.id}"><span class="material-symbols-outlined text-[15px]">delete</span><span>Hapus</span></button>` : ''}
       </div>
@@ -42,7 +42,7 @@ function renderSaleItemCard(item, index, totalItems) {
             <span class="absolute left-3 top-2.5 text-on-surface-variant pointer-events-none"><span class="material-symbols-outlined text-[17px]">qr_code</span></span>
             <input 
               type="text" 
-              class="sale-item-barcode w-full pl-9 pr-8 py-2 rounded-xl bg-surface-container-low text-on-surface font-mono text-sm font-semibold border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
+ class="sale-item-barcode w-full pl-9 pr-8 py-2 rounded-xl glass-input text-on-surface font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
               placeholder="Scan / ketik / pilih dari stok..." 
               value="${item.barcode || ''}" 
               data-sale-item-id="${item.id}"
@@ -59,7 +59,7 @@ function renderSaleItemCard(item, index, totalItems) {
           </div>
           <button 
             type="button" 
-            class="btn-sale-item-camera px-3 py-2 rounded-xl bg-primary-container hover:bg-tertiary text-white font-label-md text-xs font-bold flex items-center gap-1 bevel-primary active:scale-95 shadow-sm shrink-0" 
+ class="btn-sale-item-camera px-3 py-2 rounded-xl glass-primary glass-btn text-primary-btn font-label-md text-xs font-bold flex items-center gap-1 shrink-0" 
             data-sale-item-id="${item.id}"
             title="Scan Barcode via Kamera HP"
           >
@@ -70,7 +70,7 @@ function renderSaleItemCard(item, index, totalItems) {
 
         <!-- DROPDOWN POPUP LIST SEPATU DI STOK (BELUM TERJUAL) -->
         <div 
-          class="stock-dropdown-popup hidden absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto bg-surface-container-lowest border-2 border-primary/40 rounded-2xl shadow-2xl p-1.5 flex flex-col gap-1 transition-all" 
+ class="stock-dropdown-popup hidden absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto glass-sheet rounded-2xl p-1.5 flex flex-col gap-1 transition-all" 
           data-sale-item-id="${item.id}"
         >
         </div>
@@ -84,7 +84,7 @@ function renderSaleItemCard(item, index, totalItems) {
       <div class="flex items-center gap-2">
         <div class="relative flex-1">
           <span class="absolute left-3 top-2.5 text-xs text-on-surface-variant font-bold">Rp</span>
-          <input type="text" class="sale-item-price w-full pl-8 pr-3 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-sm font-tabular border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" placeholder="Harga jual..." value="${priceVal}" inputmode="numeric" data-sale-item-id="${item.id}" />
+ <input type="text" class="sale-item-price w-full pl-8 pr-3 py-2 rounded-xl glass-input text-on-surface font-bold text-sm font-tabular focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" placeholder="Harga jual..." value="${priceVal}" inputmode="numeric" data-sale-item-id="${item.id}" />
         </div>
         <span class="text-[10px] text-on-surface-variant font-semibold shrink-0">Harga Jual</span>
       </div>
@@ -129,13 +129,13 @@ export function renderTambahTransaksiPage(store, params = {}) {
       <form id="form-tambah-trx" novalidate class="flex flex-col w-full px-4 pt-3 pb-24 gap-4">
         <input type="hidden" id="edit-trx-id" value="${isEdit ? params.editId : ''}" />
 
-        <div class="w-full bg-surface-container-low p-1.5 rounded-xl shadow-inner flex items-center gap-1.5 border border-surface-container-high/60">
-          <button type="button" id="btn-switch-masuk" class="flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${initialType === 'masuk' ? 'bg-surface-container-lowest shadow-sm text-primary font-bold' : 'text-on-surface-variant'}">
-            <span class="w-5 h-5 rounded-full ${initialType === 'masuk' ? 'bg-secondary-fixed text-primary' : 'bg-surface-container text-on-surface-variant'} flex items-center justify-center"><span class="material-symbols-outlined text-[14px]">arrow_downward</span></span>
+ <div class="w-full glass-track p-1.5 rounded-xl flex items-center gap-1.5">
+ <button type="button" id="btn-switch-masuk" class="flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${initialType === 'masuk' ? 'glass-seg-active text-primary font-bold' : 'text-on-surface-variant'}">
+ <span class="w-5 h-5 rounded-full ${initialType === 'masuk' ? 'bg-secondary-fixed text-primary' : 'glass-chip text-on-surface-variant'} flex items-center justify-center"><span class="material-symbols-outlined text-[14px]">arrow_downward</span></span>
             <span class="font-label-md text-xs font-bold">+ Kas Masuk (Jual)</span>
           </button>
-          <button type="button" id="btn-switch-keluar" class="flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${initialType === 'keluar' ? 'bg-surface-container-lowest shadow-sm text-rose-800 font-bold' : 'text-on-surface-variant'}">
-            <span class="w-5 h-5 rounded-full ${initialType === 'keluar' ? 'bg-rose-100 text-rose-800' : 'bg-surface-container text-on-surface-variant'} flex items-center justify-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span></span>
+ <button type="button" id="btn-switch-keluar" class="flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 ${initialType === 'keluar' ? 'glass-seg-active text-rose-800 font-bold' : 'text-on-surface-variant'}">
+ <span class="w-5 h-5 rounded-full ${initialType === 'keluar' ? 'bg-rose-100 text-rose-800' : 'glass-chip text-on-surface-variant'} flex items-center justify-center"><span class="material-symbols-outlined text-[14px]">arrow_upward</span></span>
             <span class="font-label-md text-xs font-medium">- Kas Keluar</span>
           </button>
         </div>
@@ -143,7 +143,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
         <!-- KAS MASUK -->
         <div id="masuk-wrapper" class="${initialType === 'masuk' ? 'flex' : 'hidden'} flex-col gap-4">
           <!-- TANGGAL TRANSAKSI KAS MASUK -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label for="input-trx-date-masuk" class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
@@ -155,21 +155,21 @@ export function renderTambahTransaksiPage(store, params = {}) {
               type="date" 
               id="input-trx-date-masuk" 
               value="${defaultDate}" 
-              class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
+ class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
               required
             />
           </div>
 
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">person</span><span>Nama Pembeli</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Pelanggan Toko</span>
             </div>
-            <input type="text" id="input-buyer-name" placeholder="Contoh: Mas Budi / Kak Anisa..." value="${defaultBuyer}" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" />
+ <input type="text" id="input-buyer-name" placeholder="Contoh: Mas Budi / Kak Anisa..." value="${defaultBuyer}" class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" />
           </div>
 
           <!-- MULTI-ITEM CART -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-primary/20 flex flex-col gap-3">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
@@ -182,7 +182,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
             </div>
 
             <!-- Total Penjualan -->
-            <div class="flex items-center justify-between bg-surface-container-low px-4 py-3 rounded-xl border border-surface-container-high">
+ <div class="flex items-center justify-between glass-panel px-4 py-3 rounded-xl">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[18px]">calculate</span>
                 <span class="font-label-md text-xs text-on-surface font-semibold">Total Penjualan</span>
@@ -199,32 +199,32 @@ export function renderTambahTransaksiPage(store, params = {}) {
           </div>
 
           <!-- ONGKIR -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">local_shipping</span><span>Ongkir / Pengiriman</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Pilih Layanan</span>
             </div>
             <div class="grid grid-cols-3 gap-2">
-              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border-2 ${defaultOngkir === 'FO' ? 'border-primary bg-secondary-container text-primary shadow-sm' : 'border-surface-container-high bg-surface-container-low text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="FO" ${defaultOngkir === 'FO' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight">FO</span><span class="text-[10px]">Free Ongkir</span></label>
-              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border ${defaultOngkir === 'COD' ? 'border-2 border-primary bg-secondary-container text-primary shadow-sm' : 'border-surface-container-high bg-surface-container-low text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="COD" ${defaultOngkir === 'COD' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight text-on-surface">COD</span><span class="text-[10px] text-on-surface-variant">Bayar di Tempat</span></label>
-              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border ${defaultOngkir === 'SHOPEE' ? 'border-2 border-primary bg-secondary-container text-primary shadow-sm' : 'border-surface-container-high bg-surface-container-low text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="SHOPEE" ${defaultOngkir === 'SHOPEE' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight text-on-surface">SHOPEE</span><span class="text-[10px] text-on-surface-variant">Marketplace</span></label>
+              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border-2 ${defaultOngkir === 'FO' ? 'glass-chip-btn text-primary border-2 border-primary' : 'glass-chip-btn text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="FO" ${defaultOngkir === 'FO' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight">FO</span><span class="text-[10px]">Free Ongkir</span></label>
+              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border ${defaultOngkir === 'COD' ? 'glass-chip-btn border-2 border-primary text-primary' : 'glass-chip-btn text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="COD" ${defaultOngkir === 'COD' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight text-on-surface">COD</span><span class="text-[10px] text-on-surface-variant">Bayar di Tempat</span></label>
+              <label class="ongkir-radio-card cursor-pointer p-2.5 rounded-xl border ${defaultOngkir === 'SHOPEE' ? 'glass-chip-btn border-2 border-primary text-primary' : 'glass-chip-btn text-on-surface-variant'} flex flex-col items-center justify-center text-center transition-all"><input type="radio" name="ongkirOption" value="SHOPEE" ${defaultOngkir === 'SHOPEE' ? 'checked' : ''} class="hidden" /><span class="font-label-md text-sm font-bold tracking-tight text-on-surface">SHOPEE</span><span class="text-[10px] text-on-surface-variant">Marketplace</span></label>
             </div>
           </div>
 
           <!-- NOTE -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">edit_note</span><span>Note</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Catatan Transaksi</span>
             </div>
-            <input type="text" id="input-notes" placeholder="Catatan tambahan..." value="${defaultNote}" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" />
+ <input type="text" id="input-notes" placeholder="Catatan tambahan..." value="${defaultNote}" class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" />
           </div>
         </div>
 
         <!-- KAS KELUAR -->
         <div id="keluar-wrapper" class="${initialType === 'keluar' ? 'flex' : 'hidden'} flex-col gap-4">
           <!-- TANGGAL TRANSAKSI KAS KELUAR -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label for="input-trx-date-keluar" class="font-label-md text-xs text-rose-950 font-bold flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-rose-700 text-[18px]">calendar_today</span>
@@ -236,28 +236,28 @@ export function renderTambahTransaksiPage(store, params = {}) {
               type="date" 
               id="input-trx-date-keluar" 
               value="${defaultDate}" 
-              class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all" 
+ class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all" 
               required
             />
           </div>
 
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-rose-950 font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-rose-700 text-[18px]">category</span><span>Kategori Pengeluaran</span></label>
               <span id="selected-kategori-label" class="font-label-sm text-[10px] bg-rose-100 text-rose-900 border border-rose-300 px-2 py-0.5 rounded-full font-bold">${defaultCategory}</span>
             </div>
             <div class="grid grid-cols-2 gap-2" id="kategori-keluar-grid">
-              ${KATEGORI_KELUAR.map((cat) => { const a = cat.label === defaultCategory; return '<button type="button" data-cat-keluar="' + cat.label + '" class="btn-cat-keluar p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all ' + (a ? 'border-2 border-rose-600 bg-rose-50 text-rose-950 font-bold shadow-sm' : 'border-surface-container-high bg-surface-container-low text-on-surface-variant hover:bg-surface-container') + '"><div class="w-7 h-7 rounded-lg ' + (a ? 'bg-rose-200 text-rose-900' : 'bg-surface-container text-on-surface-variant') + ' flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[15px]">' + cat.icon + '</span></div><div class="flex flex-col min-w-0"><span class="font-label-md text-[11px] leading-tight truncate">' + cat.label + '</span><span class="text-[9px] text-on-surface-variant/80 truncate leading-tight">' + cat.desc + '</span></div></button>'; }).join('')}
+ ${KATEGORI_KELUAR.map((cat) => { const a = cat.label === defaultCategory; return '<button type="button" data-cat-keluar="' + cat.label + '" class="btn-cat-keluar p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all ' + (a ? 'border-2 border-rose-600 bg-rose-50 text-rose-950 font-bold ' : ' text-on-surface-variant hover:') + '"><div class="w-7 h-7 rounded-lg ' + (a ? 'bg-rose-200 text-rose-900' : 'glass-chip text-on-surface-variant') + ' flex items-center justify-center shrink-0"><span class="material-symbols-outlined text-[15px]">' + cat.icon + '</span></div><div class="flex flex-col min-w-0"><span class="font-label-md text-[11px] leading-tight truncate">' + cat.label + '</span><span class="text-[9px] text-on-surface-variant/80 truncate leading-tight">' + cat.desc + '</span></div></button>'; }).join('')}
             </div>
           </div>
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-rose-700 text-[18px]">description</span><span>Keterangan Pengeluaran</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Rincian</span>
             </div>
-            <input type="text" id="input-keluar-keterangan" placeholder="Contoh: Ongkir Shopee order #9921..." value="${defaultKeterangan}" class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all" />
+ <input type="text" id="input-keluar-keterangan" placeholder="Contoh: Ongkir Shopee order #9921..." value="${defaultKeterangan}" class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-rose-400 transition-all" />
           </div>
-          <div class="w-full bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2">
+ <div class="w-full glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <span class="font-label-sm text-[11px] text-on-surface-variant uppercase tracking-wider font-semibold">Nominal Pengeluaran (IDR)</span>
               <span class="font-label-sm text-[11px] px-2 py-0.5 rounded-full bg-rose-100 text-rose-900 border border-rose-200 font-semibold">Pengeluaran Toko</span>
@@ -266,27 +266,27 @@ export function renderTambahTransaksiPage(store, params = {}) {
               <span class="font-headline-sm text-xl text-on-surface-variant font-bold">Rp</span>
               <input type="text" id="input-nominal" inputmode="numeric" value="${defaultNominalKeluar}" class="font-currency-display text-3xl font-bold text-rose-700 bg-transparent focus:outline-none w-full tracking-tight select-all font-tabular" placeholder="0" />
             </div>
-            <div class="h-0.5 w-full bg-surface-container-high rounded-full my-1"></div>
+            <div class="h-0.5 w-full bg-white/50 rounded-full my-1"></div>
             <div class="flex items-center gap-1.5 overflow-x-auto pb-1 -mx-1 px-1">
-              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-xs hover:bg-surface-container transition-all active:scale-95 shadow-sm border border-surface-container-high/60" data-add="10000">+10.000</button>
-              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-xs hover:bg-surface-container transition-all active:scale-95 shadow-sm border border-surface-container-high/60" data-add="50000">+50.000</button>
-              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-xs hover:bg-surface-container transition-all active:scale-95 shadow-sm border border-surface-container-high/60" data-add="100000">+100.000</button>
-              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container-low text-on-surface font-label-sm text-xs hover:bg-surface-container transition-all active:scale-95 shadow-sm border border-surface-container-high/60" data-add="500000">+500.000</button>
-              <button type="button" id="btn-denom-reset" class="shrink-0 px-2.5 py-1.5 rounded-lg bg-surface-container text-on-surface-variant font-label-sm text-xs hover:bg-surface-container-high active:scale-95">Reset</button>
+              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface font-label-sm text-xs" data-add="10000">+10.000</button>
+              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface font-label-sm text-xs" data-add="50000">+50.000</button>
+              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface font-label-sm text-xs" data-add="100000">+100.000</button>
+              <button type="button" class="denom-chip shrink-0 px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface font-label-sm text-xs" data-add="500000">+500.000</button>
+ <button type="button" id="btn-denom-reset" class="shrink-0 px-2.5 py-1.5 rounded-lg glass-chip text-on-surface-variant font-label-sm text-xs active:scale-95">Reset</button>
             </div>
           </div>
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-rose-700 text-[18px]">receipt_long</span><span>Foto Bukti Transaksi</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Screenshot / Struk</span>
             </div>
             <input type="file" id="input-keluar-photo" accept="image/*" class="hidden" />
-            <label for="input-keluar-photo" id="keluar-photo-placeholder" class="${defaultPhoto ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-rose-400 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
+ <label for="input-keluar-photo" id="keluar-photo-placeholder" class="${defaultPhoto ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed hover:border-rose-400 glass-panel cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
               <div class="w-12 h-12 rounded-full bg-rose-100 text-rose-800 flex items-center justify-center shadow-inner"><span class="material-symbols-outlined text-2xl">add_photo_alternate</span></div>
               <span class="font-label-md text-xs font-bold text-on-surface mt-1">Unggah Screenshot / Foto Bukti Transfer</span>
               <span class="font-body-sm text-[11px] text-on-surface-variant">Ketuk untuk memilih screenshot m-banking atau foto struk</span>
             </label>
-            <div id="keluar-photo-preview-box" class="${defaultPhoto ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-surface-container-high bg-black/5 shadow-sm">
+            <div id="keluar-photo-preview-box" class="${defaultPhoto ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-white/70 bg-black/5">
               <img id="keluar-photo-preview-img" src="${defaultPhoto}" alt="Bukti Transfer" class="w-full h-44 object-cover object-center" />
               <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between p-2 rounded-xl bg-black/60 backdrop-blur-md text-white">
                 <span class="font-label-sm text-[11px] font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-[16px] text-emerald-400">check_circle</span><span>SS Transfer Terlampir</span></span>
@@ -299,7 +299,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
           </div>
         </div>
 
-        <button type="submit" id="btn-submit-trx" class="w-full mt-1 h-14 ${initialType === 'masuk' ? 'bg-primary-container text-surface-bright' : 'bg-rose-800 text-white'} rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md">
+        <button type="submit" id="btn-submit-trx" class="w-full mt-1 h-14 ${initialType === 'masuk' ? 'glass-primary glass-btn glass-sheen text-primary-btn' : 'glass-rose glass-btn glass-sheen text-primary-btn'} rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2">
           <span class="material-symbols-outlined text-[22px]">save</span>
           <span id="btn-submit-text">${isEdit ? 'Simpan Perubahan' : (initialType === 'masuk' ? 'Simpan Kas Masuk' : 'Simpan Kas Keluar')}</span>
         </button>
@@ -390,21 +390,21 @@ export function initTambahTransaksiPage(router, store, params = {}) {
       if (dateMasukInput && dateKeluarInput && dateKeluarInput.value) {
         dateMasukInput.value = dateKeluarInput.value;
       }
-      if (btnMasuk) btnMasuk.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 bg-surface-container-lowest shadow-sm text-primary font-bold';
+ if (btnMasuk) btnMasuk.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 glass-seg-active text-primary font-bold';
       if (btnKeluar) btnKeluar.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-on-surface-variant';
       if (masukWrapper) masukWrapper.classList.remove('hidden');
       if (keluarWrapper) keluarWrapper.classList.add('hidden');
-      if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 bg-primary-container text-surface-bright rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md';
+      if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 glass-primary glass-btn glass-sheen text-primary-btn rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2';
       if (btnSubmitText) btnSubmitText.textContent = isEditMode ? 'Simpan Perubahan' : 'Simpan Kas Masuk';
     } else {
       if (dateMasukInput && dateKeluarInput && dateMasukInput.value) {
         dateKeluarInput.value = dateMasukInput.value;
       }
-      if (btnKeluar) btnKeluar.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 bg-surface-container-lowest shadow-sm text-rose-800 font-bold';
+ if (btnKeluar) btnKeluar.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 glass-seg-active text-rose-800 font-bold';
       if (btnMasuk) btnMasuk.className = 'flex-1 py-3 px-3 rounded-lg flex items-center justify-center gap-2 transition-all duration-200 text-on-surface-variant';
       if (masukWrapper) masukWrapper.classList.add('hidden');
       if (keluarWrapper) keluarWrapper.classList.remove('hidden');
-      if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 bg-rose-800 text-white rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md';
+      if (btnSubmit) btnSubmit.className = 'w-full mt-1 h-14 glass-rose glass-btn glass-sheen text-white rounded-2xl font-label-md text-base font-bold flex items-center justify-center gap-2';
       if (btnSubmitText) btnSubmitText.textContent = isEditMode ? 'Simpan Perubahan' : 'Simpan Kas Keluar';
     }
   }
@@ -642,7 +642,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     }
 
     popup.innerHTML = `
-      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-surface-container-high/60 text-[11px] font-bold text-primary bg-surface-container-low/40 rounded-t-xl">
+      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-white/45 text-[11px] font-bold text-primary glass-panel bg-white/40 rounded-t-xl">
         <span class="flex items-center gap-1">
           <span class="material-symbols-outlined text-[15px]">inventory_2</span>
           <span>Stok Tersedia (${filtered.length} Sepatu)</span>
@@ -653,17 +653,17 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         ${filtered.map((p) => `
           <button 
             type="button" 
-            class="btn-select-stock-item w-full text-left p-2 rounded-xl hover:bg-surface-container flex items-center gap-2.5 transition-all active:scale-[0.99] border border-transparent hover:border-surface-container-high" 
+            class="btn-select-stock-item w-full text-left p-2 rounded-xl glass-row flex items-center gap-2.5 transition-all active:scale-[0.99]" 
             data-barcode="${p.barcode}"
             data-sale-item-id="${itemId}"
           >
             ${p.photo ? `
-              <img src="${p.photo}" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" alt="Foto" />
+              <img src="${p.photo}" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/70" alt="Foto" />
             ` : ''}
             <div class="flex-1 min-w-0 flex flex-col">
               <span class="font-bold text-xs text-on-surface truncate">${p.name || 'Sepatu Tanpa Nama'}</span>
               <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant mt-0.5">
-                <span class="font-mono font-bold bg-surface-container-high px-1.5 py-0.2 rounded text-primary">${p.barcode}</span>
+                <span class="font-mono font-bold glass-chip px-1.5 py-0.2 rounded text-primary">${p.barcode}</span>
                 ${p.kondisi === 'Minus' ? '<span class="text-amber-700 font-bold bg-amber-50 px-1 rounded border border-amber-200">⚠ Minus</span>' : '<span class="text-emerald-700 font-bold bg-emerald-50 px-1 rounded border border-emerald-200">✓ Bagus</span>'}
               </div>
             </div>
@@ -843,9 +843,9 @@ export function initTambahTransaksiPage(router, store, params = {}) {
       selectedKategoriKeluar = btn.getAttribute('data-cat-keluar');
       if (selectedKategoriLabel) selectedKategoriLabel.textContent = selectedKategoriKeluar;
       catButtons.forEach((b) => {
-        b.className = 'btn-cat-keluar p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all border-surface-container-high bg-surface-container-low text-on-surface-variant hover:bg-surface-container';
+        b.className = 'btn-cat-keluar p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all glass-chip-btn text-on-surface-variant';
         const id2 = b.querySelector('div:first-of-type');
-        if (id2) id2.className = 'w-7 h-7 rounded-lg bg-surface-container text-on-surface-variant flex items-center justify-center shrink-0';
+ if (id2) id2.className = 'w-7 h-7 rounded-lg glass-chip text-on-surface-variant flex items-center justify-center shrink-0';
       });
       btn.className = 'btn-cat-keluar p-2.5 rounded-xl border text-left flex items-center gap-2 transition-all border-2 border-rose-600 bg-rose-50 text-rose-950 font-bold shadow-sm';
       const id2 = btn.querySelector('div:first-of-type');
@@ -901,7 +901,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   document.querySelectorAll('input[name="ongkirOption"]').forEach((radio) => {
     radio.addEventListener('change', () => {
       document.querySelectorAll('.ongkir-radio-card').forEach((card) => {
-        card.className = 'ongkir-radio-card cursor-pointer p-2.5 rounded-xl border border-surface-container-high bg-surface-container-low text-on-surface-variant flex flex-col items-center justify-center text-center transition-all';
+        card.className = 'ongkir-radio-card cursor-pointer p-2.5 rounded-xl border glass-chip-btn text-on-surface-variant flex flex-col items-center justify-center text-center transition-all';
         const ts = card.querySelector('span:first-of-type');
         if (ts) ts.className = 'font-label-md text-sm font-bold tracking-tight text-on-surface';
       });

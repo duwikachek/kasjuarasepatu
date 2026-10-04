@@ -160,17 +160,17 @@ export function renderLaporanPage(store, period = 'bulan') {
       <div class="flex flex-col w-full px-4 pt-3 pb-24 gap-4">
         <!-- Period Switcher Row 1 -->
         <div class="flex flex-col gap-2">
-          <div class="bg-surface-container-low p-1 rounded-xl flex items-center gap-1 shadow-inner border border-surface-container-high/60">
-            <button type="button" data-period="hari" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'hari' ? 'bg-surface-container-lowest text-on-surface font-bold shadow-sm' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+          <div class="glass-track p-1 rounded-xl flex items-center gap-1">
+            <button type="button" data-period="hari" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'hari' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
               Hari Ini
             </button>
-            <button type="button" data-period="minggu" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'minggu' ? 'bg-surface-container-lowest text-on-surface font-bold shadow-sm' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="minggu" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'minggu' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
               7 Hari
             </button>
-            <button type="button" data-period="bulan" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'bulan' ? 'bg-surface-container-lowest text-on-surface font-bold shadow-sm' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="bulan" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'bulan' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
               Bulan Ini
             </button>
-            <button type="button" data-period="semua" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'semua' ? 'bg-surface-container-lowest text-on-surface font-bold shadow-sm' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="semua" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'semua' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
               Semua
             </button>
           </div>
@@ -178,19 +178,19 @@ export function renderLaporanPage(store, period = 'bulan') {
           <!-- Period Switcher Row 2: Custom date/month pickers -->
           <div class="flex items-center gap-2">
             <button type="button" data-period="tanggal"
-              class="period-btn flex-1 py-1.5 px-3 rounded-xl border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-md text-xs transition-all flex items-center justify-center gap-1.5 hover:bg-surface-container hover:text-on-surface active:scale-95">
+              class="period-btn glass-chip-btn flex-1 py-1.5 px-3 rounded-xl text-on-surface-variant font-label-md text-xs flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-[15px]">calendar_today</span>
               <span id="btn-tanggal-label">Pilih Tanggal</span>
             </button>
             <button type="button" data-period="pilih-bulan"
-              class="period-btn flex-1 py-1.5 px-3 rounded-xl border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-md text-xs transition-all flex items-center justify-center gap-1.5 hover:bg-surface-container hover:text-on-surface active:scale-95">
+              class="period-btn glass-chip-btn flex-1 py-1.5 px-3 rounded-xl text-on-surface-variant font-label-md text-xs flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-[15px]">calendar_month</span>
               <span id="btn-bulan-label">Pilih Bulan</span>
             </button>
           </div>
 
           <!-- Date Picker Panel (hidden by default) -->
-          <div id="date-picker-panel" class="hidden bg-surface-container-lowest border border-surface-container-high rounded-2xl p-3.5 shadow-sm flex flex-col gap-2.5">
+          <div id="date-picker-panel" class="hidden glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <span class="font-bold text-xs text-on-surface flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
@@ -201,18 +201,18 @@ export function renderLaporanPage(store, period = 'bulan') {
               </button>
             </div>
             <input type="date" id="input-custom-date"
-              class="w-full px-3 py-2 rounded-xl bg-surface-container text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              class="glass-input w-full px-3 py-2 rounded-xl text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               value="${new Date().toISOString().split('T')[0]}"
             />
             <button type="button" id="btn-apply-date"
-              class="w-full py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm">
+              class="glass-primary glass-btn glass-sheen w-full py-2 rounded-xl text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-[16px]">check_circle</span>
               Tampilkan Laporan Tanggal Ini
             </button>
           </div>
 
           <!-- Month Picker Panel (hidden by default) -->
-          <div id="month-picker-panel" class="hidden bg-surface-container-lowest border border-surface-container-high rounded-2xl p-3.5 shadow-sm flex flex-col gap-2.5">
+          <div id="month-picker-panel" class="hidden glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5">
             <div class="flex items-center justify-between">
               <span class="font-bold text-xs text-on-surface flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
@@ -223,11 +223,11 @@ export function renderLaporanPage(store, period = 'bulan') {
               </button>
             </div>
             <input type="month" id="input-custom-month"
-              class="w-full px-3 py-2 rounded-xl bg-surface-container text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              class="glass-input w-full px-3 py-2 rounded-xl text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               value="${new Date().toISOString().slice(0, 7)}"
             />
             <button type="button" id="btn-apply-month"
-              class="w-full py-2 rounded-xl bg-primary text-on-primary font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 transition-all shadow-sm">
+              class="glass-primary glass-btn glass-sheen w-full py-2 rounded-xl text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5">
               <span class="material-symbols-outlined text-[16px]">check_circle</span>
               Tampilkan Laporan Bulan Ini
             </button>
@@ -238,7 +238,7 @@ export function renderLaporanPage(store, period = 'bulan') {
         <div id="laporan-dynamic-hero"></div>
 
         <!-- FITUR 1: Laporan Total Jumlah Sepatu Laku -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-emerald-200/80 flex flex-col gap-3 relative overflow-hidden" id="section-sepatu-laku">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-sepatu-laku">
           <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-emerald-500/10 pointer-events-none"></div>
           
           <div class="flex items-center justify-between">
@@ -246,23 +246,23 @@ export function renderLaporanPage(store, period = 'bulan') {
               <h3 class="font-bold text-sm text-on-surface">Laporan Sepatu Laku</h3>
               <p class="text-[11px] text-on-surface-variant">Total pasang & nominal penjualan sepatu</p>
             </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold border border-emerald-300">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-emerald text-emerald-900 text-[10px] font-bold">
               Terjual
             </span>
           </div>
 
           <!-- Total Pasang & Omset Grid -->
           <div class="grid grid-cols-2 gap-2.5 mt-1">
-            <div class="bg-emerald-50/80 border border-emerald-200/80 rounded-xl p-3 flex flex-col justify-between">
-              <span class="text-[10px] text-emerald-800 font-bold uppercase tracking-wider">Total Sepatu Laku</span>
+            <div class="glass-emerald rounded-xl p-3 flex flex-col justify-between">
+              <span class="text-[10px] text-emerald-900 font-bold uppercase tracking-wider">Total Sepatu Laku</span>
               <div class="flex items-baseline gap-1 mt-1">
-                <span id="stat-total-sepatu-laku" class="text-2xl font-extrabold text-emerald-900 font-tabular">0</span>
+                <span id="stat-total-sepatu-laku" class="text-2xl font-extrabold text-emerald-950 font-tabular">0</span>
                 <span class="text-xs font-bold text-emerald-800">Pasang</span>
               </div>
-              <span id="stat-count-trx-sepatu" class="text-[10px] text-emerald-700 mt-0.5">0 Transaksi Penjualan</span>
+              <span id="stat-count-trx-sepatu" class="text-[10px] text-emerald-800 mt-0.5">0 Transaksi Penjualan</span>
             </div>
 
-            <div class="bg-surface-container-low rounded-xl p-3 flex flex-col justify-between border border-surface-container-high">
+            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between">
               <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Total Omset Sepatu</span>
               <div class="mt-1">
                 <span id="stat-omset-sepatu" class="text-base font-bold text-primary font-tabular truncate block">+Rp 0</span>
@@ -273,7 +273,7 @@ export function renderLaporanPage(store, period = 'bulan') {
 
           <!-- Tombol Buka/Tutup Rincian Sepatu Laku -->
           <button type="button" id="btn-toggle-sepatu-list"
-            class="w-full py-2 px-3 rounded-xl bg-surface-container hover:bg-surface-container-high text-on-surface text-xs font-bold flex items-center justify-between transition-all border border-surface-container-high active:scale-[0.99] mt-0.5">
+            class="glass-chip-btn w-full py-2 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-[16px] text-emerald-700">list_alt</span>
               <span id="btn-toggle-sepatu-label">Lihat Rincian Sepatu Laku</span>
@@ -282,14 +282,14 @@ export function renderLaporanPage(store, period = 'bulan') {
           </button>
 
           <!-- Container Daftar Sepatu Laku (Collapsible) -->
-          <div id="container-daftar-sepatu-laku" class="hidden flex flex-col gap-2 pt-1 border-t border-surface-container-high/60"></div>
+          <div id="container-daftar-sepatu-laku" class="hidden flex flex-col gap-2 pt-1 border-t border-white/45"></div>
         </section>
 
         <!-- FITUR 2: Filter Total Pengeluaran Berdasarkan Kategori -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-rose-200/80 flex flex-col gap-3 relative overflow-hidden" id="section-kategori-pengeluaran">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-kategori-pengeluaran">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <div class="w-9 h-9 rounded-xl bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+              <div class="w-9 h-9 rounded-xl glass-rose text-rose-700 flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-[20px]">category</span>
               </div>
               <div>
@@ -297,7 +297,7 @@ export function renderLaporanPage(store, period = 'bulan') {
                 <p class="text-[11px] text-on-surface-variant">Filter & analisa biaya operasional toko</p>
               </div>
             </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold border border-rose-300">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-rose text-rose-900 text-[10px] font-bold">
               Kas Keluar
             </span>
           </div>
@@ -308,7 +308,7 @@ export function renderLaporanPage(store, period = 'bulan') {
           </div>
 
           <!-- Highlight Kategori Terpilih -->
-          <div class="bg-rose-50/70 border border-rose-200 rounded-xl p-3 flex items-center justify-between" id="expense-category-highlight">
+          <div class="glass-rose rounded-xl p-3 flex items-center justify-between" id="expense-category-highlight">
             <div class="flex flex-col min-w-0 pr-2">
               <div class="flex items-center gap-1.5">
                 <span class="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0" id="selected-cat-dot"></span>
@@ -324,7 +324,7 @@ export function renderLaporanPage(store, period = 'bulan') {
 
           <!-- Visual Bar Breakdown Proporsi Biaya -->
           <div class="flex flex-col gap-1.5 mt-0.5">
-            <div class="h-2.5 w-full bg-surface-container rounded-full overflow-hidden flex" id="expense-progress-bar">
+            <div class="h-2.5 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="expense-progress-bar">
               <!-- Colored segments populated by JS -->
             </div>
             <div class="flex items-center justify-between text-[10px] text-on-surface-variant">
@@ -334,7 +334,7 @@ export function renderLaporanPage(store, period = 'bulan') {
           </div>
 
           <!-- Daftar Rincian Transaksi Pengeluaran Sesuai Filter -->
-          <div class="flex flex-col gap-2 pt-2 border-t border-surface-container-high/60">
+          <div class="flex flex-col gap-2 pt-2 border-t border-white/45">
             <div class="flex items-center justify-between">
               <span class="text-xs font-bold text-on-surface">Rincian Transaksi Pengeluaran</span>
               <span class="text-[10px] text-on-surface-variant" id="expense-list-count">0 catatan</span>
@@ -346,7 +346,7 @@ export function renderLaporanPage(store, period = 'bulan') {
         </section>
 
         <!-- SVG Visual Arus Kas 7 Hari -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-primary text-[18px]">bar_chart</span>
@@ -385,18 +385,18 @@ export function renderLaporanPage(store, period = 'bulan') {
         </section>
 
         <!-- Rekapitulasi Belanja Stock -->
-        <section class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
           <div class="flex items-center justify-between">
             <h3 class="font-title-ledger text-sm font-bold text-on-surface">Rekap Pengadaan (Stock Sepatu)</h3>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full bg-secondary-container text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
+            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
           </div>
 
           <div class="grid grid-cols-2 gap-2 mt-1">
-            <div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
+            <div class="glass-panel rounded-xl p-2.5 flex flex-col">
               <span class="text-[10px] text-on-surface-variant">Total Belanja Stock</span>
               <span class="font-bold text-sm text-primary font-tabular mt-0.5">${formatRupiah(totalBelanja)}</span>
             </div>
-            <div class="bg-surface-container-low p-2.5 rounded-xl flex flex-col">
+            <div class="glass-panel rounded-xl p-2.5 flex flex-col">
               <span class="text-[10px] text-on-surface-variant">Total Sepatu Masuk</span>
               <span class="font-bold text-sm text-primary font-tabular mt-0.5">${totalItems} Pasang</span>
             </div>
@@ -407,7 +407,7 @@ export function renderLaporanPage(store, period = 'bulan') {
         <button 
           type="button" 
           id="btn-cetak-laporan"
-          class="w-full py-3.5 px-4 rounded-xl bg-surface-container-high hover:bg-surface-container-highest text-primary font-label-md text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.99] transition-all shadow-sm border border-surface-container-highest"
+          class="glass-neutral glass-btn glass-sheen w-full py-3.5 px-4 rounded-xl text-primary font-label-md text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.99]"
         >
           <span class="material-symbols-outlined text-[18px]">print</span>
           <span>Unduh Rekap Laporan Kas</span>
@@ -472,12 +472,12 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     const heroEl = g('laporan-dynamic-hero');
     if (heroEl) {
       heroEl.innerHTML = `
-        <section class="rounded-2xl bg-primary-container text-surface-container-lowest p-4 shadow-md relative overflow-hidden border border-on-tertiary-container/30">
+        <section class="glass-dark glass-sheen rounded-2xl p-4 text-surface-container-lowest">
           <div class="flex items-center justify-between mb-1">
             <span class="font-label-md text-xs text-primary-fixed-dim tracking-wider uppercase font-semibold">
               Surplus / Arus Kas Bersih
             </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full ${netProfit >= 0 ? 'bg-emerald-900/60 text-emerald-300' : 'bg-rose-900/60 text-rose-300'} text-[10px] font-semibold">
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-chip ${netProfit >= 0 ? 'text-emerald-300' : 'text-rose-300'} text-[10px] font-semibold">
               ${netProfit >= 0 ? 'Arus Kas Positif' : 'Arus Kas Defisit'}
             </span>
           </div>
@@ -489,7 +489,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
           </div>
           <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-3">Selisih total kas masuk dikurangi kas keluar (${getPeriodDesc()})</p>
 
-          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-surface-container-high/20">
+          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/20">
             <div class="flex flex-col">
               <span class="text-[10px] text-emerald-300 font-bold uppercase">Total Kas Masuk</span>
               <span class="font-bold text-sm text-surface-bright font-tabular">+${formatRupiah(totalMasuk, '')}</span>
@@ -533,7 +533,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     if (containerShoesList) {
       if (totalShoesCount === 0) {
         containerShoesList.innerHTML = `
-          <div class="py-4 text-center text-xs text-on-surface-variant bg-surface-container-low rounded-xl">
+          <div class="py-4 text-center text-xs text-on-surface-variant glass-panel rounded-xl">
             Belum ada penjualan sepatu pada periode ini.
           </div>
         `;
@@ -541,15 +541,15 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
         containerShoesList.innerHTML = soldShoes
           .map(
             (shoe, idx) => `
-          <div class="bg-surface-container-low/70 rounded-xl p-2.5 flex items-center justify-between border border-surface-container-high/60 gap-2">
+          <div class="glass-panel rounded-xl p-2.5 flex items-center justify-between gap-2">
             <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg bg-emerald-100 text-emerald-800 flex items-center justify-center shrink-0 font-bold text-xs">
+              <div class="w-8 h-8 rounded-lg glass-emerald text-emerald-900 flex items-center justify-center shrink-0 font-bold text-xs">
                 ${idx + 1}
               </div>
               <div class="flex flex-col min-w-0">
                 <span class="font-bold text-xs text-on-surface truncate">${shoe.name}</span>
                 <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
-                  <span class="font-mono bg-surface-container px-1 py-0.2 rounded">${shoe.barcode}</span>
+                  <span class="font-mono glass-chip px-1 py-0.2 rounded">${shoe.barcode}</span>
                   <span>${shoe.date}</span>
                   ${shoe.kondisi === 'Minus' ? '<span class="text-amber-700 font-bold">⚠ Minus</span>' : '<span class="text-emerald-700 font-semibold">✓ Bagus</span>'}
                 </div>
@@ -604,14 +604,14 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
           const isActive = selectedExpenseCategory === p.key;
           return `
           <button type="button" data-cat="${p.key}"
-            class="expense-cat-pill shrink-0 px-3 py-1.5 rounded-xl font-label-md text-xs font-bold transition-all flex items-center gap-1.5 border ${
+            class="expense-cat-pill shrink-0 px-3 py-1.5 rounded-xl font-label-md text-xs font-bold transition-all flex items-center gap-1.5 ${
               isActive
-                ? 'bg-rose-700 text-white border-rose-700 shadow-sm'
-                : 'bg-surface-container-low text-on-surface-variant hover:text-on-surface border-surface-container-high'
+                ? 'glass-dark text-surface-bright'
+                : 'glass-chip-btn text-on-surface-variant'
             }">
             <span>${p.label}</span>
-            <span class="text-[10px] px-1.5 py-0.2 rounded-full font-tabular ${
-              isActive ? 'bg-white/20 text-white' : 'bg-surface-container text-on-surface-variant'
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full font-tabular glass-chip ${
+              isActive ? 'text-surface-bright' : 'text-on-surface-variant'
             }">
               ${formatRupiah(p.total, '')}
             </span>
@@ -663,7 +663,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     const barEl = g('expense-progress-bar');
     if (barEl) {
       if (totalKeluar === 0) {
-        barEl.innerHTML = `<div class="w-full h-full bg-surface-container-high"></div>`;
+        barEl.innerHTML = `<div class="w-full h-full bg-white/40"></div>`;
       } else {
         barEl.innerHTML = categoryKeys
           .map((cat, idx) => {
@@ -695,7 +695,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     if (listEl) {
       if (filteredExpenseList.length === 0) {
         listEl.innerHTML = `
-          <div class="py-4 text-center text-xs text-on-surface-variant bg-surface-container-low rounded-xl">
+          <div class="py-4 text-center text-xs text-on-surface-variant glass-panel rounded-xl">
             Tidak ada pengeluaran pada kategori ini untuk periode terpilih.
           </div>
         `;
@@ -703,15 +703,15 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
         listEl.innerHTML = filteredExpenseList
           .map((t) => {
             return `
-            <div class="bg-surface-container-low/70 rounded-xl p-3 flex items-start justify-between gap-2 border border-surface-container-high/60 hover:bg-surface-container-low transition-all">
+            <div class="glass-panel glass-row rounded-xl p-3 flex items-start justify-between gap-2 transition-all">
               <div class="flex items-start gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg bg-rose-100 text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
+                <div class="w-8 h-8 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
                   <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
                 </div>
                 <div class="flex flex-col min-w-0">
                   <span class="font-bold text-xs text-on-surface truncate">${t.title || t.keterangan || t.category}</span>
                   <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
-                    <span class="px-1.5 py-0.2 rounded font-bold bg-rose-100 text-rose-800 text-[9px]">${t.category}</span>
+                    <span class="px-1.5 py-0.2 rounded font-bold glass-rose text-rose-800 text-[9px]">${t.category}</span>
                     <span>${t.date} ${t.time || ''}</span>
                     <span class="text-on-surface-variant/80">• ${t.paymentMethod || 'Tunai'}</span>
                   </div>
@@ -756,10 +756,10 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
   }
 
   // ── Period switch buttons (rows 1 & 2) ──
-  const ACTIVE_ROW1 = 'period-btn flex-1 py-1.5 px-2 rounded-lg bg-surface-container-lowest text-on-surface font-bold shadow-sm font-label-md text-xs transition-all text-center';
+  const ACTIVE_ROW1 = 'period-btn flex-1 py-1.5 px-2 rounded-lg glass-seg-active text-on-surface font-bold font-label-md text-xs transition-all text-center';
   const IDLE_ROW1   = 'period-btn flex-1 py-1.5 px-2 rounded-lg text-on-surface-variant font-label-md text-xs transition-all text-center';
-  const ACTIVE_ROW2 = 'period-btn flex-1 py-1.5 px-3 rounded-xl border border-primary bg-primary text-on-primary font-label-md text-xs transition-all flex items-center justify-center gap-1.5 active:scale-95';
-  const IDLE_ROW2   = 'period-btn flex-1 py-1.5 px-3 rounded-xl border border-surface-container-high bg-surface-container-low text-on-surface-variant font-label-md text-xs transition-all flex items-center justify-center gap-1.5 hover:bg-surface-container hover:text-on-surface active:scale-95';
+  const ACTIVE_ROW2 = 'period-btn glass-primary flex-1 py-1.5 px-3 rounded-xl text-primary-btn font-label-md text-xs flex items-center justify-center gap-1.5';
+  const IDLE_ROW2   = 'period-btn glass-chip-btn flex-1 py-1.5 px-3 rounded-xl text-on-surface-variant font-label-md text-xs flex items-center justify-center gap-1.5';
 
   const row2Periods = ['tanggal', 'pilih-bulan'];
 

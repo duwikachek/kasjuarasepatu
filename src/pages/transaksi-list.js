@@ -18,13 +18,13 @@ export function renderTransaksiListPage(store, filterType = 'all') {
         <!-- KPI Summary Cards -->
         <section class="grid grid-cols-2 gap-2.5">
           <!-- Masuk -->
-          <div class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-emerald-200/60 flex flex-col justify-between">
+          <div class="glass-emerald glass-sheen rounded-xl p-3 flex flex-col justify-between">
             <div class="flex items-center justify-between">
               <span class="font-label-sm text-xs text-emerald-900 font-bold uppercase tracking-wider flex items-center gap-1">
                 <span class="material-symbols-outlined text-[15px] text-emerald-700">arrow_downward</span>
                 Masuk
               </span>
-              <span id="kpi-trx-count-masuk" class="font-label-sm text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded-full">${summary.countMasuk} Trx</span>
+              <span id="kpi-trx-count-masuk" class="font-label-sm text-[10px] text-on-surface-variant glass-chip px-1.5 py-0.5 rounded-full">${summary.countMasuk} Trx</span>
             </div>
             <div class="mt-2">
               <span id="kpi-trx-total-masuk" class="font-headline-sm text-base font-bold text-emerald-800 block font-tabular font-bold">+${formatRupiah(summary.totalMasuk, '')}</span>
@@ -33,13 +33,13 @@ export function renderTransaksiListPage(store, filterType = 'all') {
           </div>
 
           <!-- Keluar -->
-          <div class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-rose-200/60 flex flex-col justify-between">
+          <div class="glass-rose glass-sheen rounded-xl p-3 flex flex-col justify-between">
             <div class="flex items-center justify-between">
               <span class="font-label-sm text-xs text-rose-950 font-bold uppercase tracking-wider flex items-center gap-1">
                 <span class="material-symbols-outlined text-[15px] text-rose-700">arrow_upward</span>
                 Keluar
               </span>
-              <span id="kpi-trx-count-keluar" class="font-label-sm text-[10px] text-on-surface-variant bg-surface-container px-1.5 py-0.5 rounded-full">${summary.countKeluar} Trx</span>
+              <span id="kpi-trx-count-keluar" class="font-label-sm text-[10px] text-on-surface-variant glass-chip px-1.5 py-0.5 rounded-full">${summary.countKeluar} Trx</span>
             </div>
             <div class="mt-2">
               <span id="kpi-trx-total-keluar" class="font-headline-sm text-base font-bold text-rose-800 block font-tabular font-bold">-${formatRupiah(summary.totalKeluar, '')}</span>
@@ -52,7 +52,7 @@ export function renderTransaksiListPage(store, filterType = 'all') {
         <button 
           type="button" 
           id="btn-goto-tambah-trx"
-          class="w-full h-12 bg-primary-container text-primary-fixed rounded-xl flex items-center justify-center gap-2 font-label-md text-sm bevel-primary active:scale-[0.99] transition-all shadow-sm"
+          class="glass-primary glass-btn glass-sheen w-full h-12 text-primary-btn rounded-xl flex items-center justify-center gap-2 font-label-md text-sm active:scale-[0.99]"
         >
           <span class="material-symbols-outlined text-[20px]">add_circle</span>
           <span class="font-bold">+ Catat Transaksi Baru</span>
@@ -67,35 +67,35 @@ export function renderTransaksiListPage(store, filterType = 'all') {
             type="text" 
             id="trx-search-input"
             placeholder="Cari transaksi, nota, produk..." 
-            class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface font-body-md text-sm rounded-xl shadow-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
+            class="glass-input w-full pl-10 pr-4 py-2.5 text-on-surface font-body-md text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
           />
         </div>
 
         <!-- Segmented Type Tabs (Semua / Masuk / Keluar) -->
-        <div class="bg-surface-container-low p-1 rounded-xl flex items-center gap-1 shadow-inner border border-surface-container-high/60">
+        <div class="glass-track p-1 rounded-xl flex items-center gap-1">
           <button 
             type="button" 
             data-tab="all" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'all' ? 'bg-surface-container-lowest text-on-surface shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
           >
             <span>Semua</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-secondary-container text-on-secondary-fixed text-[10px] font-bold">${transactions.length}</span>
+            <span class="px-1.5 py-0.2 rounded-full glass-chip text-on-surface text-[10px] font-bold">${transactions.length}</span>
           </button>
           <button 
             type="button" 
             data-tab="masuk" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'masuk' ? 'bg-surface-container-lowest text-emerald-800 shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'masuk' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
           >
             <span>Kas Masuk</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-emerald-100 text-emerald-800 text-[10px] font-bold">${summary.countMasuk}</span>
+            <span class="px-1.5 py-0.2 rounded-full glass-chip text-emerald-800 text-[10px] font-bold">${summary.countMasuk}</span>
           </button>
           <button 
             type="button" 
             data-tab="keluar" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'keluar' ? 'bg-surface-container-lowest text-rose-800 shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'keluar' ? 'glass-seg-active text-rose-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
           >
             <span>Kas Keluar</span>
-            <span class="px-1.5 py-0.2 rounded-full bg-rose-100 text-rose-800 text-[10px] font-bold">${summary.countKeluar}</span>
+            <span class="px-1.5 py-0.2 rounded-full glass-chip text-rose-800 text-[10px] font-bold">${summary.countKeluar}</span>
           </button>
         </div>
 
@@ -128,11 +128,11 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
     modal.className = 'hidden absolute inset-0 z-50 flex items-end justify-center overflow-hidden';
     modal.innerHTML = `
       <div class="absolute inset-0 bg-black/60 backdrop-blur-xs transition-opacity duration-200" id="add-item-modal-backdrop"></div>
-      <div class="relative w-full max-w-[430px] bg-surface rounded-t-3xl shadow-[0_-10px_35px_rgba(0,0,0,0.35)] p-4 pb-6 flex flex-col gap-3.5 max-h-[88%] overflow-y-auto border-t border-surface-container-high/60 z-10 animate-in fade-in slide-in-from-bottom duration-200">
+      <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-6 flex flex-col gap-3.5 max-h-[88%] overflow-y-auto z-10 animate-in fade-in slide-in-from-bottom duration-200">
         <!-- Header -->
-        <div class="flex items-center justify-between border-b border-surface-container-high/60 pb-3">
+        <div class="flex items-center justify-between border-b border-white/55 pb-3">
           <div class="flex items-center gap-2.5">
-            <div class="w-8 h-8 rounded-full bg-secondary-fixed text-primary flex items-center justify-center shrink-0">
+            <div class="w-8 h-8 rounded-full glass-chip text-primary flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[19px]">add_shopping_cart</span>
             </div>
             <div>
@@ -140,7 +140,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
               <p id="add-item-modal-subtitle" class="text-[11px] text-on-surface-variant font-medium">Tambah barang susulan ke nota</p>
             </div>
           </div>
-          <button type="button" id="btn-close-add-item-modal" class="p-1.5 rounded-full bg-surface-container hover:bg-surface-container-high text-on-surface-variant active:scale-95 transition-all">
+          <button type="button" id="btn-close-add-item-modal" class="p-1.5 rounded-full glass-chip-btn text-on-surface-variant">
             <span class="material-symbols-outlined text-[18px]">close</span>
           </button>
         </div>
@@ -163,7 +163,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                   type="text" 
                   id="add-item-barcode" 
                   placeholder="Ketik barcode atau pilih dari stok..." 
-                  class="w-full px-3.5 pr-8 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-mono text-xs border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
+                  class="glass-input w-full px-3.5 pr-8 py-2.5 rounded-xl text-on-surface font-mono text-xs focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
                   autocomplete="off"
                 />
                 <button 
@@ -180,25 +180,25 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
             <!-- DROPDOWN POPUP LIST SEPATU DI STOK -->
             <div 
               id="modal-stock-dropdown-popup" 
-              class="hidden absolute left-0 right-0 top-full mt-1.5 z-40 max-h-52 overflow-y-auto bg-surface-container-lowest border-2 border-primary/40 rounded-2xl shadow-2xl p-1 flex flex-col gap-1 transition-all"
+              class="hidden absolute left-0 right-0 top-full mt-1.5 z-40 max-h-52 overflow-y-auto glass-sheet rounded-2xl p-1 flex flex-col gap-1 transition-all"
             >
             </div>
 
             <!-- Warning Barcode Dobel di Modal Tambah Barang -->
-            <div id="add-item-barcode-warning" class="hidden text-xs font-medium text-rose-700 bg-rose-50 border border-rose-300 rounded-xl p-2 flex items-start gap-1.5 shadow-xs transition-all">
+            <div id="add-item-barcode-warning" class="hidden text-xs font-medium text-rose-800 glass-rose rounded-xl p-2 flex items-start gap-1.5 transition-all">
               <span class="material-symbols-outlined text-rose-600 text-base leading-none shrink-0 mt-0.5">warning</span>
               <span id="add-item-warning-text" class="leading-snug flex-1"></span>
             </div>
 
             <!-- Info Produk Terdeteksi -->
-            <div id="add-item-product-info" class="hidden flex items-center gap-2.5 bg-emerald-50/80 border border-emerald-200 rounded-xl p-2.5">
-              <div id="add-item-product-photo-box" class="w-9 h-9 rounded-lg bg-emerald-100/70 text-emerald-800 flex items-center justify-center shrink-0 overflow-hidden hidden">
+            <div id="add-item-product-info" class="hidden flex items-center gap-2.5 glass-emerald rounded-xl p-2.5">
+              <div id="add-item-product-photo-box" class="w-9 h-9 rounded-lg bg-white/50 text-emerald-800 flex items-center justify-center shrink-0 overflow-hidden hidden">
               </div>
               <div class="flex-1 min-w-0">
                 <span id="add-item-product-name" class="font-bold text-xs text-emerald-950 truncate block">-</span>
                 <span id="add-item-product-barcode-label" class="text-[10px] font-mono text-emerald-700 block">-</span>
               </div>
-              <span id="add-item-product-kondisi" class="ml-auto shrink-0 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded-full">✓ Bagus</span>
+              <span id="add-item-product-kondisi" class="ml-auto shrink-0 text-[10px] font-bold glass-chip text-emerald-800 px-1.5 py-0.2 rounded-full">✓ Bagus</span>
             </div>
           </div>
 
@@ -218,7 +218,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                 id="add-item-price" 
                 inputmode="numeric" 
                 placeholder="0" 
-                class="w-full pl-9 pr-3 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-bold text-sm font-tabular border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" 
+                class="glass-input w-full pl-9 pr-3 py-2.5 rounded-xl text-on-surface font-bold text-sm font-tabular focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" 
               />
             </div>
           </div>
@@ -226,7 +226,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
 
         <!-- Action Buttons -->
         <div class="flex flex-col gap-2 pt-1">
-          <button type="button" id="btn-confirm-add-item" class="w-full h-12 bg-primary-container text-surface-bright rounded-xl font-label-md text-sm font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md">
+          <button type="button" id="btn-confirm-add-item" class="glass-primary glass-btn glass-sheen w-full h-12 text-primary-btn rounded-xl font-label-md text-sm font-bold flex items-center justify-center gap-2">
             <span class="material-symbols-outlined text-[19px]">check_circle</span>
             <span>Simpan Tambahan Barang</span>
           </button>
@@ -265,7 +265,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
       tabButtons.forEach((b) => {
         b.className = 'tab-btn flex-1 py-1.5 px-2 rounded-lg text-on-surface-variant font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5';
       });
-      btn.className = 'tab-btn flex-1 py-1.5 px-2 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm font-bold font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5';
+      btn.className = 'tab-btn flex-1 py-1.5 px-2 rounded-lg glass-seg-active text-on-surface font-bold font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5';
       renderItems();
     });
   });
@@ -293,7 +293,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
 
     if (list.length === 0) {
       container.innerHTML = `
-        <div class="p-8 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high text-on-surface-variant">
+        <div class="p-8 text-center glass-card glass-sheen rounded-2xl text-on-surface-variant">
           <span class="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-2">content_paste_off</span>
           <p class="font-title-ledger text-sm font-semibold">Tidak ada transaksi ditemukan</p>
           <p class="font-body-sm text-xs mt-1">Coba ubah kata kunci pencarian atau tab filter.</p>
@@ -306,7 +306,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
       const isMasuk = trx.type === 'masuk';
       const isOpen = expandedTrx.has(trx.id);
       return `
-        <div class="bg-surface-container-lowest rounded-xl p-3.5 shadow-sm border border-surface-container-high flex flex-col gap-2 hover:border-primary/40 transition-all">
+        <div class="glass-card glass-sheen rounded-xl p-3.5 flex flex-col gap-2 hover:border-white/80 transition-all">
           <div class="flex items-start justify-between gap-3">
             <div class="flex items-start gap-3 min-w-0">
               ${trx.photo ? `
@@ -322,26 +322,26 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                 <!-- Metadata Badges: Buyer, Ongkir, Barcode -->
                 <div class="flex items-center gap-1.5 text-on-surface-variant text-[11px] mt-0.5 flex-wrap">
                   ${trx.buyer ? `
-                    <span class="px-1.5 py-0.2 rounded bg-secondary-container text-on-secondary-fixed font-bold text-[10px] flex items-center gap-0.5">
+                    <span class="px-1.5 py-0.2 rounded glass-chip text-on-secondary-fixed font-bold text-[10px] flex items-center gap-0.5">
                       <span class="material-symbols-outlined text-[11px]">person</span>
                       <span>${trx.buyer}</span>
                     </span>
                   ` : ''}
 
                   ${trx.ongkir ? `
-                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] ${trx.ongkir === 'FO' ? 'bg-emerald-100 text-emerald-900 border border-emerald-300' : (trx.ongkir === 'COD' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-orange-100 text-orange-900 border border-orange-300')}">
+                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] glass-chip ${trx.ongkir === 'FO' ? 'text-emerald-900' : (trx.ongkir === 'COD' ? 'text-amber-900' : 'text-orange-900')}">
                       ${trx.ongkir}
                     </span>
                   ` : ''}
 
                   ${trx.kondisi ? `
-                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] ${trx.kondisi === 'Minus' ? 'bg-amber-50 text-amber-800' : 'bg-emerald-50 text-emerald-800'}">
+                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] glass-chip ${trx.kondisi === 'Minus' ? 'text-amber-800' : 'text-emerald-800'}">
                       ${trx.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                     </span>
                   ` : ''}
 
                   ${!isMasuk && trx.category ? `
-                    <span class="px-1.5 py-0.2 rounded bg-rose-100 text-rose-900 border border-rose-300 font-bold text-[10px]">
+                    <span class="px-1.5 py-0.2 rounded glass-chip text-rose-900 font-bold text-[10px]">
                       ${trx.category}
                     </span>
                   ` : ''}
@@ -366,7 +366,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                   <button
                     type="button"
                     data-add-item-trx="${trx.id}"
-                    class="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 text-xs font-semibold active:scale-95 transition-all border border-emerald-200 shadow-xs"
+                    class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-emerald-700 text-xs font-semibold"
                     title="Tambah Barang ke Transaksi Ini"
                   >
                     <span class="material-symbols-outlined text-[14px]">add_shopping_cart</span>
@@ -377,7 +377,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                   type="button" 
                   data-edit-trx="${trx.id}"
                   data-type="${trx.type}"
-                  class="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary text-xs font-semibold active:scale-95 transition-all shadow-xs"
+                  class="glass-chip-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-primary text-xs font-semibold"
                   title="Edit Transaksi"
                 >
                   <span class="material-symbols-outlined text-[14px]">edit</span>
@@ -386,7 +386,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                 <button 
                   type="button" 
                   data-delete-trx="${trx.id}"
-                  class="inline-flex items-center gap-0.5 px-2 py-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold active:scale-95 transition-all border border-rose-200 shadow-xs"
+                  class="glass-rose glass-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-rose-700 text-xs font-semibold"
                   title="Hapus Transaksi"
                 >
                   <span class="material-symbols-outlined text-[14px]">delete</span>
@@ -400,7 +400,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
           ${trx.items && trx.items.length > 0 ? `
             <button
               type="button"
-              class="btn-toggle-items-breakdown w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-surface-container-high/60 active:scale-[0.99] transition-all"
+              class="btn-toggle-items-breakdown w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-white/45 active:scale-[0.99] transition-all"
               data-target="breakdown-${trx.id}"
               data-trx-id="${trx.id}"
               aria-expanded="${isOpen ? 'true' : 'false'}"
@@ -419,11 +419,11 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
             </button>
 
             <!-- Rincian Sepatu Terjual (tersembunyi sampai tombol Breakdown diklik) -->
-            <div id="breakdown-${trx.id}" class="trx-items-breakdown ${isOpen ? '' : 'hidden'} bg-surface-container-low/70 rounded-xl p-2.5 flex flex-col gap-2 text-xs">
+            <div id="breakdown-${trx.id}" class="trx-items-breakdown ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2.5 flex flex-col gap-2 text-xs">
               ${trx.items.map((it) => `
                 <div class="flex items-start gap-2.5">
                   ${it.photo ? `
-                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-surface-container-high shrink-0" />
+                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-white/70 shrink-0" />
                   ` : ''}
                   <div class="flex-1 min-w-0">
                     <div class="flex items-center justify-between">
@@ -432,13 +432,13 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                     </div>
                     <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                       ${it.barcode ? `
-                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-surface-container text-on-surface text-[10px] font-mono font-bold">
+                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded glass-chip text-on-surface text-[10px] font-mono font-bold">
                           <span class="material-symbols-outlined text-[12px] text-primary">qr_code</span>
                           <span>${it.barcode}</span>
                         </span>
                       ` : ''}
                       ${it.kondisi ? `
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold ${it.kondisi === 'Minus' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'}">
+                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
                           ${it.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                         </span>
                       ` : ''}
@@ -582,7 +582,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
     }
 
     popup.innerHTML = `
-      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-surface-container-high/60 text-[10px] font-bold text-primary bg-surface-container-low/40 rounded-t-xl">
+      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-white/45 text-[10px] font-bold text-primary glass-panel bg-white/40 rounded-t-xl">
         <span class="flex items-center gap-1">
           <span class="material-symbols-outlined text-[13px]">inventory_2</span>
           <span>Stok Tersedia (${filtered.length} Sepatu)</span>
@@ -593,16 +593,16 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
         ${filtered.map((p) => `
           <button 
             type="button" 
-            class="btn-select-modal-stock w-full text-left p-2 rounded-xl hover:bg-surface-container flex items-center gap-2 transition-all active:scale-[0.99] border border-transparent hover:border-surface-container-high" 
+            class="btn-select-modal-stock w-full text-left p-2 rounded-xl glass-row flex items-center gap-2 transition-all active:scale-[0.99]" 
             data-barcode="${p.barcode}"
           >
             ${p.photo ? `
-              <img src="${p.photo}" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" alt="Foto" />
+              <img src="${p.photo}" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-white/70" alt="Foto" />
             ` : ''}
             <div class="flex-1 min-w-0 flex flex-col">
               <span class="font-bold text-xs text-on-surface truncate">${p.name || 'Sepatu Tanpa Nama'}</span>
               <div class="flex items-center gap-1 text-[9px] text-on-surface-variant">
-                <span class="font-mono font-bold bg-surface-container-high px-1 rounded text-primary">${p.barcode}</span>
+                <span class="font-mono font-bold glass-chip px-1 rounded text-primary">${p.barcode}</span>
                 ${p.kondisi === 'Minus' ? '<span class="text-amber-700 font-bold bg-amber-50 px-1 rounded border border-amber-200">Minus</span>' : '<span class="text-emerald-700 font-bold bg-emerald-50 px-1 rounded border border-emerald-200">Bagus</span>'}
               </div>
             </div>

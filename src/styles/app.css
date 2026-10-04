@@ -72,11 +72,10 @@
 /* Smooth page transitions + latar foto aplikasi */
 .page-fade-in {
   animation: fadeIn 0.22s ease-out forwards;
-  /* Halaman dibuat semi-transparan agar foto latar (di #phone-frame) lebih jelas
-     terlihat. Nilai = 1 - tingkat foto yang tampak.
-     0.82 -> foto 18% terlihat ( terlalu tertutup)
-     0.52 -> foto 48% terlihat ( +30 poin, foto jelas namun teks tetap terbaca ) */
-  background-color: rgba(255, 248, 246, 0.52) !important;
+  /* Dark glass "film 60%": halaman dilapisi hijau kehitaman pekat.
+     Overlay一层 + blur + brightness di tiap kartu = total ~60% blok cahaya,
+     foto tetap terbaca samar namun teks putih di atasnya jelas tajam. */
+  background-color: rgba(7, 17, 12, 0.62) !important;
 }
 
 @keyframes fadeIn {
@@ -114,87 +113,202 @@ header.app-header,
 }
 
 /* ============================================================
-   GLASSMORPHISM CARD SYSTEM
-   Dipakai di halaman Dashboard agar kartu menyatu dengan foto
-   latar. Class ditulis ganda (mis. .glass-card.glass-card)
-   agar spesifikasi mengalahkan utility class Tailwind CDN.
+   GLASSMORPHISM CARD SYSTEM  —  GAYA "KACA FILM MOBIL 60%"
+   Seragam di seluruh aplikasi.
+
+   Konsep: seperti film tint jendela mobil 60% —挡住 60% cahaya
+   latar dengan lapisan gelap pekat, sisa 40% cahaya foto tetap
+   terlihat SAMAR dan TEBAL (blur) di balik kaca.
+
+   Mengapa teks jadi lebih terbaca?
+   1. Lapisan gelap 60% membuat latar di dalam kartu jauh lebih redup,
+      sehingga teks putih di atasnya punya rasio kontras tinggi.
+   2. Blur tinggi (+ brightness turun)_rsulter foto tidak lagi
+      "ber.tabrakan" dengan bentuk huruf.
+   3. Teks dipaksa jadi putih penuh / hijau muda cerah (lihat blok
+      "PALET TEKS TERANG" di bawah).
+
+   Class ditulis ganda (mis. .glass-card.glass-card) agar spesifikasinya
+   mengalahkan utility class Tailwind CDN.
    ============================================================ */
 
-/* --- Glass terang (dasar) --- */
+/* --- Glass utama: film gelap 60% + blur tebal --- */
 .glass-card.glass-card {
-  background-color: rgba(255, 255, 255, 0.42);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.62);
+  background-color: rgba(9, 20, 14, 0.6);
+  -webkit-backdrop-filter: blur(22px) saturate(140%) brightness(0.75);
+  backdrop-filter: blur(22px) saturate(140%) brightness(0.75);
+  border: 1px solid rgba(255, 255, 255, 0.18);
   box-shadow:
-    0 8px 24px rgba(43, 24, 16, 0.16),
-    inset 0 1px 0 rgba(255, 255, 255, 0.75);
+    0 14px 36px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
 }
 
-/* --- Glass gelap (kartu Saldo Kas) --- */
+/* --- Glass lebih pekat: kartu hero / saldo (film 72%) --- */
 .glass-dark.glass-dark {
-  background-color: rgba(38, 18, 7, 0.55);
-  -webkit-backdrop-filter: blur(18px) saturate(150%);
-  backdrop-filter: blur(18px) saturate(150%);
-  border: 1px solid rgba(255, 214, 190, 0.28);
+  background-color: rgba(7, 16, 11, 0.72);
+  -webkit-backdrop-filter: blur(24px) saturate(130%) brightness(0.6);
+  backdrop-filter: blur(24px) saturate(130%) brightness(0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
   box-shadow:
-    0 10px 30px rgba(20, 10, 4, 0.42),
-    inset 0 1px 0 rgba(255, 255, 255, 0.22);
+    0 16px 42px rgba(0, 0, 0, 0.6),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
 }
 
-/* --- Varian bernuansa (tombol cepat) --- */
+/* --- Aksen hijau muda (tombol utama, gaya "Shop Now") --- */
 .glass-primary.glass-primary {
-  background-color: rgba(224, 90, 43, 0.62);
-  -webkit-backdrop-filter: blur(16px) saturate(170%);
-  backdrop-filter: blur(16px) saturate(170%);
-  border: 1px solid rgba(255, 190, 160, 0.55);
+  background-color: rgba(198, 230, 176, 0.97);
+  -webkit-backdrop-filter: blur(14px) saturate(150%);
+  backdrop-filter: blur(14px) saturate(150%);
+  border: 1px solid rgba(235, 248, 222, 0.8);
   box-shadow:
-    0 6px 18px rgba(224, 90, 43, 0.34),
-    inset 0 1px 0 rgba(255, 255, 255, 0.35);
+    0 8px 22px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.65);
 }
 
+/* --- Varian warna: film gelap 60% + noda warna tipis --- */
 .glass-rose.glass-rose {
-  background-color: rgba(255, 228, 230, 0.55);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  box-shadow: 0 6px 18px rgba(43, 24, 16, 0.12);
+  background-color: rgba(46, 16, 20, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  border: 1px solid rgba(255, 160, 170, 0.3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
 .glass-neutral.glass-neutral {
-  background-color: rgba(255, 252, 248, 0.46);
-  -webkit-backdrop-filter: blur(16px) saturate(150%);
-  backdrop-filter: blur(16px) saturate(150%);
-  border: 1px solid rgba(255, 255, 255, 0.68);
-  box-shadow: 0 6px 18px rgba(43, 24, 16, 0.13);
+  background-color: rgba(18, 30, 23, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
 .glass-amber.glass-amber {
-  background-color: rgba(253, 230, 138, 0.5);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  box-shadow: 0 6px 18px rgba(180, 83, 9, 0.16);
+  background-color: rgba(48, 34, 10, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  border: 1px solid rgba(255, 214, 130, 0.3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
 .glass-blue.glass-blue {
-  background-color: rgba(191, 219, 254, 0.5);
-  -webkit-backdrop-filter: blur(16px) saturate(160%);
-  backdrop-filter: blur(16px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.62);
-  box-shadow: 0 6px 18px rgba(30, 64, 175, 0.14);
+  background-color: rgba(12, 30, 52, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  border: 1px solid rgba(150, 200, 255, 0.3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
 }
 
-/* --- Kilau tipis di tepi atas (efek kaca) --- */
+.glass-emerald.glass-emerald {
+  background-color: rgba(10, 42, 26, 0.62);
+  -webkit-backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  backdrop-filter: blur(20px) saturate(140%) brightness(0.8);
+  border: 1px solid rgba(120, 240, 180, 0.3);
+  box-shadow: 0 10px 26px rgba(0, 0, 0, 0.45);
+}
+
+/* --- Kilau tipis di tepi atas (efek kaca) ---
+   Host otomatis position:relative + isolate, sehingga ::before tidak
+   menimpa teks di dalamnya dan tidak perlu menuliskan class util
+   (relative / overflow-hidden) secara manual di tiap markup. */
+.glass-sheen.glass-sheen {
+  position: relative;
+  isolation: isolate;
+}
 .glass-sheen::before {
   content: '';
   position: absolute;
   inset: 0 0 auto 0;
   height: 42%;
+  z-index: -1;
   border-radius: inherit;
-  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.28), rgba(255, 255, 255, 0));
+  background: linear-gradient(to bottom, rgba(255, 255, 255, 0.14), rgba(255, 255, 255, 0));
   pointer-events: none;
 }
+
+/* ============================================================
+   PALET TEKS TERANG (dark glass)
+   Palet暖 warm-vintage原本 memakai teks cokelat gelap. Karena
+   kartu kini gelap, semua warna teks dinaikkan ke versi terang
+   lewat override global — tanpa perlu menyentuh markup halaman.
+   ============================================================ */
+
+/* Teks utama: putih murni + bayangan agar tajam di atas kaca */
+.text-on-surface.text-on-surface,
+.text-surface-container-lowest.text-surface-container-lowest,
+.text-surface-bright.text-surface-bright {
+  color: #ffffff !important;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.55);
+}
+
+/* Teks sekunder: putih 85% + bayangan tipis agar tidak samar */
+.text-on-surface-variant.text-on-surface-variant,
+.text-on-surface-variant\/80.text-on-surface-variant\/80,
+.text-on-surface-variant\/70.text-on-surface-variant\/70 {
+  color: rgba(255, 255, 255, 0.85) !important;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.5);
+}
+
+/* Aksen utama: hijau muda_segera (ikon, nominal, link) */
+.text-primary.text-primary,
+.text-on-tertiary-container.text-on-tertiary-container,
+.text-on-primary-container.text-on-primary-container {
+  color: #bfe0a0 !important;
+}
+
+/* Aksen terang sekunder */
+.text-primary-fixed-dim.text-primary-fixed-dim,
+.text-tertiary-fixed-dim.text-tertiary-fixed-dim,
+.text-primary-fixed.text-primary-fixed,
+.text-on-primary-fixed.text-on-primary-fixed {
+  color: rgba(215, 235, 195, 0.85) !important;
+}
+
+/* Teks di dalam tombol hijau muda (glass-primary) -> gelap */
+.glass-primary .text-primary-btn,
+.glass-primary.text-primary-btn {
+  color: #16281c !important;
+}
+
+/* Kelas shortcut untuk teks tombol aksi utama (latar hijau muda) */
+.text-primary-btn.text-primary-btn {
+  color: #16281c !important;
+}
+
+/* --- Warna status: versi paling terang agar kontras maksimal di kartu gelap --- */
+.text-emerald-700, .text-emerald-800, .text-emerald-900, .text-emerald-950,
+.text-emerald-700\/80, .text-emerald-800\/80, .text-emerald-900\/80,
+.text-emerald-300, .text-emerald-400 { color: #6ee7a8 !important; }
+
+.text-rose-700, .text-rose-800, .text-rose-900, .text-rose-950,
+.text-rose-300, .text-rose-400 { color: #fda4af !important; }
+
+.text-amber-700, .text-amber-800, .text-amber-900, .text-amber-950,
+.text-amber-300, .text-amber-400 { color: #fcd34d !important; }
+
+.text-blue-700, .text-blue-800, .text-blue-900, .text-blue-950,
+.text-blue-300, .text-blue-400 { color: #93c5fd !important; }
+
+.text-red-700, .text-red-800, .text-red-900 { color: #fca5a5 !important; }
+
+.text-neutral-700, .text-neutral-800, .text-neutral-900 { color: #e8e8e8 !important; }
+.text-neutral-400, .text-neutral-500 { color: rgba(255, 255, 255, 0.72) !important; }
+
+.text-primary-fixed-dim\/80, .text-primary-fixed-dim\/70 { color: rgba(226, 242, 210, 0.88) !important; }
+.text-on-tertiary-fixed-variant, .text-on-primary-fixed-variant,
+.text-on-secondary-fixed-variant { color: rgba(236, 246, 232, 0.85) !important; }
+.text-on-secondary-container { color: rgba(240, 248, 238, 0.9) !important; }
+.text-on-secondary-fixed { color: #f4faf0 !important; }
+.text-error { color: #fca5a5 !important; }
+
+/* Aksen utama juga diberi bayangan agar tidak samar di atas kartu */
+.text-primary.text-primary,
+.text-on-tertiary-container.text-on-tertiary-container,
+.text-on-primary-container.text-on-primary-container {
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.5);
+}
+
+/* Latar solid tua yang tersisa -> versi gelap transparan */
+.bg-surface.bg-surface { background-color: transparent !important; }
 
 /* --- State interaksi tombol glass --- */
 .glass-btn.glass-btn {
@@ -210,15 +324,127 @@ header.app-header,
   transform: scale(0.97) translateY(0);
 }
 
-.glass-primary.glass-primary:hover { background-color: rgba(214, 78, 33, 0.72); }
-.glass-rose.glass-rose:hover      { background-color: rgba(255, 220, 224, 0.68); }
-.glass-neutral.glass-neutral:hover{ background-color: rgba(255, 255, 255, 0.62); }
-.glass-amber.glass-amber:hover    { background-color: rgba(253, 224, 110, 0.62); }
-.glass-blue.glass-blue:hover      { background-color: rgba(180, 214, 255, 0.62); }
+.glass-primary.glass-primary:hover { background-color: rgba(210, 238, 190, 1); }
+.glass-rose.glass-rose:hover      { background-color: rgba(70, 24, 30, 0.8); }
+.glass-neutral.glass-neutral:hover{ background-color: rgba(30, 48, 37, 0.8); }
+.glass-amber.glass-amber:hover    { background-color: rgba(70, 50, 14, 0.8); }
+.glass-blue.glass-blue:hover      { background-color: rgba(18, 44, 74, 0.8); }
+.glass-emerald.glass-emerald:hover{ background-color: rgba(16, 60, 38, 0.8); }
 
-/* Baris di dalam list玻璃: hover tetap terasa di atas kaca */
+/* Baris di dalam list glass: hover tetap terasa di atas kaca */
 .glass-row:hover {
-  background-color: rgba(255, 255, 255, 0.42);
+  background-color: rgba(46, 70, 55, 0.75);
+}
+
+/* ============================================================
+   KOMPONEN GLASS LANJUTAN
+   Dipakai seragam di Login / Stock / Transaksi / Kirim / Laporan
+   agar tampilan seluruh aplikasi konsisten dengan Dashboard.
+   ============================================================ */
+
+/* --- Kolom isian (film 68% agar teks input jelas) --- */
+.glass-input.glass-input {
+  background-color: rgba(6, 14, 10, 0.68);
+  -webkit-backdrop-filter: blur(18px) saturate(130%) brightness(0.7);
+  backdrop-filter: blur(18px) saturate(130%) brightness(0.7);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow:
+    0 2px 14px rgba(0, 0, 0, 0.4),
+    inset 0 1px 0 rgba(255, 255, 255, 0.1);
+}
+.glass-input::placeholder {
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* --- Wadah segmented tab / filter track --- */
+.glass-track.glass-track {
+  background-color: rgba(6, 14, 10, 0.55);
+  -webkit-backdrop-filter: blur(18px) saturate(130%) brightness(0.7);
+  backdrop-filter: blur(18px) saturate(130%) brightness(0.7);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow: inset 0 1px 5px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Segmen aktif: lebih terang agar jelas terbaca --- */
+.glass-seg-active.glass-seg-active {
+  background-color: rgba(52, 74, 60, 0.9);
+  -webkit-backdrop-filter: blur(14px) saturate(140%);
+  backdrop-filter: blur(14px) saturate(140%);
+  border: 1px solid rgba(190, 224, 168, 0.5);
+  box-shadow:
+    0 3px 14px rgba(0, 0, 0, 0.45),
+    inset 0 1px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* --- Chip / badge kecil --- */
+.glass-chip.glass-chip {
+  background-color: rgba(6, 14, 10, 0.62);
+  -webkit-backdrop-filter: blur(14px) saturate(130%);
+  backdrop-filter: blur(14px) saturate(130%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.35);
+}
+
+/* --- Panel di dalam kartu (film 55%, sedikit lebih transparan) --- */
+.glass-panel.glass-panel {
+  background-color: rgba(6, 14, 10, 0.55);
+  -webkit-backdrop-filter: blur(16px) saturate(130%) brightness(0.7);
+  backdrop-filter: blur(16px) saturate(130%) brightness(0.7);
+  border: 1px solid rgba(255, 255, 255, 0.13);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 1px 6px rgba(0, 0, 0, 0.3);
+}
+
+/* --- Bottom sheet / modal (film 80% — teks form wajib sangat jelas) --- */
+.glass-sheet.glass-sheet {
+  background-color: rgba(6, 13, 9, 0.82);
+  -webkit-backdrop-filter: blur(32px) saturate(130%) brightness(0.6);
+  backdrop-filter: blur(32px) saturate(130%) brightness(0.6);
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  box-shadow:
+    0 -12px 50px rgba(0, 0, 0, 0.65),
+    inset 0 1px 0 rgba(255, 255, 255, 0.12);
+}
+
+/* --- Tombol aksi sekunder (pill) --- */
+.glass-chip-btn.glass-chip-btn {
+  background-color: rgba(10, 20, 14, 0.68);
+  -webkit-backdrop-filter: blur(16px) saturate(135%);
+  backdrop-filter: blur(16px) saturate(135%);
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.4);
+  transition: background-color 0.15s ease, transform 0.12s ease, box-shadow 0.15s ease;
+}
+.glass-chip-btn.glass-chip-btn:hover {
+  background-color: rgba(24, 40, 30, 0.85);
+}
+.glass-chip-btn.glass-chip-btn:active {
+  transform: scale(0.96);
+}
+
+/* --- Toast / notifikasi melayang (seragam di semua halaman) --- */
+.glass-toast.glass-toast {
+  background-color: rgba(12, 26, 19, 0.9);
+  -webkit-backdrop-filter: blur(20px) saturate(160%);
+  backdrop-filter: blur(20px) saturate(160%);
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  box-shadow:
+    0 10px 34px rgba(0, 0, 0, 0.55),
+    inset 0 1px 0 rgba(255, 255, 255, 0.14);
+}
+.glass-toast-error.glass-toast-error {
+  background-color: rgba(90, 22, 22, 0.92);
+  border-color: rgba(255, 180, 180, 0.35);
+}
+.glass-toast-info.glass-toast-info {
+  background-color: rgba(44, 48, 20, 0.92);
+  border-color: rgba(230, 240, 160, 0.32);
+}
+
+/* --- Pemisah baris di dalam kartu kaca --- */
+.glass-divide > * + * {
+  border-color: rgba(255, 255, 255, 0.14) !important;
 }
 
 /* Fallback: browser tanpa dukungan backdrop-filter tetap rapi */
@@ -227,12 +453,28 @@ header.app-header,
   .glass-neutral.glass-neutral,
   .glass-rose.glass-rose,
   .glass-amber.glass-amber,
-  .glass-blue.glass-blue {
-    background-color: rgba(255, 252, 248, 0.94);
+  .glass-blue.glass-blue,
+  .glass-emerald.glass-emerald,
+  .glass-chip.glass-chip,
+  .glass-chip-btn.glass-chip-btn,
+  .glass-seg-active.glass-seg-active,
+  .glass-panel.glass-panel {
+    background-color: rgba(9, 20, 14, 0.97);
   }
-  .glass-dark.glass-dark,
+  .glass-input.glass-input {
+    background-color: rgba(6, 14, 10, 0.99);
+  }
+  .glass-track.glass-track {
+    background-color: rgba(6, 14, 10, 0.98);
+  }
+  .glass-sheet.glass-sheet {
+    background-color: rgba(6, 13, 9, 0.99);
+  }
+  .glass-dark.glass-dark {
+    background-color: rgba(7, 16, 11, 0.99);
+  }
   .glass-primary.glass-primary {
-    background-color: rgba(38, 18, 7, 0.92);
+    background-color: rgba(198, 230, 176, 1);
   }
 }
 

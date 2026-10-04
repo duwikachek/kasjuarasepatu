@@ -19,7 +19,7 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
       <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3.5">
         <!-- KPI Belanja Cards -->
         <section class="grid grid-cols-2 gap-2.5">
-          <div class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-surface-container-high flex flex-col justify-between">
+          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between">
             <span class="font-label-sm text-xs text-on-surface-variant font-semibold flex items-center gap-1">
               <span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
               Total Belanja
@@ -32,7 +32,7 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
             </div>
           </div>
 
-          <div class="bg-surface-container-lowest rounded-xl p-3 shadow-sm border border-surface-container-high flex flex-col justify-between">
+          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between">
             <span class="font-label-sm text-xs text-on-surface-variant font-semibold flex items-center gap-1">
               <span class="material-symbols-outlined text-[16px] text-primary">inventory_2</span>
               Jumlah Stock
@@ -50,7 +50,7 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
         <button 
           type="button" 
           id="btn-goto-tambah-pasok"
-          class="w-full h-12 bg-primary-container text-primary-fixed rounded-xl flex items-center justify-center gap-2 font-label-md text-sm bevel-primary active:scale-[0.99] transition-all shadow-sm"
+          class="glass-primary glass-btn glass-sheen w-full h-12 text-primary-btn rounded-xl flex items-center justify-center gap-2 font-label-md text-sm active:scale-[0.99]"
         >
           <span class="material-symbols-outlined text-[20px]">add_box</span>
           <span class="font-bold">+ Catat Belanja / Stock Baru</span>
@@ -65,19 +65,19 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
             type="text" 
             id="pasok-search-input"
             placeholder="Cari barcode, nama sepatu, suplier..." 
-            class="w-full pl-10 pr-4 py-2.5 bg-surface-container-lowest text-on-surface font-body-md text-sm rounded-xl shadow-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
+            class="glass-input w-full pl-10 pr-4 py-2.5 text-on-surface font-body-md text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
           />
         </div>
 
         <!-- Filter Segmented Tabs -->
-        <div class="bg-surface-container-low p-1 rounded-xl flex items-center gap-1 shadow-inner border border-surface-container-high/60">
-          <button type="button" data-filter="all" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'all' ? 'bg-surface-container-lowest text-on-surface shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+        <div class="glass-track p-1 rounded-xl flex items-center gap-1">
+          <button type="button" data-filter="all" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
             Semua
           </button>
-          <button type="button" data-filter="lunas" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'lunas' ? 'bg-surface-container-lowest text-emerald-800 shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+          <button type="button" data-filter="lunas" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'lunas' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
             Lunas
           </button>
-          <button type="button" data-filter="tempo" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'tempo' ? 'bg-surface-container-lowest text-amber-800 shadow-sm font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+          <button type="button" data-filter="tempo" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'tempo' ? 'glass-seg-active text-amber-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
             Tempo / Bon
           </button>
         </div>
@@ -118,7 +118,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
       document.querySelectorAll('.pasok-filter-btn').forEach((b) => {
         b.className = 'pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg text-on-surface-variant font-label-md text-xs transition-all text-center';
       });
-      btn.className = 'pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg bg-surface-container-lowest text-on-surface shadow-sm font-bold font-label-md text-xs transition-all text-center';
+      btn.className = 'pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg glass-seg-active text-on-surface font-bold font-label-md text-xs transition-all text-center';
       renderItems();
     });
   });
@@ -162,7 +162,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
     if (list.length === 0) {
       container.innerHTML = `
-        <div class="p-8 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high text-on-surface-variant">
+        <div class="p-8 text-center glass-card glass-sheen rounded-2xl text-on-surface-variant">
           <span class="material-symbols-outlined text-4xl text-on-surface-variant/40 mb-2">inventory_2</span>
           <p class="font-title-ledger text-sm font-semibold">Tidak ada data belanja / stock</p>
           <p class="font-body-sm text-xs mt-1">Coba ubah kata kunci atau catat belanja baru.</p>
@@ -175,14 +175,14 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
       const isLunas = supply.status === 'lunas';
       const isOpen = expandedSupplies.has(supply.id);
       return `
-        <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-2.5">
+        <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
           <!-- Top Row: ID Belanja & Status Badge -->
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-primary text-[18px]">shopping_bag</span>
               <span class="font-title-ledger text-sm font-bold text-on-surface">${supply.invoiceNo}</span>
             </div>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider ${isLunas ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 'bg-amber-100 text-amber-800 border border-amber-300'}">
+            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider glass-chip ${isLunas ? 'text-emerald-800' : 'text-amber-800'}">
               ${isLunas ? 'Lunas' : 'Tempo / Bon'}
             </span>
           </div>
@@ -196,7 +196,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
           <!-- Breakdown Toggle: klik untuk buka/tutup rincian barang nota ini -->
           <button
             type="button"
-            class="pasok-breakdown-btn w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-surface-container-high/60 active:scale-[0.99] transition-all"
+            class="pasok-breakdown-btn w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-white/45 active:scale-[0.99] transition-all"
             data-target="detail-${supply.id}"
             data-supply-id="${supply.id}"
             aria-expanded="${isOpen ? 'true' : 'false'}"
@@ -216,11 +216,11 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
           <!-- Rincian Barang (tersembunyi sampai tombol Breakdown diklik) -->
           ${supply.items && supply.items.length > 0 ? `
-            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} bg-surface-container-low/70 rounded-xl p-2.5 flex flex-col gap-2 text-xs">
+            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2.5 flex flex-col gap-2 text-xs">
               ${supply.items.map((it) => `
                 <div class="flex items-start gap-2.5">
                   ${it.photo ? `
-                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-surface-container-high shrink-0" />
+                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-white/70 shrink-0" />
                   ` : ''}
                   
                   <div class="flex-1 min-w-0">
@@ -231,14 +231,14 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
                     <div class="flex items-center gap-1.5 mt-1 flex-wrap">
                       ${it.barcode ? `
-                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded bg-surface-container text-on-surface text-[10px] font-mono font-bold">
+                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded glass-chip text-on-surface text-[10px] font-mono font-bold">
                           <span class="material-symbols-outlined text-[12px] text-primary">qr_code</span>
                           <span>${it.barcode}</span>
                         </span>
                       ` : ''}
 
                       ${it.kondisi ? `
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold ${it.kondisi === 'Minus' ? 'bg-amber-100 text-amber-900 border border-amber-300' : 'bg-emerald-100 text-emerald-900 border border-emerald-300'}">
+                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
                           ${it.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                         </span>
                       ` : ''}
@@ -258,12 +258,12 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
           `}
 
           <!-- Action Buttons: + Tambah Barang, Edit & Hapus -->
-          <div class="flex items-center justify-end gap-2 pt-1 border-t border-surface-container-high/60 flex-wrap">
+          <div class="flex items-center justify-end gap-2 pt-1 border-t border-white/45 flex-wrap">
               <button 
                 type="button" 
                 data-action="add-item-supply" 
                 data-id="${supply.id}" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-primary hover:bg-[#c94d22] text-white text-xs font-semibold active:scale-95 transition-all shadow-xs"
+                class="glass-primary glass-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-primary-btn text-xs font-semibold"
                 title="Tambah barang belanja ke suplier ini"
               >
                 <span class="material-symbols-outlined text-[15px]">add_circle</span>
@@ -273,7 +273,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 type="button" 
                 data-action="edit-supply" 
                 data-id="${supply.id}" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-surface-container hover:bg-surface-container-high text-primary text-xs font-semibold active:scale-95 transition-all shadow-xs"
+                class="glass-chip-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-primary text-xs font-semibold"
               >
                 <span class="material-symbols-outlined text-[15px]">edit</span>
                 <span>Edit</span>
@@ -283,7 +283,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 data-action="delete-supply" 
                 data-id="${supply.id}" 
                 data-no="${supply.invoiceNo}" 
-                class="inline-flex items-center gap-1 px-3 py-1.5 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 text-xs font-semibold active:scale-95 transition-all border border-rose-200 shadow-xs"
+                class="glass-rose glass-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-rose-800 text-xs font-semibold"
               >
                 <span class="material-symbols-outlined text-[15px]">delete</span>
                 <span>Hapus</span>

@@ -3,9 +3,9 @@ import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
 function statusBadge(status) {
-  if (status === 'lunas') return 'bg-emerald-100 text-emerald-800 border border-emerald-300';
-  if (status === 'macet') return 'bg-rose-100 text-rose-800 border border-rose-300';
-  return 'bg-blue-100 text-blue-800 border border-blue-300';
+  if (status === 'lunas') return 'glass-chip text-emerald-800';
+  if (status === 'macet') return 'glass-chip text-rose-800';
+  return 'glass-chip text-blue-800';
 }
 function statusLabel(status) {
   if (status === 'lunas') return 'Lunas';
@@ -47,32 +47,31 @@ export function renderInvestorPage(store) {
 
         <!-- KPI Cards -->
         <div class="grid grid-cols-2 gap-2.5">
-          <div class="bg-primary-container rounded-2xl p-3.5 flex flex-col gap-1 shadow-sm relative overflow-hidden">
-            <div class="absolute -right-3 -top-3 w-16 h-16 rounded-full bg-on-primary-container/10"></div>
-            <span class="material-symbols-outlined text-on-primary-container/70 text-[18px]">account_balance_wallet</span>
+          <div class="glass-dark glass-sheen rounded-2xl p-3.5 flex flex-col gap-1 text-surface-container-lowest">
+            <span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">account_balance_wallet</span>
             <span class="font-bold text-lg text-surface-bright font-tabular">${formatRupiah(summary.totalInvested || 0, '')}</span>
             <span class="text-[10px] text-primary-fixed-dim font-semibold uppercase tracking-wide">Total Diinvestasi</span>
           </div>
-          <div class="bg-surface-container-lowest rounded-2xl p-3.5 flex flex-col gap-1 shadow-sm border border-surface-container-high">
-            <span class="material-symbols-outlined text-rose-600 text-[18px]">payments</span>
-            <span class="font-bold text-lg text-rose-700 font-tabular">${formatRupiah(summary.totalOutstanding || 0, '')}</span>
-            <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide">Sisa Kewajiban</span>
+          <div class="glass-rose glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
+            <span class="material-symbols-outlined text-rose-700 text-[18px]">payments</span>
+            <span class="font-bold text-lg text-rose-900 font-tabular">${formatRupiah(summary.totalOutstanding || 0, '')}</span>
+            <span class="text-[10px] text-rose-800 font-semibold uppercase tracking-wide">Sisa Kewajiban</span>
           </div>
-          <div class="bg-surface-container-lowest rounded-2xl p-3.5 flex flex-col gap-1 shadow-sm border border-surface-container-high">
-            <span class="material-symbols-outlined text-blue-600 text-[18px]">people</span>
-            <span class="font-bold text-lg text-blue-700 font-tabular">${summary.countAktif || 0}</span>
-            <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide">Investor Aktif</span>
+          <div class="glass-blue glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
+            <span class="material-symbols-outlined text-blue-700 text-[18px]">people</span>
+            <span class="font-bold text-lg text-blue-900 font-tabular">${summary.countAktif || 0}</span>
+            <span class="text-[10px] text-blue-800 font-semibold uppercase tracking-wide">Investor Aktif</span>
           </div>
-          <div class="bg-surface-container-lowest rounded-2xl p-3.5 flex flex-col gap-1 shadow-sm border border-surface-container-high">
-            <span class="material-symbols-outlined text-amber-600 text-[18px]">event_upcoming</span>
-            <span class="font-bold text-lg text-amber-700 font-tabular">${formatRupiah(summary.totalCicilan || 0, '')}</span>
-            <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide">Cicilan / Bulan</span>
+          <div class="glass-amber glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
+            <span class="material-symbols-outlined text-amber-700 text-[18px]">event_upcoming</span>
+            <span class="font-bold text-lg text-amber-900 font-tabular">${formatRupiah(summary.totalCicilan || 0, '')}</span>
+            <span class="text-[10px] text-amber-800 font-semibold uppercase tracking-wide">Cicilan / Bulan</span>
           </div>
         </div>
 
         <!-- Action Button -->
         <button type="button" id="btn-tambah-investor"
-          class="w-full h-12 py-3 bg-[#E05A2B] hover:bg-[#c94d22] text-white rounded-xl font-bold text-sm flex items-center justify-center gap-2 bevel-accent active:scale-[0.98] transition-all shadow-md">
+          class="glass-primary glass-btn glass-sheen w-full h-12 py-3 text-primary-btn rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]">
           <span class="material-symbols-outlined text-[20px]">add_circle</span>
           <span>+ Tambah Investor Baru</span>
         </button>
@@ -83,9 +82,9 @@ export function renderInvestorPage(store) {
             <h3 class="text-sm font-bold text-on-surface">Data Investor</h3>
             <p class="text-[11px] text-on-surface-variant">Kolom lengkap rincian investasi</p>
           </div>
-          <div class="inline-flex p-0.5 rounded-lg bg-surface-container border border-surface-container-high text-xs">
+          <div class="glass-track inline-flex p-0.5 rounded-lg text-xs">
             <button type="button" id="toggle-view-table"
-              class="px-2.5 py-1 rounded-md font-bold transition-all bg-surface-container-lowest text-primary shadow-xs">
+              class="px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary">
               <span class="material-symbols-outlined text-[15px] align-middle mr-0.5">table_chart</span> Tabel
             </button>
             <button type="button" id="toggle-view-cards"
@@ -102,10 +101,10 @@ export function renderInvestorPage(store) {
       <!-- Modal Tambah/Edit Investor -->
       <div id="investor-modal" class="hidden absolute inset-0 z-50 flex items-end justify-center overflow-hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-xs" id="investor-modal-backdrop"></div>
-        <div class="relative w-full max-w-[430px] bg-surface rounded-t-3xl shadow-2xl p-4 pb-6 flex flex-col gap-3 max-h-[92%] overflow-y-auto z-10">
-          <div class="flex items-center justify-between border-b border-surface-container-high/60 pb-3 mb-1">
+        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-6 flex flex-col gap-3 max-h-[92%] overflow-y-auto z-10">
+          <div class="flex items-center justify-between border-b border-white/55 pb-3 mb-1">
             <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full bg-amber-100 text-amber-700 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full glass-amber text-amber-800 flex items-center justify-center">
                 <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
               </div>
               <div>
@@ -113,7 +112,7 @@ export function renderInvestorPage(store) {
                 <p class="text-[11px] text-on-surface-variant">Dana otomatis masuk sebagai Kas Pemasukan</p>
               </div>
             </div>
-            <button id="btn-close-investor-modal" class="p-1.5 rounded-full bg-surface-container text-on-surface-variant active:scale-95 transition-all">
+            <button id="btn-close-investor-modal" class="p-1.5 rounded-full glass-chip-btn text-on-surface-variant">
               <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
@@ -126,7 +125,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">person</span> Nama Investor
               </label>
               <input type="text" id="inv-name" placeholder="Nama investor / pihak pemberi modal..."
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
             </div>
 
             <div class="flex flex-col gap-1">
@@ -134,7 +133,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Masuk
               </label>
               <input type="date" id="inv-date"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
             </div>
 
             <div class="flex flex-col gap-1">
@@ -142,7 +141,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">event_upcoming</span> Jatuh Tempo
               </label>
               <input type="date" id="inv-due-date"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
             </div>
 
             <div class="flex flex-col gap-1 col-span-2">
@@ -150,7 +149,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">payments</span> Total Investasi (Rp)
               </label>
               <input type="number" id="inv-amount" placeholder="0" min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
             </div>
 
             <div class="flex flex-col gap-1">
@@ -158,7 +157,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">schedule</span> Tenor (Bulan)
               </label>
               <input type="number" id="inv-tenor" placeholder="6" min="1"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all text-center font-mono" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all text-center font-mono" />
             </div>
 
             <div class="flex flex-col gap-1">
@@ -171,7 +170,7 @@ export function renderInvestorPage(store) {
                 </button>
               </div>
               <input type="number" id="inv-cicilan" placeholder="0" min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono font-bold text-amber-800" />
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono font-bold text-amber-800" />
             </div>
 
             <div class="flex flex-col gap-1 col-span-2">
@@ -179,7 +178,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">description</span> Catatan / Perjanjian
               </label>
               <textarea id="inv-notes" rows="2" placeholder="Catatan kesepakatan, bagi hasil, atau nomor rekening..."
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"></textarea>
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"></textarea>
             </div>
 
             <div class="flex flex-col gap-1 col-span-2">
@@ -187,7 +186,7 @@ export function renderInvestorPage(store) {
                 <span class="material-symbols-outlined text-primary text-[14px]">account_balance</span> Metode Pembayaran
               </label>
               <select id="inv-payment"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-primary transition-all">
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all">
                 <option value="Transfer Bank">Transfer Bank</option>
                 <option value="Tunai (Laci)">Tunai (Laci)</option>
                 <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
@@ -196,7 +195,7 @@ export function renderInvestorPage(store) {
           </div>
 
           <!-- Info box -->
-          <div class="bg-blue-50 border border-blue-200 rounded-xl p-3 flex items-start gap-2 mt-1">
+          <div class="glass-blue rounded-xl p-3 flex items-start gap-2 mt-1">
             <span class="material-symbols-outlined text-blue-600 text-[18px] shrink-0 mt-0.5">info</span>
             <p class="text-[11px] text-blue-800">
               Dana investor akan otomatis dicatat sebagai <strong>Kas Pemasukan</strong> kategori <em>"Dana Investor"</em> dan menambah saldo kas toko.
@@ -204,7 +203,7 @@ export function renderInvestorPage(store) {
           </div>
 
           <button type="button" id="btn-save-investor"
-            class="w-full h-12 bg-primary-container text-surface-bright rounded-xl text-sm font-bold flex items-center justify-center gap-2 bevel-primary active:scale-[0.99] transition-all shadow-md mt-1">
+            class="w-full h-12 glass-primary glass-btn glass-sheen text-primary-btn rounded-xl text-sm font-bold flex items-center justify-center gap-2 mt-1">
             <span class="material-symbols-outlined text-[18px]">save</span>
             <span id="btn-save-investor-label">Simpan & Catat ke Kas</span>
           </button>
@@ -214,9 +213,9 @@ export function renderInvestorPage(store) {
       <!-- Modal Konfirmasi Hapus -->
       <div id="investor-delete-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center p-6 overflow-hidden">
         <div class="absolute inset-0 bg-black/60 backdrop-blur-xs" id="investor-delete-backdrop"></div>
-        <div class="relative w-full max-w-[360px] bg-surface rounded-2xl shadow-2xl p-5 flex flex-col gap-3 z-10">
+        <div class="relative w-full max-w-[360px] glass-sheet rounded-2xl p-5 flex flex-col gap-3 z-10">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full bg-rose-100 text-rose-700 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-full glass-rose text-rose-800 flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[22px]">delete_forever</span>
             </div>
             <div>
@@ -224,12 +223,12 @@ export function renderInvestorPage(store) {
               <p class="text-[11px] text-on-surface-variant">Data investasi akan dihapus permanen.</p>
             </div>
           </div>
-          <p class="text-xs text-on-surface-variant bg-surface-container-low rounded-xl p-3">
+          <p class="text-xs text-on-surface-variant glass-panel rounded-xl p-3">
             Catatan kas pemasukan yang sudah dibukukan <strong>tidak otomatis terhapus</strong> untuk menjaga keaslian buku kas.
           </p>
           <div class="flex items-center gap-2.5 mt-1">
-            <button id="btn-cancel-delete-investor" class="flex-1 h-10 rounded-xl bg-surface-container text-on-surface text-sm font-bold border border-surface-container-high active:scale-95 transition-all">Batal</button>
-            <button id="btn-confirm-delete-investor" class="flex-1 h-10 rounded-xl bg-rose-600 text-white text-sm font-bold active:scale-95 transition-all shadow-sm">Ya, Hapus</button>
+            <button id="btn-cancel-delete-investor" class="glass-chip-btn flex-1 h-10 rounded-xl text-on-surface text-sm font-bold">Batal</button>
+            <button id="btn-confirm-delete-investor" class="glass-rose glass-btn flex-1 h-10 rounded-xl text-rose-800 text-sm font-bold">Ya, Hapus</button>
           </div>
         </div>
       </div>
@@ -268,7 +267,7 @@ export function initInvestorPage(router, store) {
 
     if (!list || list.length === 0) {
       container.innerHTML = `
-        <div class="p-8 text-center bg-surface-container-lowest rounded-2xl border border-surface-container-high text-on-surface-variant flex flex-col items-center gap-2 shadow-xs">
+        <div class="p-8 text-center glass-card glass-sheen rounded-2xl text-on-surface-variant flex flex-col items-center gap-2 shadow-xs">
           <span class="material-symbols-outlined text-4xl opacity-30">account_balance_wallet</span>
           <p class="text-sm font-bold text-on-surface">Belum ada data investor</p>
           <p class="text-xs">Klik tombol <strong>+ Tambah Investor Baru</strong> di atas untuk mulai mencatat modal investasi.</p>
@@ -279,11 +278,11 @@ export function initInvestorPage(router, store) {
 
     if (currentViewMode === 'table') {
       container.innerHTML = `
-        <div class="bg-surface-container-lowest rounded-2xl border border-surface-container-high shadow-xs overflow-hidden">
+        <div class="glass-card glass-sheen rounded-2xl overflow-hidden">
           <div class="overflow-x-auto">
             <table class="w-full text-left border-collapse text-xs">
               <thead>
-                <tr class="bg-surface-container-low/70 border-b border-surface-container-high text-on-surface-variant font-bold uppercase tracking-wider text-[10px]">
+                <tr class="glass-panel border-b border-white/45 text-on-surface-variant font-bold uppercase tracking-wider text-[10px]">
                   <th class="py-3 px-3 min-w-[90px]">Tanggal</th>
                   <th class="py-3 px-3 min-w-[130px]">Investor</th>
                   <th class="py-3 px-3 min-w-[110px] text-right">Total Inves</th>
@@ -307,7 +306,7 @@ export function initInvestorPage(router, store) {
                   const label = statusLabel(inv.status || 'aktif');
 
                   return `
-                    <tr class="hover:bg-surface-container-low/40 transition-colors">
+                    <tr class="glass-row transition-colors">
                       <td class="py-3 px-3 font-medium text-on-surface whitespace-nowrap">
                         ${formatDate(inv.date)}
                       </td>
@@ -331,17 +330,17 @@ export function initInvestorPage(router, store) {
                       <td class="py-3 px-3 text-center whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button type="button" data-edit-investor="${inv.id}" title="Edit"
-                            class="p-1 rounded-lg bg-surface-container hover:bg-surface-container-high text-on-surface-variant active:scale-95 transition-all">
+                            class="p-1 rounded-lg glass-chip-btn text-on-surface-variant">
                             <span class="material-symbols-outlined text-[16px]">edit</span>
                           </button>
                           ${(inv.status || 'aktif') !== 'lunas' ? `
                             <button type="button" data-lunas-investor="${inv.id}" title="Tandai Lunas"
-                              class="p-1 rounded-lg bg-emerald-50 hover:bg-emerald-100 text-emerald-700 active:scale-95 transition-all border border-emerald-200">
+                              class="p-1 rounded-lg glass-emerald text-emerald-800">
                               <span class="material-symbols-outlined text-[16px]">check_circle</span>
                             </button>
                           ` : ''}
                           <button type="button" data-delete-investor="${inv.id}" title="Hapus"
-                            class="p-1 rounded-lg bg-rose-50 hover:bg-rose-100 text-rose-700 active:scale-95 transition-all border border-rose-200">
+                            class="p-1 rounded-lg glass-rose text-rose-800">
                               <span class="material-symbols-outlined text-[16px]">delete</span>
                           </button>
                         </div>
@@ -352,7 +351,7 @@ export function initInvestorPage(router, store) {
               </tbody>
             </table>
           </div>
-          <div class="p-2.5 bg-surface-container-low/40 border-t border-surface-container-high text-[11px] text-on-surface-variant flex items-center justify-between">
+          <div class="p-2.5 glass-panel border-t border-white/45 text-[11px] text-on-surface-variant flex items-center justify-between">
             <span>Geser tabel ke samping untuk melihat kolom penuh</span>
             <span class="font-bold text-primary font-tabular">${list.length} Investor Terdaftar</span>
           </div>
@@ -375,11 +374,11 @@ export function initInvestorPage(router, store) {
         const label = statusLabel(inv.status || 'aktif');
 
         return `
-          <div class="bg-surface-container-lowest rounded-xl border border-surface-container-high shadow-xs overflow-hidden flex flex-col">
+          <div class="glass-card glass-sheen rounded-xl overflow-hidden flex flex-col">
             <!-- Header -->
             <div class="flex items-start justify-between gap-2 p-3.5 pb-2">
               <div class="flex items-start gap-2.5 min-w-0">
-                <div class="w-10 h-10 rounded-xl bg-amber-100 text-amber-700 flex items-center justify-center shrink-0 shadow-xs">
+                <div class="w-10 h-10 rounded-xl glass-amber text-amber-800 flex items-center justify-center shrink-0">
                   <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
                 </div>
                 <div class="flex flex-col min-w-0">
@@ -397,7 +396,7 @@ export function initInvestorPage(router, store) {
             </div>
 
             <!-- Data Grid -->
-            <div class="grid grid-cols-3 gap-0 divide-x divide-surface-container-high mx-3.5 mb-2.5 bg-surface-container-low/50 rounded-xl border border-surface-container-high overflow-hidden">
+            <div class="grid grid-cols-3 gap-0 divide-x divide-white/50 mx-3.5 mb-2.5 glass-panel rounded-xl overflow-hidden">
               <div class="flex flex-col items-center py-2 px-1 text-center">
                 <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide mb-0.5">Tenor</span>
                 <span class="font-bold text-sm text-on-surface font-tabular">${inv.tenor || '-'}</span>
@@ -420,21 +419,21 @@ export function initInvestorPage(router, store) {
             ` : ''}
 
             <!-- Action Bar -->
-            <div class="border-t border-surface-container-high/60 px-3 py-2 flex items-center gap-2">
+            <div class="border-t border-white/45 px-3 py-2 flex items-center gap-2">
               <button type="button" data-edit-investor="${inv.id}"
-                class="flex-1 py-1.5 rounded-xl bg-secondary-container text-on-secondary-container text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-all">
+                class="flex-1 py-1.5 rounded-xl glass-chip-btn text-on-surface text-xs font-bold flex items-center justify-center gap-1">
                 <span class="material-symbols-outlined text-[15px]">edit_note</span>
                 <span>Edit</span>
               </button>
               ${(inv.status || 'aktif') !== 'lunas' ? `
                 <button type="button" data-lunas-investor="${inv.id}"
-                  class="flex-1 py-1.5 rounded-xl bg-emerald-50 text-emerald-700 text-xs font-bold flex items-center justify-center gap-1 active:scale-95 transition-all border border-emerald-200">
+                  class="flex-1 py-1.5 rounded-xl glass-emerald text-emerald-900 text-xs font-bold flex items-center justify-center gap-1">
                   <span class="material-symbols-outlined text-[15px]">check_circle</span>
                   <span>Tandai Lunas</span>
                 </button>
               ` : ''}
               <button type="button" data-delete-investor="${inv.id}"
-                class="px-3 py-1.5 rounded-xl bg-rose-50 text-rose-700 text-xs font-bold flex items-center justify-center active:scale-95 transition-all border border-rose-200">
+                class="px-3 py-1.5 rounded-xl glass-rose text-rose-800 text-xs font-bold flex items-center justify-center">
                 <span class="material-symbols-outlined text-[15px]">delete_outline</span>
               </button>
             </div>
@@ -523,14 +522,14 @@ export function initInvestorPage(router, store) {
   if (btnTable && btnCards) {
     btnTable.addEventListener('click', () => {
       currentViewMode = 'table';
-      btnTable.className = 'px-2.5 py-1 rounded-md font-bold transition-all bg-surface-container-lowest text-primary shadow-xs';
+      btnTable.className = 'px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary';
       btnCards.className = 'px-2.5 py-1 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface';
       renderView();
     });
 
     btnCards.addEventListener('click', () => {
       currentViewMode = 'cards';
-      btnCards.className = 'px-2.5 py-1 rounded-md font-bold transition-all bg-surface-container-lowest text-primary shadow-xs';
+      btnCards.className = 'px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary';
       btnTable.className = 'px-2.5 py-1 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface';
       renderView();
     });

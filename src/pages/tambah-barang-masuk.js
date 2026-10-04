@@ -24,9 +24,9 @@ function renderItemCardHtml(item, index, totalItems) {
   const priceVal = formatRupiah(item.buyPrice || 185000, '');
 
   return `
-    <div class="item-card bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3.5 transition-all" data-item-id="${item.id}">
+ <div class="item-card glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3.5 transition-all" data-item-id="${item.id}">
       <!-- Header Baris Item -->
-      <div class="flex items-center justify-between border-b border-surface-container-high/60 pb-2">
+      <div class="flex items-center justify-between border-b border-white/45 pb-2">
         <div class="flex items-center gap-2">
           <span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">${itemNum}</span>
           <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Sepatu #${itemNum}</span>
@@ -45,7 +45,7 @@ function renderItemCardHtml(item, index, totalItems) {
       </div>
 
       <!-- 1. Barcode Code 39 Excel -->
-      <div class="bg-surface-container-low/80 rounded-2xl p-3 border border-primary/20 flex flex-col gap-2">
+      <div class="glass-panel rounded-2xl p-3 flex flex-col gap-2">
         <div class="flex items-center justify-between">
           <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5">
             <span class="material-symbols-outlined text-primary text-[18px]">barcode_scanner</span>
@@ -61,7 +61,7 @@ function renderItemCardHtml(item, index, totalItems) {
             </span>
             <input 
               type="text" 
-              class="input-barcode w-full pl-9 pr-3 py-2.5 rounded-xl bg-surface-container-lowest text-on-surface font-mono text-sm font-semibold border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+              class="input-barcode w-full pl-9 pr-3 py-2.5 rounded-xl glass-input text-on-surface font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
               placeholder="Kode barcode stiker (Code 39)..." 
               value="${item.barcode || ''}"
               data-item-id="${item.id}"
@@ -69,7 +69,7 @@ function renderItemCardHtml(item, index, totalItems) {
           </div>
           <button 
             type="button" 
-            class="btn-open-scanner px-3.5 py-2.5 rounded-xl bg-primary-container hover:bg-tertiary text-white font-label-md text-xs font-bold flex items-center gap-1.5 bevel-primary active:scale-95 shadow-sm"
+            class="btn-open-scanner px-3.5 py-2.5 rounded-xl glass-primary glass-btn text-primary-btn font-label-md text-xs font-bold flex items-center gap-1.5"
             data-item-id="${item.id}"
             title="Scan Barcode via Kamera HP"
           >
@@ -99,7 +99,7 @@ function renderItemCardHtml(item, index, totalItems) {
         <label class="font-label-sm text-xs text-on-surface-variant font-semibold">Nama / Model Sepatu</label>
         <input 
           type="text" 
-          class="input-item-name w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+ class="input-item-name w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
           placeholder="Contoh: Ventela Public Low Black 40-44" 
           value="${item.name || ''}"
           data-item-id="${item.id}"
@@ -115,7 +115,7 @@ function renderItemCardHtml(item, index, totalItems) {
         </div>
 
         <div class="grid grid-cols-2 gap-2.5">
-          <label class="lbl-kondisi-bagus cursor-pointer p-3 rounded-xl border-2 ${!isMinus ? 'border-emerald-600 bg-emerald-50 text-emerald-950 shadow-sm' : 'border-surface-container-high bg-surface-container-lowest text-on-surface-variant'} flex flex-col gap-1 transition-all" data-item-id="${item.id}">
+ <label class="lbl-kondisi-bagus cursor-pointer p-3 rounded-xl border-2 ${!isMinus ? 'border-emerald-600 bg-emerald-50 text-emerald-950 ' : 'glass-chip-btn text-on-surface-variant'} flex flex-col gap-1 transition-all" data-item-id="${item.id}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-emerald-700 text-[20px]">check_circle</span>
@@ -126,7 +126,7 @@ function renderItemCardHtml(item, index, totalItems) {
             <span class="text-[10px] text-emerald-800 leading-tight">Fisik mulus, tanpa cacat, grade A</span>
           </label>
 
-          <label class="lbl-kondisi-minus cursor-pointer p-3 rounded-xl border ${isMinus ? 'border-2 border-amber-600 bg-amber-50 text-amber-950 shadow-sm' : 'border-surface-container-high bg-surface-container-lowest text-on-surface-variant'} flex flex-col gap-1 transition-all" data-item-id="${item.id}">
+ <label class="lbl-kondisi-minus cursor-pointer p-3 rounded-xl border ${isMinus ? 'border-2 border-amber-600 bg-amber-50 text-amber-950 ' : 'glass-chip-btn text-on-surface-variant'} flex flex-col gap-1 transition-all" data-item-id="${item.id}">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-amber-700 text-[20px]">warning</span>
@@ -161,15 +161,15 @@ function renderItemCardHtml(item, index, totalItems) {
 
         <input type="file" id="photo-input-${item.id}" class="input-photo-file hidden" accept="image/*" data-item-id="${item.id}" />
 
-        <label for="photo-input-${item.id}" class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed border-surface-container-high hover:border-primary/50 bg-surface-container-low/40 cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
-          <div class="w-11 h-11 rounded-full bg-surface-container flex items-center justify-center text-primary shadow-inner">
+ <label for="photo-input-${item.id}" class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed hover:border-primary/50 glass-panel cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
+          <div class="w-11 h-11 rounded-full glass-chip flex items-center justify-center text-primary">
             <span class="material-symbols-outlined text-2xl">add_a_photo</span>
           </div>
           <span class="font-label-md text-xs font-bold text-on-surface mt-1">Ambil Foto dengan Kamera HP</span>
           <span class="font-body-sm text-[10px] text-on-surface-variant">Ketuk untuk membuka kamera atau pilih galeri</span>
         </label>
 
-        <div class="photo-preview-box ${item.photo ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-surface-container-high bg-black/5 shadow-sm" data-item-id="${item.id}">
+        <div class="photo-preview-box ${item.photo ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-white/70 bg-black/5" data-item-id="${item.id}">
           <img class="photo-preview-img w-full h-44 object-cover object-center" src="${item.photo || ''}" alt="Foto Sepatu" />
           <div class="absolute bottom-2 left-2 right-2 flex items-center justify-between p-2 rounded-xl bg-black/60 backdrop-blur-md text-white">
             <span class="font-label-sm text-[11px] font-semibold flex items-center gap-1">
@@ -188,9 +188,9 @@ function renderItemCardHtml(item, index, totalItems) {
 
       <!-- 5. Qty (Locked 1 Pcs) & Harga Beli -->
       <div class="grid grid-cols-2 gap-2.5">
-        <div class="flex flex-col justify-between bg-surface-container-low p-2.5 rounded-xl border border-surface-container-high/60">
+ <div class="flex flex-col justify-between glass-panel p-2.5 rounded-xl">
           <span class="font-label-sm text-[11px] text-on-surface font-semibold">Jumlah Pasang (Qty)</span>
-          <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg bg-surface-container-lowest border border-surface-container-high text-on-surface font-bold text-xs shadow-sm mt-1 select-none">
+          <div class="flex items-center gap-1.5 px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface font-bold text-xs mt-1 select-none">
             <span class="material-symbols-outlined text-[14px] text-on-surface-variant">lock</span>
             <span class="font-tabular font-bold text-primary">1 Pcs</span>
           </div>
@@ -202,7 +202,7 @@ function renderItemCardHtml(item, index, totalItems) {
             <span class="absolute left-2.5 top-2.5 text-xs text-on-surface-variant font-bold">Rp</span>
             <input 
               type="text" 
-              class="input-harga-beli w-full pl-7 pr-2.5 py-2 rounded-xl bg-surface-container-low text-on-surface font-bold text-sm font-tabular border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+ class="input-harga-beli w-full pl-7 pr-2.5 py-2 rounded-xl glass-input text-on-surface font-bold text-sm font-tabular focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
               value="${priceVal}"
               data-item-id="${item.id}"
             />
@@ -285,7 +285,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
 
             <!-- Daftar Barang yang sudah tercatat sebelumnya -->
             ${targetSupply.items && targetSupply.items.length > 0 ? `
-              <div class="mt-1 bg-surface-container-lowest/80 rounded-xl p-2.5 flex flex-col gap-1.5 border border-surface-container-high/60">
+ <div class="mt-1 glass-panel rounded-xl p-2.5 flex flex-col gap-1.5">
                 <span class="text-[10px] font-bold text-on-surface-variant uppercase tracking-wider">Barang Sudah Tercatat di Nota Ini:</span>
                 <div class="flex flex-col gap-1 divide-y divide-surface-container-high/40">
                   ${targetSupply.items.map((it, idx) => `
@@ -299,7 +299,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
                     </div>
                   `).join('')}
                 </div>
-                <div class="flex items-center justify-between pt-1.5 border-t border-surface-container-high/60 text-xs font-semibold">
+                <div class="flex items-center justify-between pt-1.5 border-t border-white/45 text-xs font-semibold">
                   <span class="text-on-surface-variant">Total Saat Ini:</span>
                   <span class="text-on-surface font-bold">${formatRupiah(targetSupply.totalAmount)} (${targetSupply.itemsCount || targetSupply.items.length} Pasang)</span>
                 </div>
@@ -308,7 +308,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
           </div>
         ` : `
           <!-- Data Suplier & Tanggal (Untuk Belanja Baru atau Edit) -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
             <div class="flex items-center gap-1.5">
               <span class="material-symbols-outlined text-primary text-[18px]">storefront</span>
               <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Data Suplier & Tanggal</span>
@@ -321,7 +321,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
                 id="input-suplier-name" 
                 placeholder="Isi nama suplier" 
                 value="${defaultSupplier}"
-                class="w-full px-3.5 py-2.5 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+ class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
                 required
               />
             </div>
@@ -332,7 +332,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
                 type="date" 
                 id="input-belanja-date" 
                 value="${defaultDate}" 
-                class="w-full px-3.5 py-2 rounded-xl bg-surface-container-low text-on-surface font-body-md text-sm border border-surface-container-high"
+ class="w-full px-3.5 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
               />
             </div>
           </div>
@@ -367,11 +367,11 @@ export function renderTambahBarangMasukPage(store, params = {}) {
 
         ${!isAppend ? `
           <!-- Status Pembayaran Belanja (Lunas / Tempo) -->
-          <div class="bg-surface-container-lowest rounded-2xl p-4 shadow-sm border border-surface-container-high flex flex-col gap-3">
+ <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
             <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Status Pembayaran Belanja</span>
             
             <div class="grid grid-cols-2 gap-2">
-              <label class="status-radio-opt cursor-pointer p-3 rounded-xl border-2 ${defaultStatus === 'lunas' ? 'border-primary bg-secondary-container text-primary' : 'border-surface-container-high bg-surface-container-lowest text-on-surface-variant'} flex items-center gap-2">
+ <label class="status-radio-opt cursor-pointer p-3 rounded-xl border-2 ${defaultStatus === 'lunas' ? 'border-primary bg-secondary-container text-primary' : 'glass-chip-btn text-on-surface-variant'} flex items-center gap-2">
                 <input type="radio" name="supplyStatus" value="lunas" ${defaultStatus === 'lunas' ? 'checked' : ''} class="hidden"/>
                 <span class="material-symbols-outlined text-[20px]">check_circle</span>
                 <div class="flex flex-col">
@@ -380,7 +380,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
                 </div>
               </label>
 
-              <label class="status-radio-opt cursor-pointer p-3 rounded-xl border ${defaultStatus === 'tempo' ? 'border-2 border-primary bg-secondary-container text-primary' : 'border-surface-container-high bg-surface-container-lowest text-on-surface-variant'} flex items-center gap-2">
+ <label class="status-radio-opt cursor-pointer p-3 rounded-xl border ${defaultStatus === 'tempo' ? 'border-2 border-primary bg-secondary-container text-primary' : 'glass-chip-btn text-on-surface-variant'} flex items-center gap-2">
                 <input type="radio" name="supplyStatus" value="tempo" ${defaultStatus === 'tempo' ? 'checked' : ''} class="hidden"/>
                 <span class="material-symbols-outlined text-[20px]">schedule</span>
                 <div class="flex flex-col">
@@ -393,7 +393,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
         ` : ''}
 
         <!-- Total Belanja Summary & Submit Button -->
-        <div class="bg-primary-container text-surface-bright rounded-2xl p-4 shadow-md flex items-center justify-between">
+        <div class="glass-dark glass-sheen rounded-2xl p-4 flex items-center justify-between">
           <div class="flex flex-col">
             <span id="summary-label-sub" class="text-xs text-primary-fixed-dim">
               ${isAppend ? 'Total Tambahan Ini' : 'Total Belanja'}
@@ -403,7 +403,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
           <button 
             type="submit" 
             id="btn-submit-belanja"
-            class="px-5 py-3 rounded-xl bg-[#E05A2B] hover:bg-[#c94d22] text-white font-label-md text-sm font-bold bevel-accent active:scale-95 shadow-sm"
+ class="px-5 py-3 rounded-xl glass-primary glass-btn text-primary-btn font-label-md text-sm font-bold"
           >
             ${isAppend ? 'Simpan ke Nota' : (isEdit ? 'Simpan Perubahan' : 'Simpan Belanja')}
           </button>
@@ -689,14 +689,14 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
 
       if (isMinus) {
         if (lblMinus) lblMinus.className = 'lbl-kondisi-minus cursor-pointer p-3 rounded-xl border-2 border-amber-600 bg-amber-50 text-amber-950 flex flex-col gap-1 transition-all shadow-sm';
-        if (lblBagus) lblBagus.className = 'lbl-kondisi-bagus cursor-pointer p-3 rounded-xl border border-surface-container-high bg-surface-container-lowest text-on-surface-variant flex flex-col gap-1 transition-all';
+ if (lblBagus) lblBagus.className = 'lbl-kondisi-bagus cursor-pointer p-3 rounded-xl border glass-chip-btn text-on-surface-variant flex flex-col gap-1 transition-all';
         if (wrapperMinus) {
           wrapperMinus.classList.remove('hidden');
           wrapperMinus.classList.add('flex');
         }
       } else {
         if (lblBagus) lblBagus.className = 'lbl-kondisi-bagus cursor-pointer p-3 rounded-xl border-2 border-emerald-600 bg-emerald-50 text-emerald-950 flex flex-col gap-1 transition-all shadow-sm';
-        if (lblMinus) lblMinus.className = 'lbl-kondisi-minus cursor-pointer p-3 rounded-xl border border-surface-container-high bg-surface-container-lowest text-on-surface-variant flex flex-col gap-1 transition-all';
+ if (lblMinus) lblMinus.className = 'lbl-kondisi-minus cursor-pointer p-3 rounded-xl border glass-chip-btn text-on-surface-variant flex flex-col gap-1 transition-all';
         if (wrapperMinus) {
           wrapperMinus.classList.add('hidden');
           wrapperMinus.classList.remove('flex');
@@ -883,7 +883,7 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   document.querySelectorAll('.status-radio-opt input').forEach((radio) => {
     radio.addEventListener('change', () => {
       document.querySelectorAll('.status-radio-opt').forEach((lbl) => {
-        lbl.className = 'status-radio-opt cursor-pointer p-3 rounded-xl border border-surface-container-high bg-surface-container-lowest text-on-surface-variant flex items-center gap-2';
+ lbl.className = 'status-radio-opt cursor-pointer p-3 rounded-xl border glass-chip-btn text-on-surface-variant flex items-center gap-2';
       });
       const parent = radio.closest('.status-radio-opt');
       if (parent) {

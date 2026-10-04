@@ -6,21 +6,21 @@ export function showToast(message, type = 'success', duration = 2500) {
 
   const toast = document.createElement('div');
   
-  let bgClass = 'bg-primary-container text-surface-bright border border-on-tertiary-container/30';
+  let bgClass = 'glass-toast';
   let icon = 'check_circle';
-  let iconColor = 'text-emerald-400';
+  let iconColor = 'text-emerald-300';
 
   if (type === 'error') {
-    bgClass = 'bg-error text-white';
+    bgClass = 'glass-toast glass-toast-error';
     icon = 'error';
-    iconColor = 'text-white';
+    iconColor = 'text-rose-200';
   } else if (type === 'info') {
-    bgClass = 'bg-secondary text-white';
+    bgClass = 'glass-toast glass-toast-info';
     icon = 'info';
     iconColor = 'text-amber-300';
   }
 
-  toast.className = `toast-enter flex items-center gap-2.5 px-4 py-3 rounded-xl shadow-lg ${bgClass} text-sm font-medium transition-all pointer-events-auto select-none`;
+  toast.className = `toast-enter flex items-center gap-2.5 px-4 py-3 rounded-xl ${bgClass} text-surface-bright text-sm font-medium transition-all pointer-events-auto select-none`;
   toast.innerHTML = `
     <span class="material-symbols-outlined text-[20px] ${iconColor}">${icon}</span>
     <span class="truncate max-w-[280px]">${message}</span>
