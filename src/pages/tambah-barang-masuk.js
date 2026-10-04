@@ -3,6 +3,7 @@ import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
+import { createPhotoSourceSheet } from '../components/photo-source-sheet.js';
 
 function createNewItem(defaultValues = {}) {
   const uniqueId = `item-${Date.now()}-${Math.floor(Math.random() * 1000)}`;
@@ -159,15 +160,19 @@ function renderItemCardHtml(item, index, totalItems) {
           <span class="font-label-sm text-[10px] text-on-surface-variant">Dokumentasi Fisik</span>
         </div>
 
-        <input type="file" id="photo-input-${item.id}" class="input-photo-file hidden" accept="image/*" data-item-id="${item.id}" />
+        <!-- Tiga input: kamera belakang, kamera depan, dan galeri.
+             Dipilih dari bottom sheet "Ambil Foto Barang". -->
+        <input type="file" class="input-photo-file input-photo-camera hidden" accept="image/*" capture="environment" data-item-id="${item.id}" />
+        <input type="file" class="input-photo-file input-photo-front hidden" accept="image/*" capture="user" data-item-id="${item.id}" />
+        <input type="file" class="input-photo-file input-photo-gallery hidden" accept="image/*" data-item-id="${item.id}" />
 
- <label for="photo-input-${item.id}" class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed hover:border-primary/50 glass-panel cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
+        <div data-photo-trigger="${item.id}" class="photo-placeholder-box ${item.photo ? 'hidden' : ''} w-full p-4 rounded-2xl border-2 border-dashed hover:border-primary/50 glass-panel cursor-pointer flex flex-col items-center justify-center gap-1.5 text-center transition-all active:scale-[0.99]">
           <div class="w-11 h-11 rounded-full glass-chip flex items-center justify-center text-primary">
             <span class="material-symbols-outlined text-2xl">add_a_photo</span>
           </div>
-          <span class="font-label-md text-xs font-bold text-on-surface mt-1">Ambil Foto dengan Kamera HP</span>
-          <span class="font-body-sm text-[10px] text-on-surface-variant">Ketuk untuk membuka kamera atau pilih galeri</span>
-        </label>
+          <span class="font-label-md text-xs font-bold text-on-surface mt-1">Ambil / Pilih Foto</span>
+          <span class="font-body-sm text-[10px] text-on-surface-variant">Ketuk untuk buka Kamera atau Galeri</span>
+        </div>
 
         <div class="photo-preview-box ${item.photo ? '' : 'hidden'} relative rounded-2xl overflow-hidden border border-white/70 bg-black/5" data-item-id="${item.id}">
           <img class="photo-preview-img w-full h-44 object-cover object-center" src="${item.photo || ''}" alt="Foto Sepatu" />
@@ -177,7 +182,7 @@ function renderItemCardHtml(item, index, totalItems) {
               <span>Foto Terlampir</span>
             </span>
             <div class="flex items-center gap-1.5">
-              <label for="photo-input-${item.id}" class="btn-retake-photo cursor-pointer px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-xs font-semibold active:scale-95 select-none">Ganti</label>
+              <button type="button" data-photo-trigger="${item.id}" class="btn-retake-photo cursor-pointer px-2.5 py-1 rounded-lg bg-white/20 hover:bg-white/30 text-white text-xs font-semibold active:scale-95 select-none">Ganti</button>
               <button type="button" class="btn-remove-photo p-1 rounded-lg bg-rose-600/80 hover:bg-rose-700 text-white active:scale-95" data-item-id="${item.id}" title="Hapus Foto">
                 <span class="material-symbols-outlined text-[16px]">delete</span>
               </button>
@@ -490,6 +495,9 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   const btnCancelCamera = document.getElementById('btn-cancel-scanner');
   const btnSampleCode39 = document.getElementById('btn-sample-code39');
 
+  // Bottom sheet pilihan sumber foto (Kamera / Kamera Depan / Galeri)
+  const photoSheet = createPhotoSourceSheet();
+
   function calculateTotals() {
     const totalAmount = items.reduce((sum, it) => sum + ((Number(it.buyPrice) || 0) * (Number(it.qty) || 1)), 0);
     const totalCount = items.reduce((sum, it) => sum + (Number(it.qty) || 1), 0);
@@ -716,24 +724,35 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     }
 
     // Foto Handlers
-    const photoInput = cardEl.querySelector('.input-photo-file');
+    const photoInputs = cardEl.querySelectorAll('.input-photo-file');
     const photoPlaceholder = cardEl.querySelector('.photo-placeholder-box');
     const photoPreviewBox = cardEl.querySelector('.photo-preview-box');
     const photoPreviewImg = cardEl.querySelector('.photo-preview-img');
     const btnRemovePhoto = cardEl.querySelector('.btn-remove-photo');
 
-    // Foto: dibuka secara native lewat <label for="photo-input-..."> agar andal di browser HP / WebView
+    // Pemicu sheet: kotak "Ambil / Pilih Foto" dan tombol "Ganti"
+    cardEl.querySelectorAll('[data-photo-trigger]').forEach((trigger) => {
+      trigger.addEventListener('click', (e) => {
+        // Cegah event bubbling ke elemen lain (mis. label/button submit)
+        e.preventDefault();
+        e.stopPropagation();
+        photoSheet.open(item.id);
+      });
+    });
+
     if (btnRemovePhoto) {
       btnRemovePhoto.addEventListener('click', () => {
         item.photo = null;
-        if (photoInput) photoInput.value = '';
+        photoInputs.forEach((inp) => { inp.value = ''; });
         if (photoPreviewImg) photoPreviewImg.src = '';
         if (photoPreviewBox) photoPreviewBox.classList.add('hidden');
         if (photoPlaceholder) photoPlaceholder.classList.remove('hidden');
         showToast('Foto sepatu dihapus.', 'info');
       });
     }
-    if (photoInput) {
+
+    // Semua input (kamera belakang / depan / galeri) memakai handler yang sama
+    photoInputs.forEach((photoInput) => {
       photoInput.addEventListener('change', (e) => {
         const file = e.target.files && e.target.files[0];
         if (!file) return;
@@ -752,7 +771,7 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
           showToast('Foto gagal diproses. Coba pilih foto lain.', 'error');
         });
       });
-    }
+    });
 
     // Input Harga Beli
     const inputBeli = cardEl.querySelector('.input-harga-beli');
