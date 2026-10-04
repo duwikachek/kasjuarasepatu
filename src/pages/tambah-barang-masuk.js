@@ -8,7 +8,9 @@ import {
   buildScannerConfig1D,
   buildCameraConstraints,
   createScanDebouncer,
-  enhanceVideoElement
+  enhanceVideoElement,
+  checkCameraSupport,
+  describeCameraError
 } from '../utils/barcode-scanner-config.js';
 
 function createNewItem(defaultValues = {}) {
@@ -462,10 +464,16 @@ export function renderTambahBarangMasukPage(store, params = {}) {
             </div>
           </div>
 
-          <!-- Panduan dinamis -->
+          <!-- Panduan dinamis / pesan error -->
           <p id="scanner-hint" class="text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium">
             Geser barcode ke dalam kotak sampai terkunci
           </p>
+
+          <!-- Tombol coba lagi (hanya tampil saat terjadi error) -->
+          <button type="button" id="btn-scanner-retry"
+            class="hidden mt-2.5 px-4 py-2 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold active:scale-95">
+            Coba Lagi
+          </button>
 
           <!-- Info format barcode terakhir -->
           <div id="scanner-last-read" class="hidden mt-2 px-3 py-1.5 rounded-full glass-chip text-[11px] text-white font-mono"></div>
@@ -894,7 +902,21 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   function openScanner() {
     if (!barcodeModal) return;
     barcodeModal.classList.remove('hidden');
+
+    // --- PRE-FLIGHT CHECK -------------------------------------------------
+    // Kamera hanya boleh dibuka pada secure context (https / localhost).
+    // Jika aplikasi diakses lewat IP LAN, browser memblokir kamera,
+    // jadi lebih baik informasikan penyebabnya sejak awal.
+    const support = checkCameraSupport();
+    if (!support.ok) {
+      setScannerStatus(support.reason, 'error');
+      setScannerHint(support.hint);
+      showRetryButton(true);
+      return;
+    }
+
     setScannerStatus('Meminta izin kamera...', 'info');
+    showRetryButton(false);
 
     // Reset state zoom & kamera
     scannerZoom = 1;
@@ -919,7 +941,9 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       setTimeout(() => {
         enhanceVideoElement('qr-reader');
         applyTorch(true);
-        setScannerStatus('', null);
+        setScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+        setScannerHint('');
+        showRetryButton(false);
       }, 120);
     };
 
@@ -963,29 +987,43 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       .catch(() => tryStart({}, { ...baseConfig, fps: 10 }, 'tanpa facingMode'))
       .catch((err) => {
         console.error('[scanner] kamera tidak dapat dibuka', err);
-        const msg = (err && err.name === 'NotAllowedError')
-          ? 'Izin kamera ditolak. Aktifkan izin kamera pada browser lalu coba lagi.'
-          : 'Kamera tidak dapat dibuka. Pastikan tidak ada aplikasi lain yang memakai kamera.';
-        setScannerStatus(msg, 'error');
-        showToast(msg, 'error', 4500);
+        setScannerStatus(describeCameraError(err), 'error');
+        showRetryButton(true);
       });
   }
 
-  /** Menampilkan pesan status di dalam modal scanner. */
+  /** Menampilkan pesan status ringkas di dalam modal scanner. */
   function setScannerStatus(text, type) {
     const hint = document.getElementById('scanner-hint');
     if (!hint) return;
-    if (!text) {
-      hint.textContent = 'Geser barcode ke dalam kotak sampai terkunci';
-      hint.className = 'text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium';
-      return;
-    }
     hint.textContent = text;
     if (type === 'error') {
       hint.className = 'text-xs text-rose-300 text-center mt-2.5 px-4 leading-snug font-semibold';
     } else {
       hint.className = 'text-xs text-white/80 text-center mt-2.5 px-5 leading-snug font-medium';
     }
+  }
+
+  /** Menampilkan petunjuk tambahan (mis. cara membuka via HTTPS). */
+  function setScannerHint(text) {
+    let el = document.getElementById('scanner-hint-detail');
+    if (!el) {
+      el = document.createElement('p');
+      el.id = 'scanner-hint-detail';
+      el.className = 'text-[10px] text-white/55 text-center mt-1.5 px-5 leading-snug';
+      const anchor = document.getElementById('scanner-hint');
+      if (anchor && anchor.parentElement) {
+        anchor.parentElement.insertBefore(el, anchor.nextSibling);
+      }
+    }
+    el.textContent = text || '';
+    el.classList.toggle('hidden', !text);
+  }
+
+  /** Tampilkan / sembunyikan tombol "Coba Lagi". */
+  function showRetryButton(show) {
+    const btn = document.getElementById('btn-scanner-retry');
+    if (btn) btn.classList.toggle('hidden', !show);
   }
 
   /** Nyalakan / matikan lampu kilat (torch) jika perangkat mendukung. */
@@ -1067,6 +1105,9 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
 
     activeScanItemId = null;
     scannerStartedOnce = false;
+    showRetryButton(false);
+    setScannerHint('');
+    setScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
     const lastRead = document.getElementById('scanner-last-read');
     if (lastRead) lastRead.classList.add('hidden');
   }
@@ -1080,6 +1121,23 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   if (btnTorch) btnTorch.addEventListener('click', toggleTorch);
   if (btnZoom) btnZoom.addEventListener('click', cycleZoom);
   if (btnSwitchCam) btnSwitchCam.addEventListener('click', switchCamera);
+
+  const btnRetry = document.getElementById('btn-scanner-retry');
+  if (btnRetry) {
+    btnRetry.addEventListener('click', () => {
+      // Bersihkan scanner lama (bila ada) lalu coba lagi
+      const oldScanner = html5Scanner;
+      html5Scanner = null;
+      if (oldScanner) {
+        oldScanner.stop()
+          .then(() => { try { oldScanner.clear(); } catch (_) {} })
+          .catch(() => {})
+          .then(() => openScanner());
+      } else {
+        openScanner();
+      }
+    });
+  }
 
   if (btnSampleCode39) {
     btnSampleCode39.addEventListener('click', () => {

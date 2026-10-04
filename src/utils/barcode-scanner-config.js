@@ -14,6 +14,73 @@
  */
 import { Html5QrcodeSupportedFormats } from 'html5-qrcode';
 
+/**
+ * Cek dukungan kamera sebelum membuka scanner.
+ *
+ * PENTING: getUserMedia hanya boleh dipanggil pada "secure context",
+ * yaitu https:// atau http://localhost / 127.0.0.1.
+ * Jika aplikasi dibuka lewat IP LAN (mis. http://192.168.1.5:5173),
+ * browser akan MEMBLOKIR kamera secara otomatis.
+ *
+ * @returns {{ok: boolean, reason?: string, hint?: string}}
+ */
+export function checkCameraSupport() {
+  // 1. Butuh https atau localhost
+  const isLocal = ['localhost', '127.0.0.1', '[::1]'].includes(window.location.hostname);
+  if (!window.isSecureContext && !isLocal) {
+    return {
+      ok: false,
+      reason: 'Konteks tidak aman (bukan HTTPS)',
+      hint: 'Kamera hanya boleh dibuka lewat alamat HTTPS atau http://localhost. ' +
+            'Saat ini Anda memakai http://' + window.location.host + '. ' +
+            'Coba: (1) adb reverse tcp:5173 tcp:5173 lalu buka http://localhost:5173 di HP, ' +
+            'atau (2) deploy aplikasi ke hosting HTTPS (GitHub Pages).'
+    };
+  }
+
+  // 2. Browser harus mendukung mediaDevices
+  if (!navigator.mediaDevices || typeof navigator.mediaDevices.getUserMedia !== 'function') {
+    return {
+      ok: false,
+      reason: 'Browser tidak mendukung akses kamera',
+      hint: 'Gunakan Chrome, Edge, atau browser Android terbaru yang mendukung WebRTC.'
+    };
+  }
+
+  return { ok: true };
+}
+
+/**
+ * Terjemahkan error kamera menjadi pesan berbahasa Indonesia yang actionable.
+ */
+export function describeCameraError(err) {
+  const name = (err && err.name) || '';
+  const msg = (err && err.message) || String(err || '');
+
+  if (!window.isSecureContext && !['localhost', '127.0.0.1'].includes(window.location.hostname)) {
+    return 'Kamera diblokir karena alamat ini bukan HTTPS. ' +
+           'Gunakan http://localhost:5173 (adb reverse) atau deploy ke hosting HTTPS.';
+  }
+  if (name === 'NotAllowedError' || /permission/i.test(msg)) {
+    return 'Izin kamera ditolak. Buka pengaturan browser > Izin situs > Kamera, lalu izinkan.';
+  }
+  if (name === 'NotFoundError' || /no camera/i.test(msg)) {
+    return 'Tidak ada kamera yang tersedia di perangkat ini.';
+  }
+  if (name === 'NotReadableError' || /in use|being used/i.test(msg)) {
+    return 'Kamera sedang dipakai aplikasi lain. Tutup aplikasi kamera/WhatsApp lalu coba lagi.';
+  }
+  if (name === 'OverconstrainedError') {
+    return 'Kamera menolak resolusi yang diminta. Gadget kamera mungkin sedang dipakai aplikasi lain.';
+  }
+  if (name === 'SecurityError' || /secure context/i.test(msg)) {
+    return 'Kamera hanya bisa dibuka melalui HTTPS atau localhost.';
+  }
+
+  // Fallback: tampilkan pesan asli agar mudah didiagnosis
+  return 'Kamera gagal dibuka (' + (name || 'Error') + '): ' + msg;
+}
+
 /** Format yang didukung, diurutkan dari prioritas. */
 export const SUPPORTED_FORMATS = [
   Html5QrcodeSupportedFormats.CODE_128, // Label retail pada tag sepatu
