@@ -34,6 +34,10 @@ class Store {
         this._migrateShopBranch(parsed);
         // Migrate: hapus data contoh 'inventory' lama (alert stok kini pakai data nyata)
         this._migrateRemoveDummyInventory(parsed);
+        // Migrate: hapus field 'stock' dari katalog produk (stok kini HANYA dari supplies)
+        this._migrateCleanProductStockField(parsed);
+        // Migrate: hapus data dummy bawaan (supplies, products, transactions contoh)
+        this._migratePurgeDummyData(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -42,7 +46,15 @@ class Store {
       }
     }
 
-    const fresh = JSON.parse(JSON.stringify(INITIAL_DATA));
+    // Fresh state: mulai dengan data bersih (tanpa dummy products/supplies)
+    const fresh = {
+      shop: JSON.parse(JSON.stringify(INITIAL_DATA.shop)),
+      transactions: [],
+      supplies: [],
+      products: [],
+      investors: [],
+      opnameRecords: []
+    };
     this.saveState(fresh);
     return fresh;
   }
@@ -90,6 +102,93 @@ class Store {
     // Dihapus agar alert "Stok Menipis" memakai perhitungan dari data nyata.
     if (data && Object.prototype.hasOwnProperty.call(data, 'inventory')) {
       delete data.inventory;
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /**
+   * Migrasi: Hapus field 'stock' / 'qty' dari katalog produk.
+   * Sebelumnya katalog produk punya field 'stock' (misal 10, 12, 5) yang
+   * dipakai sebagai sumber stok di laporan — ini menyebabkan produk tetap muncul
+   * di laporan sisa stock meski faktur belanjanya sudah dihapus.
+   * Mulai versi ini: sumber stok HANYA dari supplies (faktur belanja).
+   * Products hanya metadata (nama, harga, foto, kondisi).
+   */
+  _migrateCleanProductStockField(data) {
+    if (!data || !Array.isArray(data.products) || data.products.length === 0) return;
+    let changed = false;
+    data.products = data.products.map((p) => {
+      if (Object.prototype.hasOwnProperty.call(p, 'stock') ||
+          Object.prototype.hasOwnProperty.call(p, 'qty')) {
+        const { stock, qty, ...rest } = p; // eslint-disable-line no-unused-vars
+        changed = true;
+        return rest;
+      }
+      return p;
+    });
+    if (changed) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /**
+   * Migrasi: Hapus data dummy bawaan aplikasi dari localStorage.
+   * Data yang dihapus:
+   *  - Faktur belanja contoh: PASOK-01, PASOK-02, PASOK-03
+   *  - Transaksi contoh: TRX-101 s/d TRX-110
+   *  - Produk katalog dengan barcode contoh (SP-2024-0089, VENTELA-41, PIERO-JGR, SLOP-KLT)
+   *    hanya jika TIDAK ada lagi supply yang memiliki barcode yang sama (data pengguna aman).
+   * Data pengguna yang asli tidak disentuh.
+   */
+  _migratePurgeDummyData(data) {
+    if (!data) return;
+    const DUMMY_SUPPLY_IDS = ['PASOK-01', 'PASOK-02', 'PASOK-03'];
+    const DUMMY_TRX_IDS = ['TRX-101', 'TRX-102', 'TRX-103', 'TRX-104', 'TRX-105',
+                           'TRX-106', 'TRX-107', 'TRX-108', 'TRX-109', 'TRX-110'];
+    const DUMMY_BARCODES = new Set(['SP-2024-0089', 'VENTELA-41', 'PIERO-JGR', 'SLOP-KLT', 'OXFORD-42']);
+
+    let changed = false;
+
+    // Hapus supplies dummy
+    if (Array.isArray(data.supplies)) {
+      const before = data.supplies.length;
+      data.supplies = data.supplies.filter((s) => !DUMMY_SUPPLY_IDS.includes(s.id));
+      if (data.supplies.length !== before) changed = true;
+    }
+
+    // Hapus transaksi dummy
+    if (Array.isArray(data.transactions)) {
+      const before = data.transactions.length;
+      data.transactions = data.transactions.filter((t) => !DUMMY_TRX_IDS.includes(t.id));
+      if (data.transactions.length !== before) changed = true;
+    }
+
+    // Hapus produk katalog dummy — hanya jika tidak ada supply real yang masih memakainya
+    if (Array.isArray(data.products)) {
+      // Kumpulkan barcode yang masih dipakai oleh supplies yang tersisa (non-dummy)
+      const usedBarcodes = new Set();
+      (data.supplies || []).forEach((sup) => {
+        if (Array.isArray(sup.items)) {
+          sup.items.forEach((it) => {
+            if (it.barcode) usedBarcodes.add(it.barcode.toString().trim().toUpperCase());
+          });
+        }
+      });
+      const before = data.products.length;
+      data.products = data.products.filter((p) => {
+        if (!p.barcode) return true;
+        const bc = p.barcode.toString().trim().toUpperCase();
+        // Hapus jika barcode dummy DAN tidak dipakai oleh supply yang tersisa
+        return !(DUMMY_BARCODES.has(bc) && !usedBarcodes.has(bc));
+      });
+      if (data.products.length !== before) changed = true;
+    }
+
+    if (changed) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
       } catch (e) { /* ignore */ }
@@ -366,14 +465,47 @@ class Store {
   }
 
   deleteSupply(id) {
+    // Kumpulkan barcode dari supply yang akan dihapus
+    const supplyToDelete = this.state.supplies.find((s) => s.id === id);
+    const deletedBarcodes = new Set();
+    if (supplyToDelete && Array.isArray(supplyToDelete.items)) {
+      supplyToDelete.items.forEach((it) => {
+        if (it.barcode) deletedBarcodes.add(it.barcode.toString().trim().toUpperCase());
+      });
+    }
+
+    // Hapus supply
     this.state.supplies = this.state.supplies.filter((s) => s.id !== id);
+
+    // Hapus produk dari katalog yang tidak lagi direferensikan oleh supply manapun
+    if (deletedBarcodes.size > 0) {
+      const remainingBarcodes = new Set();
+      this.state.supplies.forEach((sup) => {
+        if (Array.isArray(sup.items)) {
+          sup.items.forEach((it) => {
+            if (it.barcode) remainingBarcodes.add(it.barcode.toString().trim().toUpperCase());
+          });
+        }
+      });
+      // Hapus dari catalog produk jika barcode tidak ada di supply manapun
+      if (Array.isArray(this.state.products)) {
+        this.state.products = this.state.products.filter((p) => {
+          if (!p.barcode) return true; // Pertahankan produk tanpa barcode
+          const bc = p.barcode.toString().trim().toUpperCase();
+          return !deletedBarcodes.has(bc) || remainingBarcodes.has(bc);
+        });
+      }
+    }
+
     this.notify();
   }
 
   // Master Catalog Products (Indexed by Barcode Code 39)
+  // Catatan: catalog produk hanya menyimpan metadata (nama, harga, foto, kondisi).
+  // Sumber stok HANYA dari supplies (faktur belanja), bukan dari field 'stock' di sini.
   getProducts() {
     if (!this.state.products || !Array.isArray(this.state.products)) {
-      this.state.products = (INITIAL_DATA.products && [...INITIAL_DATA.products]) || [];
+      this.state.products = [];
     }
     return this.state.products;
   }
@@ -384,20 +516,32 @@ class Store {
 
   /**
    * Menghasilkan Laporan Komprehensif Sisa Stock Belum Terjual Secara Real Time.
-   * Dihitung secara presisi:
-   * (Total Pasang Masuk dari Belanja Supplies & Katalog Produk)
-   * DIKURANGI
-   * (Total Sepatu Terjual di Transaksi Kasir/Penjualan).
+   * 
+   * SUMBER STOK: HANYA dari Faktur Belanja / Supplies.
+   * Katalog Produk (products) HANYA dipakai sebagai metadata pelengkap
+   * (foto, harga jual) — TIDAK sebagai sumber kuantitas stok.
+   * 
+   * Formula: Sisa Stok = Total Qty Masuk (supplies) - Total Terjual (transaksi kasir)
+   * 
+   * Ketika faktur belanja dihapus → stoknya langsung hilang dari laporan ini.
    * 
    * @param {Object} options
-   * @param {string|null} options.excludeTrxId - Abaikan transaksi ID ini (misal saat edit transaksi)
+   * @param {string|null} options.excludeTrxId - Abaikan transaksi ID ini (misal saat edit)
    * @returns {Object} { items, unsoldItems, summary }
    */
   getRealtimeStockReport(options = {}) {
     const { excludeTrxId = null } = options;
     const transactions = this.getTransactions();
     const supplies = this.getSupplies();
-    const products = this.getProducts();
+    const products = this.getProducts(); // hanya untuk metadata pelengkap
+
+    // Buat indeks metadata dari katalog produk (foto, harga) — BUKAN kuantitas stok
+    const productMeta = new Map();
+    products.forEach((p) => {
+      if (!p.barcode) return;
+      const bc = p.barcode.toString().trim().toUpperCase();
+      productMeta.set(bc, p);
+    });
 
     // 1. Kumpulkan jumlah fisik sepatu terjual per barcode & per nama
     const soldCountByBarcode = new Map();
@@ -434,88 +578,62 @@ class Store {
       }
     });
 
-    // 2. Kumpulkan seluruh master stok masuk (dari Belanja / supplies & Katalog produk)
+    // 2. Kumpulkan stok HANYA dari Faktur Belanja (supplies)
+    //    Jika supply dihapus → tidak masuk ke stockMap → tidak muncul di laporan.
     const stockMap = new Map();
 
-    // A. Dari Faktur Barang Masuk (supplies)
     supplies.forEach((sup) => {
-      if (sup.items && Array.isArray(sup.items)) {
-        sup.items.forEach((it, idx) => {
-          const rawBc = it.barcode ? it.barcode.toString().trim().toUpperCase() : '';
-          const rawName = (it.name || 'Sepatu Tanpa Nama').trim();
-          // Kunci utama: barcode jika ada, fallback ke nama produk
-          const key = rawBc || `NAME:${rawName.toLowerCase()}`;
-          const qty = Math.max(1, Number(it.qty) || 1);
-          const buyPrice = Number(it.buyPrice) || 0;
-          const sellPrice = Number(it.sellPrice) || (buyPrice ? Math.round(buyPrice * 1.35) : 0);
+      if (!sup.items || !Array.isArray(sup.items)) return;
+      sup.items.forEach((it, idx) => {
+        const rawBc = it.barcode ? it.barcode.toString().trim().toUpperCase() : '';
+        const rawName = (it.name || 'Sepatu Tanpa Nama').trim();
+        // Kunci utama: barcode jika ada, fallback ke nama produk lowercase
+        const key = rawBc || `NAME:${rawName.toLowerCase()}`;
+        const qty = Math.max(0, Number(it.qty) || 0);
+        const buyPrice = Number(it.buyPrice) || 0;
 
-          if (!stockMap.has(key)) {
-            stockMap.set(key, {
-              key,
-              barcode: it.barcode || (rawBc ? rawBc : `AUTO-${idx + 1}`),
-              hasRealBarcode: Boolean(rawBc),
-              name: rawName,
-              kondisi: it.kondisi || 'Bagus',
-              catatanMinus: it.catatanMinus || '',
-              buyPrice,
-              sellPrice,
-              photo: it.photo || null,
-              supplier: sup.supplierName || 'Suplier Umum',
-              lastSupplyDate: sup.date || '',
-              lastInvoiceNo: sup.invoiceNo || '',
-              totalMasuk: 0
-            });
-          }
+        // Ambil harga jual dari item supply; jika tidak ada coba dari catalog produk
+        const meta = rawBc ? productMeta.get(rawBc) : null;
+        const sellPrice = Number(it.sellPrice) ||
+          (meta ? Number(meta.sellPrice) : 0) ||
+          (buyPrice ? Math.round(buyPrice * 1.35) : 0);
 
-          const entry = stockMap.get(key);
-          entry.totalMasuk += qty;
-          if (!entry.photo && it.photo) entry.photo = it.photo;
-          if (it.kondisi === 'Minus') {
-            entry.kondisi = 'Minus';
-            if (it.catatanMinus) entry.catatanMinus = it.catatanMinus;
-          }
-          if (buyPrice > 0 && entry.buyPrice === 0) entry.buyPrice = buyPrice;
-          if (sellPrice > 0 && entry.sellPrice === 0) entry.sellPrice = sellPrice;
-          if (sup.date && (!entry.lastSupplyDate || sup.date > entry.lastSupplyDate)) {
-            entry.lastSupplyDate = sup.date;
-            entry.lastInvoiceNo = sup.invoiceNo || entry.lastInvoiceNo;
-          }
-        });
-      }
-    });
+        if (!stockMap.has(key)) {
+          stockMap.set(key, {
+            key,
+            barcode: rawBc || it.barcode || `AUTO-${idx + 1}`,
+            hasRealBarcode: Boolean(rawBc),
+            name: rawName,
+            kondisi: it.kondisi || 'Bagus',
+            catatanMinus: it.catatanMinus || '',
+            buyPrice,
+            sellPrice,
+            photo: it.photo || (meta ? meta.photo : null) || null,
+            supplier: sup.supplierName || 'Suplier Umum',
+            lastSupplyDate: sup.date || '',
+            lastInvoiceNo: sup.invoiceNo || '',
+            totalMasuk: 0
+          });
+        }
 
-    // B. Dari Master Katalog Produk (products) jika belum masuk di supplies
-    products.forEach((prod, idx) => {
-      const rawBc = prod.barcode ? prod.barcode.toString().trim().toUpperCase() : '';
-      const rawName = (prod.name || 'Sepatu Tanpa Nama').trim();
-      const key = rawBc || `NAME:${rawName.toLowerCase()}`;
-      const qty = Math.max(1, Number(prod.stock) || Number(prod.qty) || 1);
-      const buyPrice = Number(prod.buyPrice) || 0;
-      const sellPrice = Number(prod.sellPrice) || (buyPrice ? Math.round(buyPrice * 1.35) : 0);
-
-      if (!stockMap.has(key)) {
-        stockMap.set(key, {
-          key,
-          barcode: prod.barcode || (rawBc ? rawBc : `PROD-${idx + 1}`),
-          hasRealBarcode: Boolean(rawBc),
-          name: rawName,
-          kondisi: prod.kondisi || 'Bagus',
-          catatanMinus: prod.catatanMinus || '',
-          buyPrice,
-          sellPrice,
-          photo: prod.photo || null,
-          supplier: prod.supplier || 'Suplier Umum',
-          lastSupplyDate: prod.date || '',
-          lastInvoiceNo: '',
-          totalMasuk: qty
-        });
-      } else {
         const entry = stockMap.get(key);
-        if (!entry.photo && prod.photo) entry.photo = prod.photo;
+        entry.totalMasuk += qty;
+        // Perkaya metadata dari catalog produk jika ada
+        if (!entry.photo) {
+          entry.photo = it.photo || (meta ? meta.photo : null) || null;
+        }
+        if (it.kondisi === 'Minus') {
+          entry.kondisi = 'Minus';
+          if (it.catatanMinus) entry.catatanMinus = it.catatanMinus;
+        }
         if (buyPrice > 0 && entry.buyPrice === 0) entry.buyPrice = buyPrice;
         if (sellPrice > 0 && entry.sellPrice === 0) entry.sellPrice = sellPrice;
-        if (entry.totalMasuk === 0) entry.totalMasuk = qty;
-      }
+        // Simpan tanggal supply terbaru
+        if (sup.date && (!entry.lastSupplyDate || sup.date > entry.lastSupplyDate)) {
+          entry.lastSupplyDate = sup.date;
+          entry.lastInvoiceNo = sup.invoiceNo || entry.lastInvoiceNo;
+        }
+      });
     });
 
     // 3. Kalkulasi per item: Terjual, Sisa, Nilai Modal Aset, Potensi Omset & Laba
