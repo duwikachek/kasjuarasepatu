@@ -5,8 +5,10 @@ import { showToast } from '../components/toast.js';
 export function renderBarangMasukListPage(store, filterStatus = 'all') {
   const supplies = store.getSupplies();
   
+  const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: { totalSisaPasang: 0 } };
   const totalBelanja = supplies.reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
   const totalItems = supplies.reduce((sum, s) => sum + (Number(s.itemsCount) || 0), 0);
+  const totalSisa = stockReport.summary.totalSisaPasang;
 
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
@@ -17,7 +19,7 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
       })}
 
       <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3.5">
-        <!-- KPI Belanja Cards -->
+        <!-- KPI Belanja & Sisa Stock Cards -->
         <section class="grid grid-cols-2 gap-2.5">
           <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between">
             <span class="font-label-sm text-xs text-on-surface-variant font-semibold flex items-center gap-1">
@@ -32,21 +34,21 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
             </div>
           </div>
 
-          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between">
-            <span class="font-label-sm text-xs text-on-surface-variant font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-[16px] text-primary">inventory_2</span>
-              Jumlah Stock
+          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
+            <span class="font-label-sm text-xs text-emerald-400 font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[16px] text-emerald-400">inventory_2</span>
+              Sisa Stok Real-Time
             </span>
             <div class="mt-2">
-              <span id="kpi-total-items" class="font-headline-sm text-base font-bold text-primary block font-tabular">
-                ${totalItems} Pasang
+              <span id="kpi-total-items" class="font-headline-sm text-base font-bold text-white block font-tabular">
+                ${totalSisa} Pasang
               </span>
-              <span class="font-body-sm text-[11px] text-on-surface-variant mt-0.5 block">Stock Masuk Toko</span>
+              <span class="font-body-sm text-[11px] text-emerald-400/90 mt-0.5 block">Belum Terjual (${totalItems} Masuk)</span>
             </div>
           </div>
         </section>
 
-        <!-- Action Buttons: Belanja Baru & Stock Opname -->
+        <!-- Action Buttons: Belanja Baru, Laporan Sisa Stock, Stock Opname -->
         <div class="grid grid-cols-2 gap-2.5">
           <button 
             type="button" 
@@ -58,13 +60,22 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
           </button>
           <button 
             type="button" 
-            id="btn-goto-stock-opname"
-            class="glass-card glass-sheen h-12 border border-neutral-700/60 hover:border-neutral-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm text-neutral-200 active:scale-[0.99]"
+            id="btn-goto-laporan-stock"
+            class="glass-card glass-sheen h-12 border border-emerald-500/50 hover:border-emerald-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm text-emerald-300 active:scale-[0.99]"
           >
-            <span class="material-symbols-outlined text-[19px] text-emerald-400">fact_check</span>
-            <span class="font-bold">Stock Opname</span>
+            <span class="material-symbols-outlined text-[19px] text-emerald-400">analytics</span>
+            <span class="font-bold">Laporan Sisa Stok</span>
           </button>
         </div>
+
+        <button 
+          type="button" 
+          id="btn-goto-stock-opname"
+          class="glass-card glass-sheen h-10 border border-neutral-700/60 hover:border-neutral-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs text-neutral-300 active:scale-[0.99]"
+        >
+          <span class="material-symbols-outlined text-[17px] text-emerald-400">fact_check</span>
+          <span>Stock Opname (Cek Fisik Sepatu)</span>
+        </button>
 
         <!-- Search Bar -->
         <div class="relative w-full">
@@ -114,6 +125,11 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
     addBtn.addEventListener('click', () => router.navigate('tambah-pasok'));
   }
 
+  const laporanStockBtn = document.getElementById('btn-goto-laporan-stock');
+  if (laporanStockBtn) {
+    laporanStockBtn.addEventListener('click', () => router.navigate('laporan-stock'));
+  }
+
   const opnameBtn = document.getElementById('btn-goto-stock-opname');
   if (opnameBtn) {
     opnameBtn.addEventListener('click', () => router.navigate('stock-opname'));
@@ -140,8 +156,9 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
   function updateKpi() {
     const supplies = store.getSupplies();
+    const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: { totalSisaPasang: 0 } };
     const totalBelanja = supplies.reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
-    const totalItems = supplies.reduce((sum, s) => sum + (Number(s.itemsCount) || 0), 0);
+    const totalSisa = stockReport.summary.totalSisaPasang;
 
     const elTotal = document.getElementById('kpi-total-belanja');
     const elCount = document.getElementById('kpi-count-belanja');
@@ -149,7 +166,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
 
     if (elTotal) elTotal.textContent = formatRupiah(totalBelanja);
     if (elCount) elCount.textContent = `${supplies.length} Transaksi Belanja`;
-    if (elItems) elItems.textContent = `${totalItems} Pasang`;
+    if (elItems) elItems.textContent = `${totalSisa} Pasang`;
   }
 
   function renderItems() {

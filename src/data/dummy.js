@@ -22,6 +22,9 @@ export const INITIAL_DATA = {
       category: "Penjualan Toko / Kasir",
       amount: 438000,
       title: "Penjualan Sepatu Compass Gazelle Low Black (Size 42)",
+      productName: "Compass Gazelle Low Retro (Size 40-42)",
+      barcode: "SP-2024-0089",
+      kondisi: "Bagus",
       paymentMethod: "Tunai (Laci)",
       date: "2024-10-24",
       time: "14:20 WIB",
@@ -33,6 +36,9 @@ export const INITIAL_DATA = {
       category: "Penjualan Toko / Kasir",
       amount: 269000,
       title: "Sepatu Ventela Public Low Black Natural (Size 41)",
+      productName: "Ventela Public Low Black (Size 39-43)",
+      barcode: "VENTELA-41",
+      kondisi: "Bagus",
       paymentMethod: "QRIS / Transfer",
       date: "2024-10-24",
       time: "13:45 WIB",
@@ -99,6 +105,10 @@ export const INITIAL_DATA = {
       category: "Penjualan Toko / Kasir",
       amount: 540000,
       title: "2x Sepatu Sandal Slip-on Kulit Sentosa",
+      productName: "Sandal Slop Kulit Pria Asli Sentosa",
+      barcode: "SLOP-KLT",
+      kondisi: "Bagus",
+      itemCount: 2,
       paymentMethod: "Tunai (Laci)",
       date: "2024-10-23",
       time: "15:20 WIB",
@@ -110,6 +120,10 @@ export const INITIAL_DATA = {
       category: "Penjualan Grosir",
       amount: 1250000,
       title: "Grosir 10 Pasang Sandal Slop Kulit ke Toko Berkah",
+      productName: "Sandal Slop Kulit Pria Asli Sentosa",
+      barcode: "SLOP-KLT",
+      kondisi: "Bagus",
+      itemCount: 10,
       paymentMethod: "Transfer Bank BCA",
       date: "2024-10-23",
       time: "11:00 WIB",
@@ -141,8 +155,8 @@ export const INITIAL_DATA = {
       itemsCount: 15,
       totalAmount: 3450000,
       items: [
-        { name: "Ventela Public Low Black (Size 39-43)", qty: 10, buyPrice: 185000, sellPrice: 269000 },
-        { name: "Compass Gazelle Low Retro (Size 40-42)", qty: 5, buyPrice: 320000, sellPrice: 438000 }
+        { barcode: "VENTELA-41", name: "Ventela Public Low Black Natural Size 41", qty: 10, buyPrice: 185000, sellPrice: 269000, kondisi: "Bagus", photo: "https://images.unsplash.com/photo-1525966222134-fcfa99b8ae77?auto=format&fit=crop&w=400&q=80" },
+        { barcode: "SP-2024-0089", name: "Compass Gazelle Low Retro Size 40-43", qty: 5, buyPrice: 320000, sellPrice: 438000, kondisi: "Bagus", photo: "https://images.unsplash.com/photo-1549298916-b41d501d3772?auto=format&fit=crop&w=400&q=80" }
       ]
     },
     {
@@ -157,8 +171,8 @@ export const INITIAL_DATA = {
       itemsCount: 23,
       totalAmount: 2800000,
       items: [
-        { name: "Sandal Slop Kulit Pria Asli", qty: 15, buyPrice: 90000, sellPrice: 145000 },
-        { name: "Sepatu Pantofel Pria Oxford", qty: 8, buyPrice: 180000, sellPrice: 275000 }
+        { barcode: "SLOP-KLT", name: "Sandal Slop Kulit Pria Asli Sentosa Size 41", qty: 15, buyPrice: 90000, sellPrice: 145000, kondisi: "Bagus", photo: "https://images.unsplash.com/photo-1603808033192-082d6919d3e1?auto=format&fit=crop&w=400&q=80" },
+        { barcode: "OXFORD-42", name: "Sepatu Pantofel Pria Oxford Size 42", qty: 8, buyPrice: 180000, sellPrice: 275000, kondisi: "Bagus" }
       ]
     },
     {
@@ -172,7 +186,7 @@ export const INITIAL_DATA = {
       itemsCount: 12,
       totalAmount: 2160000,
       items: [
-        { name: "Piero Jogger Premium Grey", qty: 12, buyPrice: 180000, sellPrice: 289000 }
+        { barcode: "PIERO-JGR", name: "Piero Jogger Premium Grey Size 42", qty: 12, buyPrice: 180000, sellPrice: 289000, kondisi: "Minus", catatanMinus: "Ada noda sol luar tipis dari pabrik", photo: "https://images.unsplash.com/photo-1560769629-975ec94e6a86?auto=format&fit=crop&w=400&q=80" }
       ]
     }
   ],

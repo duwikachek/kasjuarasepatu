@@ -378,53 +378,263 @@ class Store {
     return this.state.products;
   }
 
-  // Available In-Stock Products (excluding already sold items)
-  // Hanya dari entri Barang Masuk (supplies) - bukan dari katalog produk
-  getAvailableProducts(excludeTrxId = null) {
+  // =========================================================================
+  // LAPORAN REAL-TIME SISA STOCK (BARANG BELUM TERJUAL) & INVENTARIS
+  // =========================================================================
+
+  /**
+   * Menghasilkan Laporan Komprehensif Sisa Stock Belum Terjual Secara Real Time.
+   * Dihitung secara presisi:
+   * (Total Pasang Masuk dari Belanja Supplies & Katalog Produk)
+   * DIKURANGI
+   * (Total Sepatu Terjual di Transaksi Kasir/Penjualan).
+   * 
+   * @param {Object} options
+   * @param {string|null} options.excludeTrxId - Abaikan transaksi ID ini (misal saat edit transaksi)
+   * @returns {Object} { items, unsoldItems, summary }
+   */
+  getRealtimeStockReport(options = {}) {
+    const { excludeTrxId = null } = options;
     const transactions = this.getTransactions();
-    const soldSet = new Set();
+    const supplies = this.getSupplies();
+    const products = this.getProducts();
+
+    // 1. Kumpulkan jumlah fisik sepatu terjual per barcode & per nama
+    const soldCountByBarcode = new Map();
+    const soldCountByName = new Map();
 
     transactions.forEach((t) => {
-      if (t.type === 'masuk' && (!excludeTrxId || t.id !== excludeTrxId)) {
-        if (t.barcode) soldSet.add(t.barcode.toString().trim().toUpperCase());
-        if (t.items && Array.isArray(t.items)) {
-          t.items.forEach((it) => {
-            if (it.barcode) soldSet.add(it.barcode.toString().trim().toUpperCase());
-          });
+      if (t.type !== 'masuk') return;
+      if (excludeTrxId && t.id === excludeTrxId) return;
+      // Abaikan transaksi non-penjualan sepatu
+      if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang') return;
+
+      if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+        t.items.forEach((it) => {
+          if (it.barcode) {
+            const bc = it.barcode.toString().trim().toUpperCase();
+            soldCountByBarcode.set(bc, (soldCountByBarcode.get(bc) || 0) + 1);
+          }
+          const nm = (it.name || '').toString().trim().toLowerCase();
+          if (nm) {
+            soldCountByName.set(nm, (soldCountByName.get(nm) || 0) + 1);
+          }
+        });
+      } else {
+        if (t.barcode) {
+          const bc = t.barcode.toString().trim().toUpperCase();
+          const count = Number(t.itemCount) || 1;
+          soldCountByBarcode.set(bc, (soldCountByBarcode.get(bc) || 0) + count);
+        }
+        const nm = (t.productName || t.title || '').toString().trim().toLowerCase();
+        if (nm) {
+          const count = Number(t.itemCount) || 1;
+          soldCountByName.set(nm, (soldCountByName.get(nm) || 0) + count);
         }
       }
     });
 
-    const resultMap = new Map();
+    // 2. Kumpulkan seluruh master stok masuk (dari Belanja / supplies & Katalog produk)
+    const stockMap = new Map();
 
-    // HANYA dari entri Barang Masuk (supplies) yang punya barcode
-    const supplies = this.getSupplies();
+    // A. Dari Faktur Barang Masuk (supplies)
     supplies.forEach((sup) => {
       if (sup.items && Array.isArray(sup.items)) {
-        sup.items.forEach((it) => {
-          if (it.barcode && it.barcode.trim()) {
-            const clean = it.barcode.toString().trim().toUpperCase();
-            if (!soldSet.has(clean) && !resultMap.has(clean)) {
-              resultMap.set(clean, {
-                barcode: it.barcode,
-                name: it.name,
-                kondisi: it.kondisi || 'Bagus',
-                sellPrice: it.sellPrice || (it.buyPrice ? Math.round(Number(it.buyPrice) * 1.35) : 0),
-                buyPrice: it.buyPrice || 0,
-                photo: it.photo || null,
-                supplier: sup.supplierName || ''
-              });
-            }
+        sup.items.forEach((it, idx) => {
+          const rawBc = it.barcode ? it.barcode.toString().trim().toUpperCase() : '';
+          const rawName = (it.name || 'Sepatu Tanpa Nama').trim();
+          // Kunci utama: barcode jika ada, fallback ke nama produk
+          const key = rawBc || `NAME:${rawName.toLowerCase()}`;
+          const qty = Math.max(1, Number(it.qty) || 1);
+          const buyPrice = Number(it.buyPrice) || 0;
+          const sellPrice = Number(it.sellPrice) || (buyPrice ? Math.round(buyPrice * 1.35) : 0);
+
+          if (!stockMap.has(key)) {
+            stockMap.set(key, {
+              key,
+              barcode: it.barcode || (rawBc ? rawBc : `AUTO-${idx + 1}`),
+              hasRealBarcode: Boolean(rawBc),
+              name: rawName,
+              kondisi: it.kondisi || 'Bagus',
+              catatanMinus: it.catatanMinus || '',
+              buyPrice,
+              sellPrice,
+              photo: it.photo || null,
+              supplier: sup.supplierName || 'Suplier Umum',
+              lastSupplyDate: sup.date || '',
+              lastInvoiceNo: sup.invoiceNo || '',
+              totalMasuk: 0
+            });
+          }
+
+          const entry = stockMap.get(key);
+          entry.totalMasuk += qty;
+          if (!entry.photo && it.photo) entry.photo = it.photo;
+          if (it.kondisi === 'Minus') {
+            entry.kondisi = 'Minus';
+            if (it.catatanMinus) entry.catatanMinus = it.catatanMinus;
+          }
+          if (buyPrice > 0 && entry.buyPrice === 0) entry.buyPrice = buyPrice;
+          if (sellPrice > 0 && entry.sellPrice === 0) entry.sellPrice = sellPrice;
+          if (sup.date && (!entry.lastSupplyDate || sup.date > entry.lastSupplyDate)) {
+            entry.lastSupplyDate = sup.date;
+            entry.lastInvoiceNo = sup.invoiceNo || entry.lastInvoiceNo;
           }
         });
       }
     });
 
-    return Array.from(resultMap.values());
+    // B. Dari Master Katalog Produk (products) jika belum masuk di supplies
+    products.forEach((prod, idx) => {
+      const rawBc = prod.barcode ? prod.barcode.toString().trim().toUpperCase() : '';
+      const rawName = (prod.name || 'Sepatu Tanpa Nama').trim();
+      const key = rawBc || `NAME:${rawName.toLowerCase()}`;
+      const qty = Math.max(1, Number(prod.stock) || Number(prod.qty) || 1);
+      const buyPrice = Number(prod.buyPrice) || 0;
+      const sellPrice = Number(prod.sellPrice) || (buyPrice ? Math.round(buyPrice * 1.35) : 0);
+
+      if (!stockMap.has(key)) {
+        stockMap.set(key, {
+          key,
+          barcode: prod.barcode || (rawBc ? rawBc : `PROD-${idx + 1}`),
+          hasRealBarcode: Boolean(rawBc),
+          name: rawName,
+          kondisi: prod.kondisi || 'Bagus',
+          catatanMinus: prod.catatanMinus || '',
+          buyPrice,
+          sellPrice,
+          photo: prod.photo || null,
+          supplier: prod.supplier || 'Suplier Umum',
+          lastSupplyDate: prod.date || '',
+          lastInvoiceNo: '',
+          totalMasuk: qty
+        });
+      } else {
+        const entry = stockMap.get(key);
+        if (!entry.photo && prod.photo) entry.photo = prod.photo;
+        if (buyPrice > 0 && entry.buyPrice === 0) entry.buyPrice = buyPrice;
+        if (sellPrice > 0 && entry.sellPrice === 0) entry.sellPrice = sellPrice;
+        if (entry.totalMasuk === 0) entry.totalMasuk = qty;
+      }
+    });
+
+    // 3. Kalkulasi per item: Terjual, Sisa, Nilai Modal Aset, Potensi Omset & Laba
+    const allItems = [];
+    let totalSisaPasang = 0;
+    let totalNilaiAsetModal = 0;
+    let totalPotensiOmset = 0;
+    let countKondisiBagus = 0;
+    let countKondisiMinus = 0;
+    let countStokMenipis = 0;
+    let totalTerjualSemua = 0;
+    let totalMasukSemua = 0;
+
+    stockMap.forEach((entry) => {
+      let sold = 0;
+      if (entry.hasRealBarcode) {
+        sold = soldCountByBarcode.get(entry.barcode.toString().trim().toUpperCase()) || 0;
+      } else {
+        sold = soldCountByName.get(entry.name.toLowerCase()) || 0;
+      }
+
+      totalMasukSemua += entry.totalMasuk;
+      totalTerjualSemua += sold;
+
+      const sisaStock = Math.max(0, entry.totalMasuk - sold);
+      const totalNilaiBeli = sisaStock * entry.buyPrice;
+      const totalNilaiJual = sisaStock * entry.sellPrice;
+      const potensiLaba = totalNilaiJual - totalNilaiBeli;
+      const marginPercent = entry.sellPrice > 0 ? Math.round(((entry.sellPrice - entry.buyPrice) / entry.sellPrice) * 100) : 0;
+
+      const itemReport = {
+        ...entry,
+        totalTerjual: sold,
+        sisaStock,
+        totalNilaiBeli,
+        totalNilaiJual,
+        potensiLaba,
+        marginPercent,
+        status: sisaStock === 0 ? 'habis' : (sisaStock <= 2 ? 'menipis' : 'ready')
+      };
+
+      allItems.push(itemReport);
+
+      if (sisaStock > 0) {
+        totalSisaPasang += sisaStock;
+        totalNilaiAsetModal += totalNilaiBeli;
+        totalPotensiOmset += totalNilaiJual;
+
+        if (entry.kondisi === 'Minus') {
+          countKondisiMinus += sisaStock;
+        } else {
+          countKondisiBagus += sisaStock;
+        }
+
+        if (sisaStock <= 2) {
+          countStokMenipis += 1;
+        }
+      }
+    });
+
+    // Urutkan: Stok aktif sisa terbanyak di atas
+    allItems.sort((a, b) => {
+      if (a.sisaStock > 0 && b.sisaStock === 0) return -1;
+      if (a.sisaStock === 0 && b.sisaStock > 0) return 1;
+      return b.sisaStock - a.sisaStock;
+    });
+
+    const unsoldItems = allItems.filter((it) => it.sisaStock > 0);
+    const totalPotensiLaba = totalPotensiOmset - totalNilaiAsetModal;
+    const avgMarginPercent = totalPotensiOmset > 0 ? Math.round((totalPotensiLaba / totalPotensiOmset) * 100) : 0;
+
+    return {
+      items: allItems,
+      unsoldItems,
+      summary: {
+        totalSisaPasang,
+        totalVarianSisa: unsoldItems.length,
+        totalVarianSemua: allItems.length,
+        totalMasukSemua,
+        totalTerjualSemua,
+        totalNilaiAsetModal,
+        totalPotensiOmset,
+        totalPotensiLaba,
+        avgMarginPercent,
+        countKondisiBagus,
+        countKondisiMinus,
+        countStokMenipis,
+        lastUpdated: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB'
+      }
+    };
+  }
+
+  // Available In-Stock Products (excluding already sold items)
+  // Menghasilkan daftar sepatu yang masih memiliki sisa stok > 0
+  getAvailableProducts(excludeTrxId = null) {
+    const report = this.getRealtimeStockReport({ excludeTrxId });
+    return report.unsoldItems.map((it) => ({
+      barcode: it.barcode,
+      name: it.name,
+      kondisi: it.kondisi || 'Bagus',
+      catatanMinus: it.catatanMinus || '',
+      sellPrice: it.sellPrice || (it.buyPrice ? Math.round(Number(it.buyPrice) * 1.35) : 0),
+      buyPrice: it.buyPrice || 0,
+      photo: it.photo || null,
+      supplier: it.supplier || '',
+      date: it.lastSupplyDate || '',
+      sisaStock: it.sisaStock,
+      totalMasuk: it.totalMasuk,
+      totalTerjual: it.totalTerjual
+    }));
   }
 
   isBarcodeSold(barcode, excludeTrxId = null) {
-    return Boolean(this.findSoldTransactionByBarcode(barcode, excludeTrxId));
+    if (!barcode) return false;
+    const clean = barcode.toString().trim().toUpperCase();
+    const report = this.getRealtimeStockReport({ excludeTrxId });
+    const item = report.items.find((it) => it.barcode && it.barcode.toString().trim().toUpperCase() === clean);
+    if (!item) return false;
+    return item.sisaStock <= 0;
   }
 
   findSoldTransactionByBarcode(barcode, excludeTrxId = null) {

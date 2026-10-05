@@ -7,6 +7,7 @@ import { renderTambahBarangMasukPage, initTambahBarangMasukPage } from './pages/
 import { renderPengirimanPage, initPengirimanPage } from './pages/pengiriman.js';
 import { renderInvestorPage, initInvestorPage } from './pages/investor.js';
 import { renderLaporanPage, initLaporanPage } from './pages/laporan.js';
+import { renderLaporanStockPage, initLaporanStockPage } from './pages/laporan-stock.js';
 import { renderPengaturanPage, initPengaturanPage } from './pages/pengaturan.js';
 import { renderStockOpnamePage, initStockOpnamePage } from './pages/stock-opname.js';
 import { renderTambahOpnamePage, initTambahOpnamePage } from './pages/tambah-opname.js';
@@ -75,6 +76,7 @@ export class Router {
       'pengiriman': 'pengiriman',
       'investor': 'dashboard',
       'laporan': 'laporan',
+      'laporan-stock': 'laporan',
       'pengaturan': 'pengaturan',
       'stock-opname': 'pasok',
       'tambah-opname': 'pasok',
@@ -152,6 +154,11 @@ export class Router {
       case 'laporan':
         this.container.innerHTML = renderLaporanPage(this.store, this.params.period || 'bulan');
         initLaporanPage(this, this.store, this.params.period || 'bulan');
+        break;
+
+      case 'laporan-stock':
+        this.container.innerHTML = renderLaporanStockPage(this.store);
+        initLaporanStockPage(this, this.store);
         break;
 
       case 'pengaturan':

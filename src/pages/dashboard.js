@@ -11,6 +11,7 @@ export function renderDashboardPage(store) {
   const lowStockItems = store.getLowStockItems ? store.getLowStockItems() : [];
   const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
   const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
+  const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: { totalSisaPasang: 0 } };
 
   const todayStr = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
@@ -153,6 +154,21 @@ export function renderDashboardPage(store) {
           >
             <span class="material-symbols-outlined text-[18px] text-primary">local_shipping</span>
             <span>Kelola Pengiriman</span>
+          </button>
+
+          <button 
+            type="button" 
+            data-action="lihat-laporan-stock"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-between px-3.5 active:scale-[0.98]"
+          >
+            <div class="flex items-center gap-2">
+              <span class="material-symbols-outlined text-[19px] text-cyan-400">inventory_2</span>
+              <span>Laporan Sisa Stock (Real Time)</span>
+            </div>
+            <div class="flex items-center gap-1.5 text-[11px] text-cyan-300">
+              <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold font-tabular">${stockReport.summary.totalSisaPasang} Pasang Sisa</span>
+              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            </div>
           </button>
 
           <button 
@@ -323,6 +339,11 @@ export function initDashboardPage(router, store) {
   const btnPengiriman = document.querySelector('[data-action="lihat-pengiriman"]');
   if (btnPengiriman) {
     btnPengiriman.addEventListener('click', () => router.navigate('pengiriman'));
+  }
+
+  const btnStockReport = document.querySelector('[data-action="lihat-laporan-stock"]');
+  if (btnStockReport) {
+    btnStockReport.addEventListener('click', () => router.navigate('laporan-stock'));
   }
 
   const btnOpname = document.querySelector('[data-action="lihat-opname"]');

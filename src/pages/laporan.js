@@ -285,7 +285,97 @@ export function renderLaporanPage(store, period = 'bulan') {
           <div id="container-daftar-sepatu-laku" class="hidden flex flex-col gap-2 pt-1 border-t border-white/45"></div>
         </section>
 
-        <!-- FITUR 2: Filter Total Pengeluaran Berdasarkan Kategori -->
+        <!-- FITUR 2: Laporan Total Sisa Stock Yang Belum Terjual (Real Time) -->
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden" id="section-sisa-stock">
+          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-cyan-500/10 pointer-events-none"></div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-on-surface">Laporan Sisa Stock (Real Time)</h3>
+                <p class="text-[11px] text-on-surface-variant">Sisa sepatu belum terjual & modal aset toko</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+              Live
+            </span>
+          </div>
+
+          <!-- Total Sisa Pasang & Nilai Aset Modal Grid -->
+          <div class="grid grid-cols-2 gap-2.5 mt-1">
+            <div class="glass-card rounded-xl p-3 flex flex-col justify-between border border-emerald-500/30">
+              <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Total Sisa Stok</span>
+              <div class="flex items-baseline gap-1 mt-1">
+                <span id="stat-sisa-total-pasang" class="text-2xl font-extrabold text-white font-tabular">0</span>
+                <span class="text-xs font-bold text-emerald-400">Pasang</span>
+              </div>
+              <span id="stat-sisa-total-varian" class="text-[10px] text-neutral-400 mt-0.5">0 Model Tersedia</span>
+            </div>
+
+            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Nilai Modal Aset</span>
+              <div class="mt-1">
+                <span id="stat-sisa-nilai-modal" class="text-base font-bold text-primary font-tabular truncate block">Rp 0</span>
+              </div>
+              <span class="text-[10px] text-neutral-400 mt-0.5">Modal beli tertahan</span>
+            </div>
+
+            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Omset</span>
+              <div class="mt-1">
+                <span id="stat-sisa-potensi-omset" class="text-sm font-bold text-cyan-300 font-tabular truncate block">Rp 0</span>
+              </div>
+              <span class="text-[10px] text-neutral-400 mt-0.5">Jika laku semua</span>
+            </div>
+
+            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Laba</span>
+              <div class="mt-1">
+                <span id="stat-sisa-potensi-laba" class="text-sm font-bold text-amber-300 font-tabular truncate block">+Rp 0</span>
+              </div>
+              <span id="stat-sisa-margin" class="text-[10px] text-amber-400/90 mt-0.5">Margin: ~0%</span>
+            </div>
+          </div>
+
+          <!-- Quick Condition Breakdown Badges -->
+          <div class="flex items-center justify-between gap-1 text-[11px] pt-1 border-t border-neutral-800/80">
+            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+              <span id="stat-sisa-bagus">0 Bagus</span>
+            </span>
+            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+              <span id="stat-sisa-minus">0 Minus</span>
+            </span>
+            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
+              <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+              <span id="stat-sisa-menipis">0 Menipis</span>
+            </span>
+            <button type="button" id="btn-goto-laporan-stock-detail" class="text-emerald-400 font-bold text-[11px] hover:underline flex items-center gap-0.5 ml-auto">
+              <span>Slip Detail</span>
+              <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+            </button>
+          </div>
+
+          <!-- Tombol Buka/Tutup Rincian Sisa Stock -->
+          <button type="button" id="btn-toggle-sisa-stock"
+            class="glass-chip-btn w-full py-2 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-cyan-400">format_list_bulleted</span>
+              <span id="btn-toggle-sisa-label">Lihat Rincian Sisa Stock</span>
+            </div>
+            <span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-toggle-sisa">expand_more</span>
+          </button>
+
+          <!-- Container Daftar Sisa Stock (Collapsible) -->
+          <div id="container-daftar-sisa-stock" class="hidden flex flex-col gap-2 pt-1 border-t border-white/45"></div>
+        </section>
+
+        <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
         <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-kategori-pengeluaran">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
@@ -423,6 +513,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
   let currentPeriod = initialPeriod;
   let selectedExpenseCategory = 'all';
   let isSepatuListExpanded = false;
+  let isSisaStockExpanded = false;
   let customDate = new Date().toISOString().split('T')[0];
   let customMonth = new Date().toISOString().slice(0, 7);
 
@@ -566,7 +657,82 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
       }
     }
 
-    // 3. FITUR 2: Filter Total Pengeluaran Berdasarkan Kategori
+    // 3. FITUR 2: Laporan Total Sisa Stock Yang Belum Terjual (Real Time)
+    const stockReport = store.getRealtimeStockReport();
+    const stockSummary = stockReport.summary;
+
+    const elSisaPasang = g('stat-sisa-total-pasang');
+    if (elSisaPasang) elSisaPasang.textContent = stockSummary.totalSisaPasang;
+
+    const elSisaVarian = g('stat-sisa-total-varian');
+    if (elSisaVarian) elSisaVarian.textContent = `${stockSummary.totalVarianSisa} Model Tersedia`;
+
+    const elSisaModal = g('stat-sisa-nilai-modal');
+    if (elSisaModal) elSisaModal.textContent = formatRupiah(stockSummary.totalNilaiAsetModal);
+
+    const elSisaOmset = g('stat-sisa-potensi-omset');
+    if (elSisaOmset) elSisaOmset.textContent = formatRupiah(stockSummary.totalPotensiOmset);
+
+    const elSisaLaba = g('stat-sisa-potensi-laba');
+    if (elSisaLaba) elSisaLaba.textContent = `+${formatRupiah(stockSummary.totalPotensiLaba)}`;
+
+    const elSisaMargin = g('stat-sisa-margin');
+    if (elSisaMargin) elSisaMargin.textContent = `Margin: ~${stockSummary.avgMarginPercent}%`;
+
+    const elSisaBagus = g('stat-sisa-bagus');
+    if (elSisaBagus) elSisaBagus.textContent = `${stockSummary.countKondisiBagus} Bagus`;
+
+    const elSisaMinus = g('stat-sisa-minus');
+    if (elSisaMinus) elSisaMinus.textContent = `${stockSummary.countKondisiMinus} Minus`;
+
+    const elSisaMenipis = g('stat-sisa-menipis');
+    if (elSisaMenipis) elSisaMenipis.textContent = `${stockSummary.countStokMenipis} Menipis`;
+
+    const elToggleSisaLabel = g('btn-toggle-sisa-label');
+    if (elToggleSisaLabel) {
+      elToggleSisaLabel.textContent = isSisaStockExpanded
+        ? 'Tutup Rincian Sisa Stock'
+        : `Lihat Rincian Sisa Stock (${stockSummary.totalSisaPasang} Pasang)`;
+    }
+
+    const containerSisaList = g('container-daftar-sisa-stock');
+    if (containerSisaList) {
+      if (stockReport.unsoldItems.length === 0) {
+        containerSisaList.innerHTML = `
+          <div class="py-4 text-center text-xs text-on-surface-variant glass-panel rounded-xl">
+            Tidak ada sisa stock sepatu (seluruh stok telah terjual).
+          </div>
+        `;
+      } else {
+        containerSisaList.innerHTML = stockReport.unsoldItems
+          .map(
+            (item, idx) => `
+          <div class="glass-panel rounded-xl p-2.5 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2.5 min-w-0">
+              <div class="w-8 h-8 rounded-lg ${item.kondisi === 'Minus' ? 'glass-amber text-amber-900' : 'glass-emerald text-emerald-900'} flex items-center justify-center shrink-0 font-bold text-xs">
+                ${idx + 1}
+              </div>
+              <div class="flex flex-col min-w-0">
+                <span class="font-bold text-xs text-on-surface truncate">${item.name}</span>
+                <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
+                  <span class="font-mono glass-chip px-1 py-0.2 rounded">${item.barcode}</span>
+                  <span class="font-bold ${item.sisaStock <= 2 ? 'text-rose-600' : 'text-emerald-700'}">Sisa: ${item.sisaStock} psg</span>
+                  ${item.kondisi === 'Minus' ? `<span class="text-amber-700 font-bold">⚠ ${item.catatanMinus || 'Minus'}</span>` : '<span class="text-emerald-700 font-semibold">✓ Bagus</span>'}
+                </div>
+              </div>
+            </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="font-bold text-xs text-primary font-tabular">Modal: ${formatRupiah(item.buyPrice, '')}</span>
+              <span class="text-[9px] text-on-surface-variant">Jual: ${formatRupiah(item.sellPrice, '')}</span>
+            </div>
+          </div>
+        `
+          )
+          .join('');
+      }
+    }
+
+    // 4. FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori
     const expenseTrxs = periodTrxs.filter((t) => t.type === 'keluar');
     const categoryTotals = {};
     const categoryCounts = {};
@@ -755,6 +921,40 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     });
   }
 
+  // Toggle dropdown sisa stock
+  const btnToggleSisa = g('btn-toggle-sisa-stock');
+  const containerSisa = g('container-daftar-sisa-stock');
+  const iconToggleSisa = g('icon-toggle-sisa');
+
+  if (btnToggleSisa && containerSisa) {
+    btnToggleSisa.addEventListener('click', () => {
+      isSisaStockExpanded = !isSisaStockExpanded;
+      if (isSisaStockExpanded) {
+        containerSisa.classList.remove('hidden');
+        if (iconToggleSisa) iconToggleSisa.style.transform = 'rotate(180deg)';
+      } else {
+        containerSisa.classList.add('hidden');
+        if (iconToggleSisa) iconToggleSisa.style.transform = 'rotate(0deg)';
+      }
+      const elToggleSisaLabel = g('btn-toggle-sisa-label');
+      if (elToggleSisaLabel) {
+        const elPasang = g('stat-sisa-total-pasang');
+        const count = elPasang ? elPasang.textContent : '';
+        elToggleSisaLabel.textContent = isSisaStockExpanded
+          ? 'Tutup Rincian Sisa Stock'
+          : `Lihat Rincian Sisa Stock (${count} Pasang)`;
+      }
+    });
+  }
+
+  // Button goto dedicated laporan stock detail
+  const btnGotoStock = g('btn-goto-laporan-stock-detail');
+  if (btnGotoStock) {
+    btnGotoStock.addEventListener('click', () => {
+      router.navigate('laporan-stock');
+    });
+  }
+
   // ── Period switch buttons (rows 1 & 2) ──
   const ACTIVE_ROW1 = 'period-btn flex-1 py-1.5 px-2 rounded-lg glass-seg-active text-on-surface font-bold font-label-md text-xs transition-all text-center';
   const IDLE_ROW1   = 'period-btn flex-1 py-1.5 px-2 rounded-lg text-on-surface-variant font-label-md text-xs transition-all text-center';
@@ -863,4 +1063,16 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
   // First render
   syncPeriodButtons();
   updatePage();
+
+  // Real-time listener: Otomatis perbarui laporan saat transaksi atau belanja berubah
+  const unsubscribe = store.subscribe(() => {
+    updatePage();
+  });
+
+  window.addEventListener('hashchange', function onLeaveLaporan() {
+    if (!window.location.hash.includes('laporan')) {
+      unsubscribe();
+      window.removeEventListener('hashchange', onLeaveLaporan);
+    }
+  });
 }
