@@ -96,8 +96,12 @@ export function initPinLoginPage(router, store) {
       if (errorMsg) errorMsg.textContent = '';
       showToast('Autentikasi Berhasil. Selamat Datang!', 'success');
       setTimeout(() => {
-        router.navigate('dashboard');
-      }, 200);
+        // Paksa navigate: update hash DAN langsung render (tanpa tunggu hashchange)
+        window.location.hash = '#/dashboard';
+        router.currentRoute = 'dashboard';
+        router.params = {};
+        router.render();
+      }, 300);
     } else {
       if (errorMsg) errorMsg.textContent = 'PIN salah, silakan coba lagi.';
       pin = '';
