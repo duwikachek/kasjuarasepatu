@@ -18,7 +18,16 @@ export default defineConfig({
     open: false
   },
   build: {
-    outDir: 'dist'
+    outDir: 'dist',
+    chunkSizeWarningLimit: 600,
+    rollupOptions: {
+      output: {
+        manualChunks: {
+          // Pisahkan Supabase ke chunk terpisah (lazy load)
+          'supabase': ['@supabase/supabase-js'],
+        }
+      }
+    }
   },
   plugins: [
     VitePWA({

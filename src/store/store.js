@@ -445,8 +445,8 @@ class Store {
   }
 
   /**
-   * Push state ke Supabase secara debounced (500ms) setelah setiap perubahan.
-   * Real-time subscription di device lain akan menerima update ini secara otomatis.
+   * Push state ke Supabase secara debounced (3 detik) setelah setiap perubahan.
+   * Debounce diperpanjang agar tidak terlalu sering request saat input cepat.
    */
   triggerSupabaseSync() {
     if (this._supabaseSyncTimer) clearTimeout(this._supabaseSyncTimer);
@@ -456,7 +456,7 @@ class Store {
       } catch (e) {
         console.warn('[Supabase] Sync gagal:', e.message);
       }
-    }, 500);
+    }, 3000); // 3 detik debounce (hemat request)
   }
 
   triggerAutoSync() {

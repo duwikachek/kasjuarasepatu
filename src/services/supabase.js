@@ -93,29 +93,55 @@ export function subscribeToStateChanges(onUpdate, getLocalUpdatedAt) {
       }
     )
     .subscribe((status) => {
+      realtimeConnected = (status === 'SUBSCRIBED');
       console.log('[Supabase] Realtime channel status:', status);
     });
 
-  // --- Polling fallback setiap 30 detik ---
-  // Digunakan jika realtime terputus atau tidak didukung browser/network
-  const pollInterval = setInterval(async () => {
-    try {
-      const result = await pullStateFromSupabase();
-      if (!result) return;
-      const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
-      // Update hanya jika server lebih baru dari lokal
-      if (!localTs || (result.updatedAt && result.updatedAt > localTs)) {
-        console.log('[Supabase] Polling: ada update baru dari server ✓');
-        onUpdate(result.data, result.updatedAt);
-      }
-    } catch (e) {
-      // ignore polling errors
+  // --- Polling fallback setiap 2 menit ---
+  // Hanya aktif jika: tab visible DAN realtime tidak connected
+  let realtimeConnected = false;
+  let pollInterval = null;
+
+  function startPolling() {
+    if (pollInterval) return; // sudah jalan
+    pollInterval = setInterval(async () => {
+      // Skip jika tab tidak aktif (hemat baterai & data)
+      if (document.hidden) return;
+      // Skip jika realtime sudah connected
+      if (realtimeConnected) return;
+      try {
+        const result = await pullStateFromSupabase();
+        if (!result) return;
+        const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
+        if (!localTs || (result.updatedAt && result.updatedAt > localTs)) {
+          console.log('[Supabase] Polling: ada update baru dari server ✓');
+          onUpdate(result.data, result.updatedAt);
+        }
+      } catch (e) { /* abaikan error polling */ }
+    }, 120000); // 2 menit (hemat resource)
+  }
+
+  function stopPolling() {
+    if (pollInterval) { clearInterval(pollInterval); pollInterval = null; }
+  }
+
+  // Mulai polling
+  startPolling();
+
+  // Pause polling saat tab tidak aktif, resume saat aktif kembali
+  const onVisibilityChange = () => {
+    if (document.hidden) {
+      stopPolling();
+    } else {
+      startPolling();
     }
-  }, 30000); // 30 detik
+  };
+  document.addEventListener('visibilitychange', onVisibilityChange);
 
   return () => {
     supabase.removeChannel(channel);
-    clearInterval(pollInterval);
+    stopPolling();
+    document.removeEventListener('visibilitychange', onVisibilityChange);
   };
 }
 
