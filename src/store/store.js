@@ -1,5 +1,6 @@
 import { INITIAL_DATA } from '../data/dummy.js';
 import { showToast } from '../components/toast.js';
+import { pushStateToSupabase, pullStateFromSupabase, subscribeToStateChanges } from '../services/supabase.js';
 
 const STORAGE_KEY = 'kas_juara_sepatu_data_v1';
 // Salinan darurat bila data tersimpan rusak / gagal diparse
@@ -9,6 +10,89 @@ class Store {
   constructor() {
     this.state = this.loadState();
     this.listeners = [];
+    this._supabaseUnsubscribe = null;
+    this._supabaseSyncTimer = null;
+    // Inisialisasi Supabase secara async (tidak block UI)
+    this._initSupabase();
+  }
+
+  /**
+   * Inisialisasi async Supabase:
+   * 1. Tarik state terbaru dari Supabase (override localStorage jika lebih baru)
+   * 2. Subscribe real-time agar update dari admin lain langsung masuk
+   */
+  async _initSupabase() {
+    try {
+      const remoteState = await pullStateFromSupabase();
+      if (remoteState) {
+        // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
+        const merged = this._mergeWithLocalPhotos(remoteState);
+        this.state = merged;
+        this.saveState();
+        this.listeners.forEach((fn) => {
+          try { fn(this.state); } catch (err) { console.error(err); }
+        });
+        console.log('[Supabase] State berhasil dimuat dari cloud');
+      } else {
+        // Pertama kali — push localStorage ke Supabase
+        await pushStateToSupabase(this.state);
+        console.log('[Supabase] State lokal diunggah ke cloud (pertama kali)');
+      }
+    } catch (e) {
+      console.warn('[Supabase] Gagal inisialisasi cloud sync:', e.message);
+    }
+
+    // Subscribe real-time
+    try {
+      this._supabaseUnsubscribe = subscribeToStateChanges((newState) => {
+        const merged = this._mergeWithLocalPhotos(newState);
+        this.state = merged;
+        this.saveState();
+        // Notify listeners (update UI)
+        this.listeners.forEach((fn) => {
+          try { fn(this.state); } catch (err) { console.error(err); }
+        });
+        showToast('Data diperbarui dari admin lain ✓', 'success', 3000);
+      });
+      console.log('[Supabase] Real-time sync aktif');
+    } catch (e) {
+      console.warn('[Supabase] Gagal subscribe real-time:', e.message);
+    }
+  }
+
+  /**
+   * Gabungkan state remote (tanpa foto) dengan foto dari localStorage.
+   * Foto di-skip saat push ke Supabase karena terlalu besar,
+   * jadi kita ambil foto dari localStorage yang masih ada.
+   */
+  _mergeWithLocalPhotos(remoteState) {
+    const local = this.state;
+    if (!local) return remoteState;
+
+    const photoMap = new Map();
+    // Kumpulkan foto dari products lokal
+    (local.products || []).forEach((p) => {
+      if (p.barcode && p.photo) photoMap.set(`product:${p.barcode}`, p.photo);
+    });
+    // Kumpulkan foto dari supplies lokal
+    (local.supplies || []).forEach((s) => {
+      (s.items || []).forEach((it) => {
+        if (it.barcode && it.photo) photoMap.set(`supply-item:${it.barcode}`, it.photo);
+      });
+    });
+
+    // Pasang foto ke state remote
+    const merged = JSON.parse(JSON.stringify(remoteState));
+    (merged.products || []).forEach((p) => {
+      if (p.barcode && !p.photo) p.photo = photoMap.get(`product:${p.barcode}`) || null;
+    });
+    (merged.supplies || []).forEach((s) => {
+      (s.items || []).forEach((it) => {
+        if (it.barcode && !it.photo) it.photo = photoMap.get(`supply-item:${it.barcode}`) || null;
+      });
+    });
+
+    return merged;
   }
 
   loadState() {
@@ -356,7 +440,23 @@ class Store {
     this.listeners.forEach((fn) => {
       try { fn(this.state); } catch (err) { console.error(err); }
     });
+    this.triggerSupabaseSync();
     this.triggerAutoSync();
+  }
+
+  /**
+   * Push state ke Supabase secara debounced (500ms) setelah setiap perubahan.
+   * Real-time subscription di device lain akan menerima update ini secara otomatis.
+   */
+  triggerSupabaseSync() {
+    if (this._supabaseSyncTimer) clearTimeout(this._supabaseSyncTimer);
+    this._supabaseSyncTimer = setTimeout(async () => {
+      try {
+        await pushStateToSupabase(this.state);
+      } catch (e) {
+        console.warn('[Supabase] Sync gagal:', e.message);
+      }
+    }, 500);
   }
 
   triggerAutoSync() {
