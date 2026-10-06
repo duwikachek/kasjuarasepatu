@@ -31,8 +31,8 @@ export default defineConfig({
         // SW baru TIDAK langsung aktif (skipWaiting: false). Aplikasi menampilkan
         // notifikasi "Versi baru tersedia" dan menunggu pengguna menekan "Muat Ulang",
         // baru kemudian mengirim pesan SKIP_WAITING ke service worker.
-        skipWaiting: false,
-        clientsClaim: false,
+        skipWaiting: true,
+        clientsClaim: true,
         // Bersihkan cache versi lama agar tidak menyajikan aset yang sudah usang.
         cleanupOutdatedCaches: true,
         runtimeCaching: [

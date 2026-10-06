@@ -96,11 +96,19 @@ export function initPinLoginPage(router, store) {
       if (errorMsg) errorMsg.textContent = '';
       showToast('Autentikasi Berhasil. Selamat Datang!', 'success');
       setTimeout(() => {
-        // Paksa navigate: update hash DAN langsung render (tanpa tunggu hashchange)
+        // Paksa navigate ke dashboard — gunakan router global sbg fallback
+        const activeRouter = window.__APP_ROUTER__ || router;
         window.location.hash = '#/dashboard';
-        router.currentRoute = 'dashboard';
-        router.params = {};
-        router.render();
+        activeRouter.currentRoute = 'dashboard';
+        activeRouter.params = {};
+        try {
+          activeRouter.render();
+        } catch (e) {
+          console.error('[PIN] render gagal:', e);
+          // Fallback terakhir: reload dengan hash dashboard
+          window.location.href = window.location.pathname + '#/dashboard';
+          window.location.reload();
+        }
       }, 300);
     } else {
       if (errorMsg) errorMsg.textContent = 'PIN salah, silakan coba lagi.';
