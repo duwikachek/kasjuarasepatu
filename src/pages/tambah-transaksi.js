@@ -36,8 +36,8 @@ function renderSaleItemCard(item, index, totalItems) {
         <span class="sale-item-name-label font-label-md text-xs font-bold text-emerald-900 truncate">${item.name || ''}</span>
         ${item.kondisi === 'Minus' ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.2 rounded-full">⚠ Minus</span>' : (item.name ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded-full">✓ Bagus</span>' : '')}
       </div>
-      <!-- Input Barcode & Dropdown List Stok Belum Terjual -->
-      <div class="relative stock-dropdown-wrapper z-30">
+      <!-- Input Barcode & List Stok Belum Terjual -->
+      <div class="stock-dropdown-wrapper flex flex-col w-full">
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <span class="absolute left-3 top-2.5 text-on-surface-variant pointer-events-none"><span class="material-symbols-outlined text-[17px]">qr_code</span></span>
@@ -69,9 +69,9 @@ function renderSaleItemCard(item, index, totalItems) {
           </button>
         </div>
 
-        <!-- DROPDOWN POPUP LIST SEPATU DI STOK (BELUM TERJUAL) -->
+        <!-- LIST SEPATU DI STOK (IN-FLOW EXPANDABLE, BEBAS TUMPANG TINDIH) -->
         <div 
- class="stock-dropdown-popup hidden absolute left-0 right-0 top-full mt-1.5 z-50 max-h-64 overflow-y-auto glass-sheet rounded-2xl p-1.5 flex flex-col gap-1 transition-all shadow-xl" 
+ class="stock-dropdown-popup hidden w-full mt-2 max-h-72 overflow-y-auto glass-sheet rounded-2xl p-2 flex flex-col gap-1 transition-all border border-white/30" 
           data-sale-item-id="${item.id}"
         >
         </div>
@@ -623,34 +623,53 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     if (filtered.length === 0) {
       popup.innerHTML = `
         <div class="p-3 text-center text-xs text-on-surface-variant flex flex-col items-center gap-1.5">
+          <div class="w-full flex justify-end">
+            <button type="button" class="btn-close-stock-popup p-1 rounded-lg hover:bg-white/20 text-on-surface-variant hover:text-on-surface" title="Tutup">
+              <span class="material-symbols-outlined text-[16px] pointer-events-none">close</span>
+            </button>
+          </div>
           <span class="material-symbols-outlined text-xl text-on-surface-variant/50">inventory_2</span>
           <span class="font-semibold text-on-surface">${query ? 'Tidak ada sepatu di stok cocok dengan "' + searchQuery + '"' : 'Belum ada stok sepatu dengan barcode'}</span>
           ${!query ? '<span class="text-[10px] text-on-surface-variant/70 leading-relaxed">Tambahkan sepatu melalui menu<br/><strong class="text-primary">+ Tambah Barang Masuk</strong></span>' : ''}
         </div>
       `;
       popup.classList.remove('hidden');
+      popup.querySelectorAll('.btn-close-stock-popup').forEach((btn) => {
+        btn.addEventListener('click', (e) => {
+          e.preventDefault(); e.stopPropagation(); popup.classList.add('hidden');
+        });
+      });
       return;
     }
 
     popup.innerHTML = `
-      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-white/45 text-[11px] font-bold text-primary glass-panel bg-white/40 rounded-t-xl">
+      <div class="px-2.5 py-1.5 flex items-center justify-between border-b border-white/45 text-[11px] font-bold text-primary glass-panel bg-white/40 rounded-xl mb-1">
         <span class="flex items-center gap-1">
           <span class="material-symbols-outlined text-[15px]">inventory_2</span>
           <span>Stok Tersedia (${filtered.length} Sepatu)</span>
         </span>
-        <span class="text-[10px] text-on-surface-variant font-normal">Pilih untuk auto-fill</span>
+        <div class="flex items-center gap-1.5">
+          <span class="text-[10px] text-on-surface-variant font-normal">Pilih untuk auto-fill</span>
+          <button type="button" class="btn-close-stock-popup p-0.5 rounded hover:bg-white/30 text-on-surface-variant hover:text-on-surface" title="Tutup list stok">
+            <span class="material-symbols-outlined text-[16px] pointer-events-none">close</span>
+          </button>
+        </div>
       </div>
-      <div class="flex flex-col gap-1 py-1">
+      <div class="flex flex-col gap-1">
         ${filtered.map((p) => `
           <button 
             type="button" 
-            class="btn-select-stock-item w-full text-left p-2 rounded-xl glass-row flex items-center gap-2.5 transition-all active:scale-[0.99]" 
+            class="btn-select-stock-item w-full text-left p-2.5 rounded-xl glass-row flex items-center gap-2.5 transition-all active:scale-[0.99] hover:bg-white/10" 
             data-barcode="${p.barcode}"
             data-sale-item-id="${itemId}"
           >
             ${p.photo ? `
               <img src="${p.photo}" class="w-10 h-10 rounded-lg object-cover shrink-0 border border-white/70" alt="Foto" />
-            ` : ''}
+            ` : `
+              <div class="w-10 h-10 rounded-lg bg-surface-container-high/60 flex items-center justify-center shrink-0 border border-white/30 text-on-surface-variant">
+                <span class="material-symbols-outlined text-[18px]">footwear</span>
+              </div>
+            `}
             <div class="flex-1 min-w-0 flex flex-col">
               <span class="font-bold text-xs text-on-surface truncate">${p.name || 'Sepatu Tanpa Nama'}</span>
               <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant mt-0.5">
@@ -670,6 +689,13 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     `;
 
     popup.classList.remove('hidden');
+
+    // Bind tombol tutup
+    popup.querySelectorAll('.btn-close-stock-popup').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.preventDefault(); e.stopPropagation(); popup.classList.add('hidden');
+      });
+    });
 
     // Bind event klik pada opsi dropdown
     popup.querySelectorAll('.btn-select-stock-item').forEach((itemBtn) => {
