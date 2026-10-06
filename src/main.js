@@ -34,7 +34,7 @@ async function requestPersistentStorage() {
 }
 
 // Versi app — ubah setiap deploy besar agar SW lama otomatis dihapus
-const APP_VERSION = '2026.10.06-v3';
+const APP_VERSION = '2026.10.06-v5';
 const VERSION_KEY = 'kas_juara_app_version';
 
 async function forceUpdateIfNewVersion() {
