@@ -37,7 +37,7 @@ function renderSaleItemCard(item, index, totalItems) {
         ${item.kondisi === 'Minus' ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.2 rounded-full">⚠ Minus</span>' : (item.name ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded-full">✓ Bagus</span>' : '')}
       </div>
       <!-- Input Barcode & Dropdown List Stok Belum Terjual -->
-      <div class="relative stock-dropdown-wrapper">
+      <div class="relative stock-dropdown-wrapper z-30">
         <div class="flex items-center gap-2">
           <div class="relative flex-1">
             <span class="absolute left-3 top-2.5 text-on-surface-variant pointer-events-none"><span class="material-symbols-outlined text-[17px]">qr_code</span></span>
@@ -71,7 +71,7 @@ function renderSaleItemCard(item, index, totalItems) {
 
         <!-- DROPDOWN POPUP LIST SEPATU DI STOK (BELUM TERJUAL) -->
         <div 
- class="stock-dropdown-popup hidden absolute left-0 right-0 top-full mt-1.5 z-40 max-h-64 overflow-y-auto glass-sheet rounded-2xl p-1.5 flex flex-col gap-1 transition-all" 
+ class="stock-dropdown-popup hidden absolute left-0 right-0 top-full mt-1.5 z-50 max-h-64 overflow-y-auto glass-sheet rounded-2xl p-1.5 flex flex-col gap-1 transition-all shadow-xl" 
           data-sale-item-id="${item.id}"
         >
         </div>
@@ -180,16 +180,6 @@ export function renderTambahTransaksiPage(store, params = {}) {
             </div>
             <div id="sale-items-container" class="flex flex-col gap-3">
               ${initialItems.map((item, idx) => renderSaleItemCard(item, idx, initialItems.length)).join('')}
-            </div>
-
-            <!-- Total Penjualan -->
- <div class="flex items-center justify-between glass-panel px-4 py-3 rounded-xl">
-              <div class="flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-primary text-[18px]">calculate</span>
-                <span class="font-label-md text-xs text-on-surface font-semibold">Total Penjualan</span>
-                <span id="sale-total-count" class="text-[10px] text-on-surface-variant">(${initialItems.length} pasang)</span>
-              </div>
-              <span id="sale-total-amount" class="font-headline-sm text-sm font-bold text-emerald-700 font-tabular">${totalItemsPrice > 0 ? '+' + formatRupiah(totalItemsPrice, '') : 'Rp 0'}</span>
             </div>
 
             <!-- Tombol Tambah Sepatu Lagi: Di bawah setelah transaksi pertama selesai -->
