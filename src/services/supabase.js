@@ -3,31 +3,25 @@ import { createClient } from '@supabase/supabase-js';
 const SUPABASE_URL = import.meta.env.VITE_SUPABASE_URL;
 const SUPABASE_ANON_KEY = import.meta.env.VITE_SUPABASE_ANON_KEY;
 
-if (!SUPABASE_URL || !SUPABASE_ANON_KEY) {
-  console.error('[Supabase] Kredensial belum dikonfigurasi. Pastikan .env sudah ada.');
+export const supabaseReady = !!(SUPABASE_URL && SUPABASE_ANON_KEY);
+
+if (!supabaseReady) {
+  console.error('[Supabase] Kredensial belum dikonfigurasi.');
 }
 
-export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
-  auth: {
-    persistSession: false // Aplikasi ini tidak pakai auth user, cukup anon key
-  }
-});
-
-// ============================================================
-// HELPER: upsert seluruh state ke Supabase (dipakai oleh store)
-// ============================================================
+export const supabase = supabaseReady
+  ? createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
+      auth: { persistSession: false },
+      realtime: { params: { eventsPerSecond: 10 } }
+    })
+  : null;
 
 /**
  * Push state snapshot ke Supabase.
- * Kita simpan state sebagai 1 row per "shop_id" di tabel app_state.
- * Ini cara paling simpel agar tidak perlu migrasi skema yang rumit.
  */
 export async function pushStateToSupabase(state) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return;
-
-  // Hilangkan foto (base64 bisa sangat besar) sebelum kirim ke Supabase
+  if (!supabaseReady) return;
   const payload = stripPhotosForSync(state);
-
   const { error } = await supabase
     .from('app_state')
     .upsert(
@@ -38,74 +32,95 @@ export async function pushStateToSupabase(state) {
       },
       { onConflict: 'shop_id' }
     );
-
   if (error) {
-    console.warn('[Supabase] Gagal menyimpan state:', error.message);
+    console.warn('[Supabase] Push gagal:', error.message);
     throw error;
   }
+  console.log('[Supabase] State berhasil disimpan ke cloud ✓');
 }
 
 /**
  * Tarik state terbaru dari Supabase.
- * Dipakai saat pertama kali app dibuka (atau refresh).
+ * Return: { data, updatedAt } atau null
  */
 export async function pullStateFromSupabase() {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return null;
+  if (!supabaseReady) return null;
+  try {
+    const { data, error } = await supabase
+      .from('app_state')
+      .select('data, updated_at')
+      .eq('shop_id', 'kas_juara_main')
+      .single();
 
-  const { data, error } = await supabase
-    .from('app_state')
-    .select('data, updated_at')
-    .eq('shop_id', 'kas_juara_main')
-    .single();
-
-  if (error) {
-    if (error.code === 'PGRST116') {
-      // Row tidak ditemukan — pertama kali
+    if (error) {
+      if (error.code === 'PGRST116') return null; // belum ada row
+      console.warn('[Supabase] Pull gagal:', error.message);
       return null;
     }
-    console.warn('[Supabase] Gagal membaca state:', error.message);
+    return data ? { data: data.data, updatedAt: data.updated_at } : null;
+  } catch (e) {
+    console.warn('[Supabase] Pull exception:', e.message);
     return null;
   }
-
-  return data ? data.data : null;
 }
 
 /**
  * Berlangganan perubahan real-time dari Supabase.
- * Ketika admin lain membuat perubahan, callback akan dipanggil dengan state baru.
- * @param {function} onUpdate - dipanggil dengan (newState) saat ada update
- * @returns {function} unsubscribe function
+ * Juga memulai polling setiap 30 detik sebagai fallback jika realtime terputus.
+ *
+ * @param {function} onUpdate - dipanggil dengan (newState, updatedAt)
+ * @param {function} getLocalUpdatedAt - fungsi yang return timestamp lokal terakhir
+ * @returns {function} unsubscribe + stop polling function
  */
-export function subscribeToStateChanges(onUpdate) {
-  if (!SUPABASE_URL || !SUPABASE_ANON_KEY) return () => {};
+export function subscribeToStateChanges(onUpdate, getLocalUpdatedAt) {
+  if (!supabaseReady) return () => {};
 
+  // --- Realtime subscription (semua events) ---
   const channel = supabase
-    .channel('app_state_changes')
+    .channel('kas_juara_realtime_v2')
     .on(
       'postgres_changes',
-      {
-        event: 'UPDATE',
-        schema: 'public',
-        table: 'app_state',
-        filter: 'shop_id=eq.kas_juara_main'
-      },
+      { event: '*', schema: 'public', table: 'app_state' },
       (payload) => {
-        if (payload.new && payload.new.data) {
-          console.log('[Supabase] Real-time update diterima dari admin lain');
-          onUpdate(payload.new.data);
-        }
+        const record = payload.new || payload.record;
+        if (!record || record.shop_id !== 'kas_juara_main') return;
+        const remoteTs = record.updated_at;
+        const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
+        // Skip jika update ini adalah milik kita sendiri (timestamp sama)
+        if (localTs && remoteTs && localTs === remoteTs) return;
+        console.log('[Supabase] Realtime update diterima ✓ event:', payload.eventType);
+        if (record.data) onUpdate(record.data, remoteTs);
       }
     )
-    .subscribe();
+    .subscribe((status) => {
+      console.log('[Supabase] Realtime channel status:', status);
+    });
+
+  // --- Polling fallback setiap 30 detik ---
+  // Digunakan jika realtime terputus atau tidak didukung browser/network
+  const pollInterval = setInterval(async () => {
+    try {
+      const result = await pullStateFromSupabase();
+      if (!result) return;
+      const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
+      // Update hanya jika server lebih baru dari lokal
+      if (!localTs || (result.updatedAt && result.updatedAt > localTs)) {
+        console.log('[Supabase] Polling: ada update baru dari server ✓');
+        onUpdate(result.data, result.updatedAt);
+      }
+    } catch (e) {
+      // ignore polling errors
+    }
+  }, 30000); // 30 detik
 
   return () => {
     supabase.removeChannel(channel);
+    clearInterval(pollInterval);
   };
 }
 
 /**
  * Hapus foto (base64) dari state sebelum dikirim ke Supabase.
- * Foto bisa sangat besar (> 1MB per foto) — disimpan di localStorage saja.
  */
 function stripPhotosForSync(data) {
   const clone = JSON.parse(JSON.stringify(data || {}));
