@@ -224,7 +224,7 @@ export function renderInvestorPage(store) {
             </div>
           </div>
           <p class="text-xs text-on-surface-variant glass-panel rounded-xl p-3">
-            Catatan kas pemasukan yang sudah dibukukan <strong>tidak otomatis terhapus</strong> untuk menjaga keaslian buku kas.
+            Catatan kas masuk terkait <strong>akan otomatis ikut dihapus</strong> sehingga saldo kas toko berkurang dan tetap akurat.
           </p>
           <div class="flex items-center gap-2.5 mt-1">
             <button id="btn-cancel-delete-investor" class="glass-chip-btn flex-1 h-10 rounded-xl text-on-surface text-sm font-bold">Batal</button>
@@ -573,7 +573,7 @@ export function initInvestorPage(router, store) {
     if (t.id === 'btn-confirm-delete-investor') {
       if (deletingId) {
         store.deleteInvestor(deletingId);
-        showToast('Data investor berhasil dihapus.', 'info', 2000);
+        showToast('Data investor & catatan kas masuk terkait berhasil dihapus.', 'info', 2500);
         deletingId = null;
       }
       const dm = g('investor-delete-modal');

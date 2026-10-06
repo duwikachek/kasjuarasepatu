@@ -38,6 +38,8 @@ class Store {
         this._migrateCleanProductStockField(parsed);
         // Migrate: hapus data dummy bawaan (supplies, products, transactions contoh)
         this._migratePurgeDummyData(parsed);
+        // Migrate: sinkronisasi investor & kas (hapus transaksi kas orphan bila investor telah dihapus)
+        this._migrateReconcileInvestorsAndTransactions(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -196,6 +198,110 @@ class Store {
   }
 
   /**
+   * Rekonsiliasi data investor dengan buku kas (transactions):
+   * 1. Hapus transaksi kas masuk bertipe 'Dana Investor' yang investor aslinya sudah dihapus.
+   * 2. Pastikan investor aktif tertaut secara dua arah dengan transaksi kas masuknya.
+   */
+  _migrateReconcileInvestorsAndTransactions(data) {
+    if (!data || !Array.isArray(data.transactions)) return;
+    const investors = Array.isArray(data.investors) ? data.investors : [];
+    let changed = false;
+
+    const validInvestorIds = new Set(investors.map((i) => i.id));
+    const validInvestorTrxIds = new Set(investors.map((i) => i.trxId).filter(Boolean));
+    const validInvestorNames = investors
+      .map((i) => (i.investorName || '').toLowerCase().trim())
+      .filter(Boolean);
+
+    const initialTrxCount = data.transactions.length;
+    data.transactions = data.transactions.filter((t) => {
+      const isInvestorTrx =
+        t.category === 'Dana Investor' ||
+        t.category === 'Investasi Modal' ||
+        t.sourceType === 'investor' ||
+        (typeof t.nota === 'string' && t.nota.startsWith('#INV-'));
+
+      if (!isInvestorTrx) return true;
+
+      // Jika tidak ada data investor aktif sama sekali, semua transaksi Dana Investor adalah orphan
+      if (investors.length === 0) {
+        changed = true;
+        return false;
+      }
+
+      // Cocok berdasarkan ID investor
+      if (t.investorId && validInvestorIds.has(t.investorId)) {
+        return true;
+      }
+
+      // Cocok berdasarkan ID transaksi investor
+      if (validInvestorTrxIds.has(t.id)) {
+        return true;
+      }
+
+      // Cocokkan judul/nama investor yang masih ada
+      const titleLower = (t.title || '').toLowerCase();
+      const matchingInv = investors.find((inv) => {
+        const name = (inv.investorName || '').toLowerCase().trim();
+        return name && titleLower.includes(name);
+      });
+
+      if (matchingInv) {
+        if (!matchingInv.trxId) matchingInv.trxId = t.id;
+        t.investorId = matchingInv.id;
+        t.sourceType = 'investor';
+        changed = true;
+        return true;
+      }
+
+      // Transaksi ini milik data investor yang sudah tidak ada -> hapus dari kas!
+      changed = true;
+      return false;
+    });
+
+    // Pastikan investor yang aktif memiliki referensi transaksi kas yang valid
+    investors.forEach((inv) => {
+      let trx = null;
+      if (inv.trxId) {
+        trx = data.transactions.find((t) => t.id === inv.trxId);
+      }
+      if (!trx) {
+        trx = data.transactions.find((t) => t.investorId === inv.id);
+      }
+      if (!trx) {
+        const invName = (inv.investorName || '').toLowerCase().trim();
+        trx = data.transactions.find((t) =>
+          (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || (typeof t.nota === 'string' && t.nota.startsWith('#INV-'))) &&
+          invName &&
+          t.title &&
+          t.title.toLowerCase().includes(invName)
+        );
+      }
+
+      if (trx) {
+        if (inv.trxId !== trx.id) {
+          inv.trxId = trx.id;
+          changed = true;
+        }
+        if (trx.investorId !== inv.id) {
+          trx.investorId = inv.id;
+          changed = true;
+        }
+        if (trx.sourceType !== 'investor') {
+          trx.sourceType = 'investor';
+          changed = true;
+        }
+      }
+    });
+
+    if (changed || data.transactions.length !== initialTrxCount) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /**
    * Simpan state ke localStorage.
    * Mengembalikan true bila berhasil. Bila kuota browser penuh, otomatis
    * mencoba menyimpan versi ringkas (tanpa foto) supaya data transaksi & stok
@@ -324,7 +430,18 @@ class Store {
   }
 
   deleteTransaction(id) {
-    this.state.transactions = this.state.transactions.filter((t) => t.id !== id);
+    const trx = (this.state.transactions || []).find((t) => t.id === id);
+    this.state.transactions = (this.state.transactions || []).filter((t) => t.id !== id);
+
+    // Jika transaksi yang dihapus tertaut ke investor, lepaskan referensinya
+    if (Array.isArray(this.state.investors)) {
+      this.state.investors.forEach((inv) => {
+        if (inv.trxId === id || (trx && trx.investorId === inv.id)) {
+          inv.trxId = null;
+        }
+      });
+    }
+
     this.notify();
   }
 
@@ -1077,7 +1194,7 @@ class Store {
 
     const newInvestor = {
       id,
-      investorName: data.investorName,
+      investorName: (data.investorName || '').trim(),
       date: data.date || new Date().toISOString().split('T')[0],
       dueDate: data.dueDate || null,
       totalAmount,
@@ -1098,7 +1215,9 @@ class Store {
       paymentMethod: newInvestor.paymentMethod,
       date: newInvestor.date,
       nota: `#INV-${Math.floor(1000 + Math.random() * 9000)}`,
-      shippingStatus: null
+      shippingStatus: null,
+      investorId: id,
+      sourceType: 'investor'
     });
     newInvestor.trxId = trx.id;
 
@@ -1113,6 +1232,7 @@ class Store {
     if (idx === -1) return null;
 
     const old = this.state.investors[idx];
+    const investorName = data.investorName !== undefined ? data.investorName.trim() : old.investorName;
     const totalAmount = data.totalAmount !== undefined ? Number(data.totalAmount) : old.totalAmount;
     const tenor = data.tenor !== undefined ? Number(data.tenor) : old.tenor;
     const cicilan = data.cicilan !== undefined ? Number(data.cicilan) : Math.round(totalAmount / (tenor || 1));
@@ -1120,19 +1240,54 @@ class Store {
     const updated = {
       ...old,
       ...data,
+      investorName,
       totalAmount,
       tenor,
       cicilan
     };
 
-    // Update linked cash transaction if exists
+    // Cari transaksi kas terkait
+    let linkedTrx = null;
     if (old.trxId) {
-      this.updateTransaction(old.trxId, {
+      linkedTrx = this.getTransactionById(old.trxId);
+    }
+    if (!linkedTrx && Array.isArray(this.state.transactions)) {
+      linkedTrx = this.state.transactions.find((t) => t.investorId === id);
+    }
+    if (!linkedTrx && Array.isArray(this.state.transactions)) {
+      const oldName = (old.investorName || '').toLowerCase().trim();
+      linkedTrx = this.state.transactions.find((t) =>
+        (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || (typeof t.nota === 'string' && t.nota.startsWith('#INV-'))) &&
+        oldName &&
+        t.title &&
+        t.title.toLowerCase().includes(oldName)
+      );
+    }
+
+    if (linkedTrx) {
+      updated.trxId = linkedTrx.id;
+      this.updateTransaction(linkedTrx.id, {
         amount: totalAmount,
         title: `Dana Investor: ${updated.investorName}`,
         date: updated.date || old.date,
-        paymentMethod: updated.paymentMethod || old.paymentMethod
+        paymentMethod: updated.paymentMethod || old.paymentMethod,
+        investorId: id,
+        sourceType: 'investor'
       });
+    } else if (totalAmount > 0) {
+      const newTrx = this.addTransaction({
+        type: 'masuk',
+        category: 'Dana Investor',
+        amount: totalAmount,
+        title: `Dana Investor: ${updated.investorName}`,
+        paymentMethod: updated.paymentMethod || 'Transfer Bank',
+        date: updated.date || new Date().toISOString().split('T')[0],
+        nota: `#INV-${Math.floor(1000 + Math.random() * 9000)}`,
+        shippingStatus: null,
+        investorId: id,
+        sourceType: 'investor'
+      });
+      updated.trxId = newTrx.id;
     }
 
     this.state.investors[idx] = updated;
@@ -1142,6 +1297,35 @@ class Store {
 
   deleteInvestor(id) {
     if (!this.state.investors) return;
+    const inv = this.state.investors.find((i) => i.id === id);
+
+    if (inv) {
+      const invName = (inv.investorName || '').toLowerCase().trim();
+      const linkedTrxIds = new Set();
+      if (inv.trxId) linkedTrxIds.add(inv.trxId);
+
+      if (Array.isArray(this.state.transactions)) {
+        this.state.transactions.forEach((t) => {
+          if (t.investorId === id) {
+            linkedTrxIds.add(t.id);
+          } else if (inv.trxId && t.id === inv.trxId) {
+            linkedTrxIds.add(t.id);
+          } else if (
+            (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || (typeof t.nota === 'string' && t.nota.startsWith('#INV-'))) &&
+            invName &&
+            t.title &&
+            t.title.toLowerCase().includes(invName)
+          ) {
+            linkedTrxIds.add(t.id);
+          }
+        });
+
+        if (linkedTrxIds.size > 0) {
+          this.state.transactions = this.state.transactions.filter((t) => !linkedTrxIds.has(t.id));
+        }
+      }
+    }
+
     this.state.investors = this.state.investors.filter((i) => i.id !== id);
     this.notify();
   }
