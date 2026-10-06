@@ -18,17 +18,21 @@ export const supabase = supabaseReady
 
 /**
  * Push state snapshot ke Supabase.
+ * @param {object} state
+ * @param {string} [customTimestamp] - ISO timestamp — jika diberikan, dipakai sebagai updated_at
+ *   agar store bisa melacak push sendiri dan mengabaikan echo realtime-nya.
  */
-export async function pushStateToSupabase(state) {
+export async function pushStateToSupabase(state, customTimestamp) {
   if (!supabaseReady) return;
   const payload = stripPhotosForSync(state);
+  const updatedAt = customTimestamp || new Date().toISOString();
   const { error } = await supabase
     .from('app_state')
     .upsert(
       {
         shop_id: 'kas_juara_main',
         data: payload,
-        updated_at: new Date().toISOString()
+        updated_at: updatedAt
       },
       { onConflict: 'shop_id' }
     );
@@ -87,8 +91,12 @@ export function subscribeToStateChanges(onUpdate, getLocalUpdatedAt) {
         const remoteTs = record.updated_at;
         const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
         // Skip jika update ini adalah milik kita sendiri (timestamp sama)
-        if (localTs && remoteTs && localTs === remoteTs) return;
+        if (localTs && remoteTs && localTs === remoteTs) {
+          console.log('[Supabase] Realtime: skip echo dari diri sendiri (ts match)');
+          return;
+        }
         console.log('[Supabase] Realtime update diterima ✓ event:', payload.eventType);
+        // Teruskan remoteTs ke callback agar store bisa verifikasi lebih lanjut
         if (record.data) onUpdate(record.data, remoteTs);
       }
     )

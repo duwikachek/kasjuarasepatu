@@ -14,8 +14,10 @@ class Store {
     this._supabaseSyncTimer = null;
     // Cache laporan stok agar tidak dihitung ulang setiap pemanggilan
     this._stockReportCache = null;
+    // Timestamp push terakhir ke Supabase — dipakai untuk abaikan echo realtime dari diri sendiri
+    this._lastPushTimestamp = null;
     // Inisialisasi Supabase secara async setelah UI tampil (tidak block render)
-    setTimeout(() => this._initSupabase(), 500);
+    setTimeout(() => this._initSupabase(), 800);
   }
 
   /**
@@ -27,37 +29,57 @@ class Store {
     try {
       const remoteState = await pullStateFromSupabase();
       if (remoteState) {
+        // Simpan timestamp cloud sebagai push terakhir agar realtime echo awal diabaikan
+        this._lastPushTimestamp = remoteState.updatedAt || null;
+
         // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
         const merged = this._mergeWithLocalPhotos(remoteState);
         this.state = merged;
-        this._stockReportCache = null; // invalidasi cache saat data cloud masuk
+        this._stockReportCache = null;
         this.saveState();
-        this.listeners.forEach((fn) => {
-          try { fn(this.state); } catch (err) { console.error(err); }
-        });
+        // Notifikasi listeners hanya jika halaman sudah aktif (listeners terdaftar)
+        // Ini mencegah re-render ke halaman kosong saat app baru dibuka
+        if (this.listeners.length > 0) {
+          this.listeners.forEach((fn) => {
+            try { fn(this.state); } catch (err) { console.error(err); }
+          });
+        }
         console.log('[Supabase] State berhasil dimuat dari cloud');
       } else {
         // Pertama kali — push localStorage ke Supabase
-        await pushStateToSupabase(this.state);
+        const ts = new Date().toISOString();
+        this._lastPushTimestamp = ts;
+        await pushStateToSupabase(this.state, ts);
         console.log('[Supabase] State lokal diunggah ke cloud (pertama kali)');
       }
     } catch (e) {
       console.warn('[Supabase] Gagal inisialisasi cloud sync:', e.message);
     }
 
-    // Subscribe real-time
+    // Subscribe real-time — abaikan echo dari push kita sendiri
     try {
-      this._supabaseUnsubscribe = subscribeToStateChanges((newState) => {
-        const merged = this._mergeWithLocalPhotos(newState);
-        this.state = merged;
-        this._stockReportCache = null; // invalidasi cache saat realtime update
-        this.saveState();
-        // Notify listeners (update UI)
-        this.listeners.forEach((fn) => {
-          try { fn(this.state); } catch (err) { console.error(err); }
-        });
-        showToast('Data diperbarui dari admin lain ✓', 'success', 3000);
-      });
+      this._supabaseUnsubscribe = subscribeToStateChanges(
+        (newState, remoteTs) => {
+          // Abaikan jika timestamp sama dengan push terakhir kita (echo dari diri sendiri)
+          if (remoteTs && this._lastPushTimestamp && remoteTs === this._lastPushTimestamp) {
+            console.log('[Supabase] Realtime echo dari diri sendiri, diabaikan.');
+            return;
+          }
+          // Update valid dari device/admin lain
+          const merged = this._mergeWithLocalPhotos(newState);
+          this.state = merged;
+          this._stockReportCache = null;
+          this.saveState();
+          // Hanya re-render jika ada listeners (tidak selalu perlu)
+          if (this.listeners.length > 0) {
+            this.listeners.forEach((fn) => {
+              try { fn(this.state); } catch (err) { console.error(err); }
+            });
+            showToast('Data diperbarui dari perangkat lain ✓', 'info', 2500);
+          }
+        },
+        () => this._lastPushTimestamp
+      );
       console.log('[Supabase] Real-time sync aktif');
     } catch (e) {
       console.warn('[Supabase] Gagal subscribe real-time:', e.message);
@@ -451,18 +473,20 @@ class Store {
   }
 
   /**
-   * Push state ke Supabase secara debounced (3 detik) setelah setiap perubahan.
-   * Debounce diperpanjang agar tidak terlalu sering request saat input cepat.
+   * Push state ke Supabase secara debounced (5 detik) setelah setiap perubahan.
+   * Simpan timestamp push agar realtime echo dari diri sendiri bisa diabaikan.
    */
   triggerSupabaseSync() {
     if (this._supabaseSyncTimer) clearTimeout(this._supabaseSyncTimer);
     this._supabaseSyncTimer = setTimeout(async () => {
       try {
-        await pushStateToSupabase(this.state);
+        const ts = new Date().toISOString();
+        this._lastPushTimestamp = ts;
+        await pushStateToSupabase(this.state, ts);
       } catch (e) {
         console.warn('[Supabase] Sync gagal:', e.message);
       }
-    }, 3000); // 3 detik debounce (hemat request)
+    }, 5000); // 5 detik debounce — lebih hemat request
   }
 
   triggerAutoSync() {
