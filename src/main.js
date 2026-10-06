@@ -33,8 +33,49 @@ async function requestPersistentStorage() {
   }
 }
 
+// Versi app — ubah setiap deploy besar agar SW lama otomatis dihapus
+const APP_VERSION = '2026.10.06-v3';
+const VERSION_KEY = 'kas_juara_app_version';
+
+async function forceUpdateIfNewVersion() {
+  try {
+    const savedVersion = localStorage.getItem(VERSION_KEY);
+    if (savedVersion === APP_VERSION) return; // Tidak ada perubahan versi
+
+    console.log('[App] Versi baru terdeteksi, membersihkan cache lama...');
+
+    // Hapus semua SW cache lama
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map(k => caches.delete(k)));
+    }
+
+    // Unregister SW lama, biarkan yang baru mendaftar
+    if ('serviceWorker' in navigator) {
+      const regs = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(regs.map(r => r.unregister()));
+    }
+
+    // Simpan versi baru
+    localStorage.setItem(VERSION_KEY, APP_VERSION);
+
+    // Reload sekali untuk pakai SW + JS baru
+    if (savedVersion !== null) {
+      // Hanya reload jika bukan pertama kali (ada versi lama)
+      console.log('[App] Reload untuk memuat versi terbaru...');
+      window.location.reload();
+      return;
+    }
+  } catch (e) {
+    console.warn('[App] Gagal force update:', e);
+  }
+}
+
 // Global App Initialization
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+  // Force update SW lama jika ada versi baru
+  await forceUpdateIfNewVersion();
+
   initLiveClock();
   requestPersistentStorage();
 
