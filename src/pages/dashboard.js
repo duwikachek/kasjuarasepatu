@@ -49,7 +49,7 @@ export function renderDashboardPage(store) {
               <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
               <span class="font-label-sm text-xs text-on-surface font-semibold">Toko Buka</span>
             </div>
-            <span class="font-label-sm text-[10px] text-on-surface-variant">Shift Kasir Aktif</span>
+            <span class="font-label-sm text-[10px] text-on-surface-variant">Bismillahirrahmanirrahim</span>
           </div>
         </section>
 
