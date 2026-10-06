@@ -1,0 +1,39 @@
+﻿<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Reset Cache - Kas Juara</title>
+  <style>
+    body { margin:0; background:#0d1f16; color:white; font-family:system-ui,sans-serif; display:flex; flex-direction:column; align-items:center; justify-content:center; min-height:100vh; padding:24px; box-sizing:border-box; text-align:center; }
+    h1 { font-size:22px; margin-bottom:8px; }
+    p { color:#9ca3af; font-size:14px; margin-bottom:24px; }
+    button { background:#22c55e; color:#000; border:none; padding:14px 32px; border-radius:12px; font-size:16px; font-weight:700; cursor:pointer; }
+    #status { margin-top:16px; font-size:14px; color:#86efac; min-height:24px; }
+  </style>
+</head>
+<body>
+  <h1>Reset Cache Aplikasi</h1>
+  <p>Tekan tombol di bawah untuk membersihkan cache lama dan membuka ulang aplikasi dengan versi terbaru.</p>
+  <button onclick="clearAndReload()">Reset dan Buka Aplikasi</button>
+  <div id="status"></div>
+  <script>
+    async function clearAndReload() {
+      const status = document.getElementById('status');
+      status.textContent = 'Membersihkan cache...';
+      try {
+        if ('caches' in window) {
+          const keys = await caches.keys();
+          await Promise.all(keys.map(k => caches.delete(k)));
+        }
+        if ('serviceWorker' in navigator) {
+          const regs = await navigator.serviceWorker.getRegistrations();
+          await Promise.all(regs.map(r => r.unregister()));
+        }
+      } catch(e) {}
+      status.textContent = 'Selesai! Membuka aplikasi...';
+      setTimeout(() => { window.location.href = '/kasjuarasepatu/'; }, 1000);
+    }
+  </script>
+</body>
+</html>
