@@ -12,8 +12,10 @@ class Store {
     this.listeners = [];
     this._supabaseUnsubscribe = null;
     this._supabaseSyncTimer = null;
-    // Inisialisasi Supabase secara async (tidak block UI)
-    this._initSupabase();
+    // Cache laporan stok agar tidak dihitung ulang setiap pemanggilan
+    this._stockReportCache = null;
+    // Inisialisasi Supabase secara async setelah UI tampil (tidak block render)
+    setTimeout(() => this._initSupabase(), 500);
   }
 
   /**
@@ -28,6 +30,7 @@ class Store {
         // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
         const merged = this._mergeWithLocalPhotos(remoteState);
         this.state = merged;
+        this._stockReportCache = null; // invalidasi cache saat data cloud masuk
         this.saveState();
         this.listeners.forEach((fn) => {
           try { fn(this.state); } catch (err) { console.error(err); }
@@ -47,6 +50,7 @@ class Store {
       this._supabaseUnsubscribe = subscribeToStateChanges((newState) => {
         const merged = this._mergeWithLocalPhotos(newState);
         this.state = merged;
+        this._stockReportCache = null; // invalidasi cache saat realtime update
         this.saveState();
         // Notify listeners (update UI)
         this.listeners.forEach((fn) => {
@@ -436,6 +440,8 @@ class Store {
   }
 
   notify() {
+    // Invalidasi cache laporan stok setiap kali data berubah
+    this._stockReportCache = null;
     this.saveState();
     this.listeners.forEach((fn) => {
       try { fn(this.state); } catch (err) { console.error(err); }
@@ -748,6 +754,11 @@ class Store {
    */
   getRealtimeStockReport(options = {}) {
     const { excludeTrxId = null } = options;
+
+    // Gunakan cache bila tidak ada filter khusus (hemat CPU di dashboard & laporan)
+    if (!excludeTrxId && this._stockReportCache) {
+      return this._stockReportCache;
+    }
     const transactions = this.getTransactions();
     const supplies = this.getSupplies();
     const products = this.getProducts(); // hanya untuk metadata pelengkap
@@ -922,7 +933,7 @@ class Store {
     const totalPotensiLaba = totalPotensiOmset - totalNilaiAsetModal;
     const avgMarginPercent = totalPotensiOmset > 0 ? Math.round((totalPotensiLaba / totalPotensiOmset) * 100) : 0;
 
-    return {
+    const result = {
       items: allItems,
       unsoldItems,
       summary: {
@@ -941,6 +952,12 @@ class Store {
         lastUpdated: new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit', second: '2-digit' }) + ' WIB'
       }
     };
+
+    // Simpan ke cache bila tidak ada filter khusus
+    if (!excludeTrxId) {
+      this._stockReportCache = result;
+    }
+    return result;
   }
 
   // Available In-Stock Products (excluding already sold items)

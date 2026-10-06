@@ -7,11 +7,13 @@ export function renderDashboardPage(store) {
   const shop = store.getShop();
   const summary = store.getBalanceSummary();
   const recentTransactions = store.getTransactions().slice(0, 4);
-  // Stok menipis dihitung dari data NYATA (Barang Masuk yang belum terjual)
-  const lowStockItems = store.getLowStockItems ? store.getLowStockItems() : [];
+  // Data ringan — tidak memerlukan kalkulasi berat
   const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
   const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
-  const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: { totalSisaPasang: 0 } };
+  // Gunakan cache stock report bila ada, hindari kalkulasi berat di main thread saat render
+  const cachedReport = store._stockReportCache;
+  const stockReport = cachedReport || { summary: { totalSisaPasang: '...' } };
+  const lowStockItems = cachedReport && store.getLowStockItems ? store.getLowStockItems() : [];
 
   const todayStr = new Date().toLocaleDateString('id-ID', {
     weekday: 'long',
@@ -166,7 +168,7 @@ export function renderDashboardPage(store) {
               <span>Laporan Sisa Stock (Real Time)</span>
             </div>
             <div class="flex items-center gap-1.5 text-[11px] text-cyan-300">
-              <span class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold font-tabular">${stockReport.summary.totalSisaPasang} Pasang Sisa</span>
+              <span data-stock-badge class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold font-tabular">${stockReport.summary.totalSisaPasang} Pasang Sisa</span>
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </div>
           </button>
@@ -319,6 +321,24 @@ export function renderDashboardPage(store) {
 
 export function initDashboardPage(router, store) {
   bindHeaderEvents(router);
+
+  // Hitung laporan stok di background (idle callback) agar render awal tidak tertunda
+  const updateStockBadge = () => {
+    const badge = document.querySelector('[data-stock-badge]');
+    if (!badge) return;
+    try {
+      const report = store.getRealtimeStockReport ? store.getRealtimeStockReport() : null;
+      if (report) {
+        badge.textContent = `${report.summary.totalSisaPasang} Pasang Sisa`;
+      }
+    } catch (e) { /* abaikan */ }
+  };
+
+  if ('requestIdleCallback' in window) {
+    requestIdleCallback(updateStockBadge, { timeout: 2000 });
+  } else {
+    setTimeout(updateStockBadge, 300);
+  }
 
   // Quick Action navigation
   const btnMasuk = document.querySelector('[data-action="tambah-masuk"]');
