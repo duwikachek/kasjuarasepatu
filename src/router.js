@@ -56,7 +56,14 @@ export class Router {
       const queryStr = Object.keys(params).length
         ? '?' + new URLSearchParams(params).toString()
         : '';
-      window.location.hash = `#/${route}${queryStr}`;
+      const newHash = `#/${route}${queryStr}`;
+      if (window.location.hash === newHash) {
+        // Hash sudah sama — hashchange TIDAK akan trigger — langsung render
+        this.render();
+      } else {
+        window.location.hash = newHash;
+        // render() akan dipanggil oleh hashchange listener
+      }
       return;
     }
 
