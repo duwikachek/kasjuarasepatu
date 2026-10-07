@@ -79,6 +79,45 @@ document.addEventListener('DOMContentLoaded', async () => {
   initLiveClock();
   requestPersistentStorage();
 
+  // Terapkan background tersimpan sejak pertama buka app
+  (function restoreBackground() {
+    try {
+      const BG_STORAGE_KEY = 'kas_juara_custom_background';
+      const PRESET_STYLES = {
+        'default':           { image: `url('./assets/background-sepatu-kulit.jpg')`, color: '#0d1f16' },
+        'solid-black':       { image: 'none', color: '#000000' },
+        'solid-green':       { image: 'none', color: '#0d1f16' },
+        'solid-navy':        { image: 'none', color: '#0f172a' },
+        'solid-brown':       { image: 'none', color: '#3d2619' },
+        'gradient-sunset':   { image: 'linear-gradient(135deg,#1a0000,#3d1a00,#1f0a00)', color: '#1a0000' },
+        'gradient-midnight': { image: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)', color: '#0f0c29' },
+        'gradient-forest':   { image: 'linear-gradient(135deg,#0a2012,#1a4a2e,#0d2e1a)', color: '#0a2012' },
+      };
+      const saved = localStorage.getItem(BG_STORAGE_KEY);
+      if (!saved) return;
+      const bgData = JSON.parse(saved);
+      const frame = document.getElementById('phone-frame');
+      if (!frame) return;
+
+      if (bgData.type === 'image') {
+        frame.style.backgroundImage = `url(${bgData.value})`;
+        frame.style.backgroundSize = 'cover';
+        frame.style.backgroundPosition = 'center 30%';
+        frame.style.backgroundRepeat = 'no-repeat';
+        frame.style.backgroundColor = '#000';
+      } else if (bgData.type === 'preset') {
+        const style = PRESET_STYLES[bgData.value];
+        if (style) {
+          frame.style.backgroundImage = style.image;
+          frame.style.backgroundSize = style.image !== 'none' ? 'cover' : '';
+          frame.style.backgroundPosition = 'center 30%';
+          frame.style.backgroundRepeat = 'no-repeat';
+          frame.style.backgroundColor = style.color;
+        }
+      }
+    } catch (e) { /* abaikan */ }
+  })();
+
   // Create & Initialize Router
   const router = new Router(store, 'app');
   router.init();

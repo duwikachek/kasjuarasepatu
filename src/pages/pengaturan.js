@@ -412,6 +412,89 @@ export function renderPengaturanPage(store) {
           </button>
         </section>
 
+
+        <!-- Tampilan Background App -->
+        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-background">
+          <div class="flex items-center gap-2">
+            <span class="material-symbols-outlined text-primary text-[20px]">wallpaper</span>
+            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Tampilan Background</h3>
+          </div>
+          <p class="text-xs text-on-surface-variant leading-relaxed">
+            Ganti gambar latar belakang aplikasi sesuai selera. Upload foto sendiri atau pilih dari tema preset yang tersedia.
+          </p>
+
+          <!-- Preview Background Saat Ini -->
+          <div class="relative w-full h-28 rounded-xl overflow-hidden border border-white/40 shadow-sm">
+            <div id="bg-preview-box" class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('./assets/background-sepatu-kulit.jpg');background-color:#0d1f16;"></div>
+            <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
+              <span class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Preview Background</span>
+            </div>
+          </div>
+
+          <!-- Upload Foto Sendiri -->
+          <div class="flex flex-col gap-1.5">
+            <span class="font-label-sm text-xs text-on-surface-variant font-semibold uppercase tracking-wide">Upload Foto Sendiri</span>
+            <label for="input-bg-upload"
+              class="w-full py-2.5 px-4 rounded-xl glass-neutral glass-btn glass-sheen cursor-pointer flex items-center justify-center gap-2 text-on-surface font-label-md text-sm font-semibold active:scale-[0.98] transition-transform"
+            >
+              <span class="material-symbols-outlined text-[20px] text-primary">add_photo_alternate</span>
+              <span>Pilih Foto dari Galeri</span>
+              <input type="file" id="input-bg-upload" accept="image/*" class="hidden" />
+            </label>
+          </div>
+
+          <!-- Preset Tema -->
+          <div class="flex flex-col gap-2">
+            <span class="font-label-sm text-xs text-on-surface-variant font-semibold uppercase tracking-wide">Atau Pilih Tema Preset</span>
+            <div class="grid grid-cols-4 gap-2" id="bg-preset-grid">
+              <!-- Default: Foto Sepatu Kulit -->
+              <button type="button" data-bg-preset="default" class="bg-preset-btn relative h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all">
+                <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('./assets/background-sepatu-kulit.jpg')"></div>
+                <div class="absolute inset-0 bg-black/20"></div>
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center drop-shadow">Default</span>
+              </button>
+              <!-- Hitam Solid -->
+              <button type="button" data-bg-preset="solid-black" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#000000;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Hitam</span>
+              </button>
+              <!-- Hijau Gelap -->
+              <button type="button" data-bg-preset="solid-green" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0d1f16;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Hijau</span>
+              </button>
+              <!-- Navy -->
+              <button type="button" data-bg-preset="solid-navy" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0f172a;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Navy</span>
+              </button>
+              <!-- Coklat Tua -->
+              <button type="button" data-bg-preset="solid-brown" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#3d2619;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Coklat</span>
+              </button>
+              <!-- Gradien Sunset -->
+              <button type="button" data-bg-preset="gradient-sunset" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#1a0000,#3d1a00,#1f0a00);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Sunset</span>
+              </button>
+              <!-- Gradien Midnight -->
+              <button type="button" data-bg-preset="gradient-midnight" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Midnight</span>
+              </button>
+              <!-- Gradien Forest -->
+              <button type="button" data-bg-preset="gradient-forest" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0a2012,#1a4a2e,#0d2e1a);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Forest</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Tombol Reset -->
+          <button
+            type="button"
+            id="btn-reset-background"
+            class="w-full py-2 rounded-xl glass-neutral glass-btn text-on-surface-variant font-label-md text-xs font-semibold flex items-center justify-center gap-1.5"
+          >
+            <span class="material-symbols-outlined text-[15px]">restart_alt</span>
+            <span>Reset ke Background Default</span>
+          </button>
+        </section>
+
         <!-- Informasi Aplikasi -->
         <section class="p-3 text-center text-xs text-on-surface-variant/80 flex flex-col items-center gap-1">
           <span class="font-bold text-on-surface">Kas Juara Sepatu v1.0.0</span>
@@ -806,6 +889,133 @@ export function initPengaturanPage(router, store) {
           <span>Sinkronkan Sekarang</span>
         `;
       }
+    });
+  }
+
+  // =============================================
+  // BACKGROUND CUSTOMIZER
+  // =============================================
+  const BG_STORAGE_KEY = 'kas_juara_custom_background';
+
+  const PRESET_STYLES = {
+    'default':           { image: `url('./assets/background-sepatu-kulit.jpg')`, color: '#0d1f16' },
+    'solid-black':       { image: 'none', color: '#000000' },
+    'solid-green':       { image: 'none', color: '#0d1f16' },
+    'solid-navy':        { image: 'none', color: '#0f172a' },
+    'solid-brown':       { image: 'none', color: '#3d2619' },
+    'gradient-sunset':   { image: 'linear-gradient(135deg,#1a0000,#3d1a00,#1f0a00)', color: '#1a0000' },
+    'gradient-midnight': { image: 'linear-gradient(135deg,#0f0c29,#302b63,#24243e)', color: '#0f0c29' },
+    'gradient-forest':   { image: 'linear-gradient(135deg,#0a2012,#1a4a2e,#0d2e1a)', color: '#0a2012' },
+  };
+
+  /** Terapkan background ke phone-frame dan preview box */
+  function applyBackground(bgData) {
+    const frame = document.getElementById('phone-frame');
+    const preview = document.getElementById('bg-preview-box');
+
+    if (!bgData) return;
+
+    if (bgData.type === 'image') {
+      // Custom upload — base64
+      if (frame) {
+        frame.style.backgroundImage = `url(${bgData.value})`;
+        frame.style.backgroundSize = 'cover';
+        frame.style.backgroundPosition = 'center 30%';
+        frame.style.backgroundRepeat = 'no-repeat';
+        frame.style.backgroundColor = '#000';
+      }
+      if (preview) {
+        preview.style.backgroundImage = `url(${bgData.value})`;
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+        preview.style.backgroundColor = '#000';
+      }
+    } else if (bgData.type === 'preset') {
+      const style = PRESET_STYLES[bgData.value];
+      if (!style) return;
+      if (frame) {
+        frame.style.backgroundImage = style.image;
+        frame.style.backgroundSize = style.image !== 'none' ? 'cover' : '';
+        frame.style.backgroundPosition = 'center 30%';
+        frame.style.backgroundRepeat = 'no-repeat';
+        frame.style.backgroundColor = style.color;
+      }
+      if (preview) {
+        preview.style.backgroundImage = style.image;
+        preview.style.backgroundSize = 'cover';
+        preview.style.backgroundPosition = 'center';
+        preview.style.backgroundColor = style.color;
+      }
+    }
+
+    // Tandai preset yang aktif
+    document.querySelectorAll('.bg-preset-btn').forEach((btn) => {
+      const isActive = bgData.type === 'preset' && btn.dataset.bgPreset === bgData.value;
+      btn.classList.toggle('border-primary', isActive);
+      btn.classList.toggle('border-transparent', !isActive);
+      btn.classList.toggle('ring-2', isActive);
+      btn.classList.toggle('ring-primary', isActive);
+    });
+  }
+
+  /** Muat background tersimpan dari localStorage */
+  function loadSavedBackground() {
+    try {
+      const saved = localStorage.getItem(BG_STORAGE_KEY);
+      if (saved) {
+        const bgData = JSON.parse(saved);
+        applyBackground(bgData);
+      }
+    } catch (e) { /* abaikan */ }
+  }
+
+  // Inisialisasi: tampilkan background yang sudah tersimpan
+  loadSavedBackground();
+
+  // Upload foto dari galeri
+  const inputBgUpload = document.getElementById('input-bg-upload');
+  if (inputBgUpload) {
+    inputBgUpload.addEventListener('change', (e) => {
+      const file = e.target.files[0];
+      if (!file) return;
+
+      if (file.size > 5 * 1024 * 1024) {
+        showToast('Ukuran foto terlalu besar (maks 5MB). Coba foto yang lebih kecil.', 'error', 4000);
+        return;
+      }
+
+      const reader = new FileReader();
+      reader.onload = (ev) => {
+        const base64 = ev.target.result;
+        const bgData = { type: 'image', value: base64 };
+        localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bgData));
+        applyBackground(bgData);
+        showToast('Background berhasil diganti! ✓', 'success');
+      };
+      reader.readAsDataURL(file);
+    });
+  }
+
+  // Pilih preset
+  document.querySelectorAll('.bg-preset-btn').forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const preset = btn.dataset.bgPreset;
+      if (!preset) return;
+      const bgData = { type: 'preset', value: preset };
+      localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bgData));
+      applyBackground(bgData);
+      showToast(`Tema "${preset}" diterapkan! ✓`, 'success');
+    });
+  });
+
+  // Reset ke default
+  const btnResetBg = document.getElementById('btn-reset-background');
+  if (btnResetBg) {
+    btnResetBg.addEventListener('click', () => {
+      localStorage.removeItem(BG_STORAGE_KEY);
+      const bgData = { type: 'preset', value: 'default' };
+      applyBackground(bgData);
+      showToast('Background dikembalikan ke default.', 'info');
     });
   }
 }
