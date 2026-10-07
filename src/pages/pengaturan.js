@@ -972,25 +972,68 @@ export function initPengaturanPage(router, store) {
   // Inisialisasi: tampilkan background yang sudah tersimpan
   loadSavedBackground();
 
-  // Upload foto dari galeri
+  // Upload foto dari galeri (mendukung hingga 20MB, auto-kompres untuk localStorage)
   const inputBgUpload = document.getElementById('input-bg-upload');
   if (inputBgUpload) {
     inputBgUpload.addEventListener('change', (e) => {
       const file = e.target.files[0];
       if (!file) return;
 
-      if (file.size > 5 * 1024 * 1024) {
-        showToast('Ukuran foto terlalu besar (maks 5MB). Coba foto yang lebih kecil.', 'error', 4000);
+      // Batas upload dinaikkan ke 20MB agar foto dari kamera langsung bisa diterima
+      if (file.size > 20 * 1024 * 1024) {
+        showToast('Ukuran foto terlalu besar (maks 20MB).', 'error', 4000);
         return;
       }
 
+      showToast('Memproses foto...', 'info', 2000);
+
       const reader = new FileReader();
       reader.onload = (ev) => {
-        const base64 = ev.target.result;
-        const bgData = { type: 'image', value: base64 };
-        localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bgData));
-        applyBackground(bgData);
-        showToast('Background berhasil diganti! ✓', 'success');
+        const img = new Image();
+        img.onload = () => {
+          // Kompres & resize otomatis agar aman disimpan di localStorage
+          const MAX_WIDTH = 1920;
+          const MAX_HEIGHT = 1080;
+          let { width, height } = img;
+
+          // Hitung rasio resize jika gambar lebih besar dari batas
+          if (width > MAX_WIDTH || height > MAX_HEIGHT) {
+            const ratio = Math.min(MAX_WIDTH / width, MAX_HEIGHT / height);
+            width = Math.round(width * ratio);
+            height = Math.round(height * ratio);
+          }
+
+          const canvas = document.createElement('canvas');
+          canvas.width = width;
+          canvas.height = height;
+          const ctx = canvas.getContext('2d');
+          ctx.drawImage(img, 0, 0, width, height);
+
+          // Kompres ke JPEG kualitas 85% — tetap tajam sebagai background
+          const base64 = canvas.toDataURL('image/jpeg', 0.85);
+
+          try {
+            const bgData = { type: 'image', value: base64 };
+            localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bgData));
+            applyBackground(bgData);
+            showToast('Background berhasil diganti! ✓', 'success');
+          } catch (storageErr) {
+            // Jika localStorage penuh, coba kualitas lebih rendah
+            try {
+              const base64Low = canvas.toDataURL('image/jpeg', 0.6);
+              const bgData = { type: 'image', value: base64Low };
+              localStorage.setItem(BG_STORAGE_KEY, JSON.stringify(bgData));
+              applyBackground(bgData);
+              showToast('Background berhasil diganti! ✓', 'success');
+            } catch (e) {
+              showToast('Penyimpanan lokal penuh. Hapus cache browser lalu coba lagi.', 'error', 5000);
+            }
+          }
+        };
+        img.onerror = () => {
+          showToast('Gagal memuat gambar. Pastikan file adalah foto yang valid.', 'error', 4000);
+        };
+        img.src = ev.target.result;
       };
       reader.readAsDataURL(file);
     });
