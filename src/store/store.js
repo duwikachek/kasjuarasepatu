@@ -27,13 +27,14 @@ class Store {
    */
   async _initSupabase() {
     try {
-      const remoteState = await pullStateFromSupabase();
-      if (remoteState) {
+      const remoteResult = await pullStateFromSupabase();
+      if (remoteResult) {
         // Simpan timestamp cloud sebagai push terakhir agar realtime echo awal diabaikan
-        this._lastPushTimestamp = remoteState.updatedAt || null;
+        this._lastPushTimestamp = remoteResult.updatedAt || null;
 
+        // PENTING: remoteResult = { data, updatedAt } — gunakan .data sebagai state
         // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
-        const merged = this._mergeWithLocalPhotos(remoteState);
+        const merged = this._mergeWithLocalPhotos(remoteResult.data);
         this.state = merged;
         this._stockReportCache = null;
         this.saveState();
@@ -514,7 +515,8 @@ class Store {
 
   // Shop Info
   getShop() {
-    return this.state.shop;
+    // Defensive: kembalikan default shop jika state.shop undefined (mis. data Supabase belum lengkap)
+    return this.state.shop || JSON.parse(JSON.stringify(INITIAL_DATA.shop));
   }
 
   updateShop(shopData) {
