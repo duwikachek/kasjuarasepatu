@@ -2,8 +2,15 @@ import { parseRupiah, formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
-import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
-import { playBeep } from '../utils/barcode-scanner-config.js';
+import { Html5Qrcode } from 'html5-qrcode';
+import {
+  buildScannerConfig1D,
+  createScanDebouncer,
+  enhanceVideoElement,
+  checkCameraSupport,
+  describeCameraError,
+  playBeep
+} from '../utils/barcode-scanner-config.js';
 
 const KATEGORI_KELUAR = [
   { label: 'BIAYA FO SHP', desc: 'Free Ongkir Shopee', icon: 'local_shipping' },
@@ -296,23 +303,75 @@ export function renderTambahTransaksiPage(store, params = {}) {
         </button>
       </form>
 
-      <div id="barcode-sale-scanner-modal" class="hidden fixed inset-0 z-50 bg-black/80 backdrop-blur-md flex flex-col items-center justify-between p-4">
-        <div class="w-full max-w-[400px] flex items-center justify-between text-white pt-4 px-2">
+      <!-- Fullscreen Barcode Camera Scanner Modal -->
+      <div id="barcode-sale-scanner-modal" class="hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-start p-3 pt-safe">
+        <!-- Top Bar -->
+        <div class="w-full max-w-[400px] flex items-center justify-between text-white pt-3 px-2 shrink-0">
           <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-amber-400 text-2xl">qr_code_scanner</span>
-            <div><h3 class="font-headline-sm text-base font-bold">Scan Barcode Sepatu Terjual</h3><p class="text-[11px] text-white/70">Arahkan kamera ke stiker Code 39 pada sepatu</p></div>
+            <span class="material-symbols-outlined text-emerald-300 text-2xl">qr_code_scanner</span>
+            <div>
+              <h3 class="font-headline-sm text-base font-bold">Scan Barcode Sepatu Terjual</h3>
+              <p class="text-[11px] text-white/70">Code 128 / Code 39 / EAN / QR</p>
+            </div>
           </div>
-          <button type="button" id="btn-close-sale-scanner" class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white active:scale-95"><span class="material-symbols-outlined text-2xl">close</span></button>
+          <div class="flex items-center gap-2">
+            <button type="button" id="btn-sale-scanner-torch"
+              class="p-2 rounded-full bg-white/15 hover:bg-white/25 text-white active:scale-95 transition-all"
+              title="Nyalakan lampu kilat">
+              <span class="material-symbols-outlined text-xl">flashlight_on</span>
+            </button>
+            <button type="button" id="btn-close-sale-scanner" class="p-2 rounded-full bg-white/20 hover:bg-white/30 text-white active:scale-95">
+              <span class="material-symbols-outlined text-2xl">close</span>
+            </button>
+          </div>
         </div>
-        <div class="w-full max-w-[340px] flex flex-col items-center my-auto">
-          <div class="w-full h-64 rounded-2xl overflow-hidden relative border-2 border-emerald-400/80 shadow-2xl bg-black">
+
+        <!-- Viewfinder -->
+        <div class="w-full max-w-[460px] flex flex-col items-center pt-3 shrink-0">
+          <div class="relative isolate w-full h-48 sm:h-56 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-2xl bg-black">
             <div id="sale-qr-reader" class="w-full h-full"></div>
-            <div class="absolute inset-x-4 top-1/2 h-0.5 bg-emerald-400 shadow-[0_0_8px_#34d399] animate-pulse pointer-events-none"></div>
+            <!-- Overlay sudut bidik + garis laser -->
+            <div class="absolute inset-0 z-10 pointer-events-none">
+              <div class="absolute left-4 top-4 w-8 h-8 border-l-3 border-t-3 border-emerald-300 rounded-tl-md"></div>
+              <div class="absolute right-4 top-4 w-8 h-8 border-r-3 border-t-3 border-emerald-300 rounded-tr-md"></div>
+              <div class="absolute left-4 bottom-4 w-8 h-8 border-l-3 border-b-3 border-emerald-300 rounded-bl-md"></div>
+              <div class="absolute right-4 bottom-4 w-8 h-8 border-r-3 border-b-3 border-emerald-300 rounded-br-md"></div>
+              <!-- Garis laser horizontal -->
+              <div class="absolute inset-x-6 top-1/2 h-0.5 bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse"></div>
+            </div>
           </div>
-          <p class="text-xs text-white/80 text-center mt-3 px-4">Arahkan kamera ke garis barcode stiker untuk otomatis menarik data sepatu</p>
+
+          <!-- Status / panduan dinamis -->
+          <p id="sale-scanner-hint" class="text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium">
+            Geser barcode ke dalam kotak sampai terkunci
+          </p>
+
+          <!-- Tombol coba lagi (hanya muncul saat error) -->
+          <button type="button" id="btn-sale-scanner-retry"
+            class="hidden mt-2.5 px-4 py-2 rounded-full bg-emerald-600/90 hover:bg-emerald-500 text-white text-xs font-bold active:scale-95">
+            Coba Lagi
+          </button>
+
+          <!-- Barcode terakhir terbaca -->
+          <div id="sale-scanner-last-read" class="hidden mt-2 px-3 py-1.5 rounded-full glass-chip text-[11px] text-white font-mono"></div>
         </div>
-        <div class="w-full max-w-[400px] pb-6 flex flex-col items-center gap-2.5">
-          <button type="button" id="btn-cancel-sale-scanner" class="px-5 py-2.5 rounded-full bg-rose-600 text-white text-xs font-semibold active:scale-95">Tutup Kamera</button>
+
+        <!-- Bottom Controls -->
+        <div class="w-full max-w-[420px] mt-auto pt-4 pb-4 flex flex-col items-center gap-2.5 shrink-0">
+          <div class="flex items-center gap-2 flex-wrap justify-center">
+            <button type="button" id="btn-sale-scanner-switch-cam"
+              class="px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">cameraswitch</span>
+              Ganti Kamera
+            </button>
+            <button type="button" id="btn-sale-scanner-zoom"
+              class="px-3.5 py-2 rounded-full bg-white/15 hover:bg-white/25 text-white text-xs font-semibold active:scale-95 flex items-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">zoom_in</span>
+              <span>Zoom</span>
+            </button>
+          </div>
+          <p class="text-[10px] text-white/50 text-center">Tips: gunakan cahaya terang, posisi datar, dan jarak 15-20 cm</p>
+          <button type="button" id="btn-cancel-sale-scanner" class="px-5 py-2.5 rounded-full bg-rose-600/90 text-white text-xs font-bold active:scale-95">Tutup Kamera</button>
         </div>
       </div>
     </div>
@@ -329,6 +388,12 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   let keluarPhotoDataUrl = (existingTrx && existingTrx.photo) || null;
   let html5SaleScanner = null;
   let activeScanItemId = null;
+  // State scanner tambahan untuk pengalaman barcode 1D responsif
+  let saleScannerZoom = 1;
+  let saleTorchOn = false;
+  let saleUseFrontCamera = false;
+  let saleScannerStartedOnce = false;
+  const saleScanDebouncer = createScanDebouncer(1500);
 
   // Baca item kartu yang sudah ada di DOM agar ID 100% cocok dengan elemen HTML
   let saleItems = [];
@@ -935,20 +1000,108 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   const btnCloseSaleCamera = document.getElementById('btn-close-sale-scanner');
   const btnCancelSaleCamera = document.getElementById('btn-cancel-sale-scanner');
 
+  /** Set pesan status di dalam modal scanner transaksi. */
+  function setSaleScannerStatus(text, type) {
+    const hint = document.getElementById('sale-scanner-hint');
+    if (!hint) return;
+    hint.textContent = text;
+    if (type === 'error') {
+      hint.className = 'text-xs text-rose-300 text-center mt-2.5 px-4 leading-snug font-semibold';
+    } else {
+      hint.className = 'text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium';
+    }
+  }
+
+  /** Tampilkan / sembunyikan tombol Coba Lagi. */
+  function showSaleRetryButton(show) {
+    const btn = document.getElementById('btn-sale-scanner-retry');
+    if (btn) btn.classList.toggle('hidden', !show);
+  }
+
+  /** Nyalakan / matikan torch scanner transaksi. */
+  async function applySaleTorch(on) {
+    try {
+      const video = document.querySelector('#sale-qr-reader video');
+      if (!video || !video.srcObject) return;
+      const track = video.srcObject.getVideoTracks()[0];
+      if (!track) return;
+      const caps = track.getCapabilities ? track.getCapabilities() : {};
+      if (!caps.torch) return;
+      await track.applyConstraints({ advanced: [{ torch: on }] });
+      saleTorchOn = on;
+      const btn = document.getElementById('btn-sale-scanner-torch');
+      if (btn) btn.classList.toggle('bg-amber-500/70', on);
+    } catch (_) { /* perangkat tidak mendukung torch */ }
+  }
+
+  /** Cycle zoom kamera: 1x → 1.5x → 2x → 2.5x → 3x → kembali 1x. */
+  function cycleSaleZoom() {
+    const steps = [1, 1.5, 2, 2.5, 3];
+    const idx = steps.indexOf(saleScannerZoom);
+    saleScannerZoom = steps[(idx + 1) % steps.length];
+    try {
+      const video = document.querySelector('#sale-qr-reader video');
+      if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        if (track && track.applyConstraints) {
+          track.applyConstraints({ advanced: [{ zoom: saleScannerZoom }] });
+        }
+      }
+    } catch (_) { /* abaikan */ }
+    const btn = document.getElementById('btn-sale-scanner-zoom');
+    if (btn) {
+      const label = btn.querySelector('span:last-child');
+      if (label) label.textContent = `Zoom ${saleScannerZoom}x`;
+    }
+  }
+
+  /** Ganti kamera depan <-> belakang. */
+  function switchSaleCamera() {
+    saleUseFrontCamera = !saleUseFrontCamera;
+    const oldScanner = html5SaleScanner;
+    html5SaleScanner = null;
+    if (oldScanner) {
+      oldScanner.stop()
+        .then(() => { try { oldScanner.clear(); } catch (_) {} })
+        .catch(() => { try { oldScanner.clear(); } catch (_) {} })
+        .then(() => setTimeout(openSaleScanner, 180));
+    } else {
+      setTimeout(openSaleScanner, 180);
+    }
+  }
+
   function openSaleScanner() {
     if (!saleScannerModal) return;
     saleScannerModal.classList.remove('hidden');
 
-    const scannerConfig = { fps: 10, qrbox: { width: 280, height: 160 } };
-    const formatsToSupport = [
-      Html5QrcodeSupportedFormats.CODE_39,
-      Html5QrcodeSupportedFormats.CODE_128,
-      Html5QrcodeSupportedFormats.EAN_13,
-      Html5QrcodeSupportedFormats.UPC_A
-    ];
+    // Pre-flight: pastikan kamera bisa dibuka (HTTPS / localhost)
+    const support = checkCameraSupport();
+    if (!support.ok) {
+      setSaleScannerStatus(support.reason, 'error');
+      showSaleRetryButton(true);
+      return;
+    }
+
+    setSaleScannerStatus('Meminta izin kamera...', 'info');
+    showSaleRetryButton(false);
+
+    saleScannerZoom = 1;
+    saleUseFrontCamera = saleScannerStartedOnce ? !saleUseFrontCamera : false;
+    saleTorchOn = false;
+    const torchBtn = document.getElementById('btn-sale-scanner-torch');
+    if (torchBtn) torchBtn.classList.remove('bg-amber-500/70');
 
     const onSuccess = (decodedText) => {
-      playBeep('success'); // Suara bip saat barcode terbaca
+      if (!saleScanDebouncer(decodedText)) return;
+
+      playBeep('success');
+
+      const lastRead = document.getElementById('sale-scanner-last-read');
+      if (lastRead) {
+        lastRead.textContent = decodedText;
+        lastRead.classList.remove('hidden');
+      }
+
       if (activeScanItemId) {
         const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
         if (barcodeInput) {
@@ -958,47 +1111,106 @@ export function initTambahTransaksiPage(router, store, params = {}) {
       }
       closeSaleScanner();
     };
+    const onError = () => { /* frame tanpa barcode, abaikan */ };
 
-    const tryStartSale = (constraint, label) => {
+    const afterStart = () => {
+      saleScannerStartedOnce = true;
+      setTimeout(() => {
+        enhanceVideoElement('sale-qr-reader');
+        applySaleTorch(false);
+        setSaleScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+        showSaleRetryButton(false);
+      }, 120);
+    };
+
+    /**
+     * Setiap percobaan memakai instance Html5Qrcode BARU karena
+     * html5-qrcode tidak mengizinkan start() dua kali pada instance sama.
+     */
+    const tryStartSale = (cameraConstraint, config, label) => {
       if (html5SaleScanner) {
         try { html5SaleScanner.clear(); } catch (_) { /* abaikan */ }
         html5SaleScanner = null;
       }
-      const scanner = new Html5Qrcode('sale-qr-reader', { formatsToSupport, verbose: false });
+      const scanner = new Html5Qrcode('sale-qr-reader', {
+        verbose: false,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      });
       html5SaleScanner = scanner;
-      return scanner.start(constraint, scannerConfig, onSuccess, () => {})
+      return scanner.start(cameraConstraint, config, onSuccess, onError)
+        .then(() => { afterStart(); })
         .catch((err) => {
-          console.warn(`[sale-scanner] gagal (${label}):`, err);
+          console.warn(`[sale-scanner] gagal start (${label}):`, err);
           try { scanner.clear(); } catch (_) { /* abaikan */ }
           if (html5SaleScanner === scanner) html5SaleScanner = null;
           throw err;
         });
     };
 
-    // PERCOBAAN 1: kamera belakang (environment)
-    tryStartSale({ facingMode: { ideal: 'environment' } }, 'environment ideal')
-      // PERCOBAAN 2: kamera belakang exact
-      .catch(() => tryStartSale({ facingMode: 'environment' }, 'environment exact'))
-      // PERCOBAAN 3: kamera depan (user) sebagai fallback
-      .catch(() => tryStartSale({ facingMode: 'user' }, 'user fallback'))
+    const baseConfig = buildScannerConfig1D();
+    const facing = saleUseFrontCamera ? 'user' : 'environment';
+
+    // PERCOBAAN 1: facingMode ideal
+    tryStartSale({ facingMode: { ideal: facing } }, baseConfig, 'facingMode ideal')
+      // PERCOBAAN 2: facingMode exact, fps sedikit diturunkan
+      .catch(() => tryStartSale({ facingMode: facing }, { ...baseConfig, fps: 15 }, 'facingMode exact'))
+      // PERCOBAAN 3: fallback environment
+      .catch(() => tryStartSale({ facingMode: 'environment' }, { ...baseConfig, fps: 10 }, 'environment fallback'))
+      // PERCOBAAN 4: kamera manapun
+      .catch(() => tryStartSale({ facingMode: 'user' }, { ...baseConfig, fps: 10 }, 'user fallback'))
       .catch((err) => {
-        console.warn('[sale-scanner] kamera tidak dapat dibuka:', err);
-        showToast('Kamera tidak dapat diakses. Ketik barcode secara manual.', 'info', 3500);
-        closeSaleScanner();
+        console.error('[sale-scanner] kamera tidak dapat dibuka:', err);
+        setSaleScannerStatus(describeCameraError(err), 'error');
+        showSaleRetryButton(true);
       });
   }
 
   function closeSaleScanner() {
-    if (html5SaleScanner) {
-      try { if (html5SaleScanner.isScanning) html5SaleScanner.stop().catch(console.error); } catch (e) { console.warn(e); }
-      html5SaleScanner = null;
+    if (!saleScannerModal) return;
+    saleScannerModal.classList.add('hidden');
+    applySaleTorch(false);
+
+    const oldScanner = html5SaleScanner;
+    html5SaleScanner = null;
+    if (oldScanner) {
+      oldScanner.stop()
+        .then(() => { try { oldScanner.clear(); } catch (_) {} })
+        .catch(() => {});
     }
-    if (saleScannerModal) saleScannerModal.classList.add('hidden');
+
     activeScanItemId = null;
+    saleScannerStartedOnce = false;
+    showSaleRetryButton(false);
+    setSaleScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+    const lastRead = document.getElementById('sale-scanner-last-read');
+    if (lastRead) lastRead.classList.add('hidden');
   }
 
   if (btnCloseSaleCamera) btnCloseSaleCamera.addEventListener('click', closeSaleScanner);
   if (btnCancelSaleCamera) btnCancelSaleCamera.addEventListener('click', closeSaleScanner);
+
+  // Bind controls tambahan scanner transaksi
+  const btnSaleTorch = document.getElementById('btn-sale-scanner-torch');
+  const btnSaleZoom = document.getElementById('btn-sale-scanner-zoom');
+  const btnSaleSwitchCam = document.getElementById('btn-sale-scanner-switch-cam');
+  const btnSaleRetry = document.getElementById('btn-sale-scanner-retry');
+  if (btnSaleTorch) btnSaleTorch.addEventListener('click', () => applySaleTorch(!saleTorchOn));
+  if (btnSaleZoom) btnSaleZoom.addEventListener('click', cycleSaleZoom);
+  if (btnSaleSwitchCam) btnSaleSwitchCam.addEventListener('click', switchSaleCamera);
+  if (btnSaleRetry) {
+    btnSaleRetry.addEventListener('click', () => {
+      const old = html5SaleScanner;
+      html5SaleScanner = null;
+      if (old) {
+        old.stop()
+          .then(() => { try { old.clear(); } catch (_) {} })
+          .catch(() => {})
+          .then(() => openSaleScanner());
+      } else {
+        openSaleScanner();
+      }
+    });
+  }
 
   function handleSubmit() {
     try {
