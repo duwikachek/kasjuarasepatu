@@ -577,7 +577,25 @@ export function initTambahTransaksiPage(router, store, params = {}) {
       };
     }
 
-    // 2. Cek apakah barcode ini sudah pernah terjual di transaksi lain sebelumnya
+    // 2. Cek apakah barcode ini ada di stok barang yang tersedia
+    const stockReport = store.getRealtimeStockReport();
+    const availableItems = stockReport.unsoldItems || [];
+    const stockItem = availableItems.find((item) => {
+      if (item.hasRealBarcode && item.barcode) {
+        return item.barcode.toString().trim().toUpperCase() === clean;
+      }
+      return false;
+    });
+    
+    if (!stockItem) {
+      return {
+        type: 'out_of_stock',
+        conflictBarcode: clean,
+        message: `❌ Barang dengan barcode "${clean}" SUDAH LAKU atau tidak ada di stok! Tidak bisa dimasukkan.`
+      };
+    }
+
+    // 3. Cek apakah barcode ini sudah pernah terjual di transaksi lain sebelumnya
     const soldTrx = store.findSoldTransactionByBarcode(clean, isEditMode ? editId : null);
     if (soldTrx) {
       const buyerInfo = soldTrx.buyer ? `ke ${soldTrx.buyer}` : '';
@@ -1126,9 +1144,32 @@ export function initTambahTransaksiPage(router, store, params = {}) {
       }
 
       if (activeScanItemId) {
+        const cleanBarcode = decodedText.trim();
+        
+        // Validasi barcode terhadap stok yang tersedia
+        const stockReport = store.getRealtimeStockReport();
+        const availableItems = stockReport.unsoldItems || [];
+        
+        // Cari item dengan barcode yang sama di stok
+        const matchedItem = availableItems.find((item) => {
+          if (item.hasRealBarcode && item.barcode) {
+            return item.barcode.toString().trim().toUpperCase() === cleanBarcode.toUpperCase();
+          }
+          return false;
+        });
+        
+        if (!matchedItem) {
+          // Barcode tidak ada di stok atau sudah habis terjual
+          showToast('❌ Barang sudah laku atau tidak ada di stok', 'error', 4000);
+          setScannerStatus('Barang tidak ditemukan di stok', 'error');
+          showRetryButton(true);
+          return;
+        }
+        
+        // Barcode valid — simpan ke input
         const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
         if (barcodeInput) {
-          barcodeInput.value = decodedText.trim();
+          barcodeInput.value = cleanBarcode;
           barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
       }
