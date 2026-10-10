@@ -448,26 +448,43 @@ export function renderTambahBarangMasukPage(store, params = {}) {
           </div>
         </div>
 
-        <!-- Viewfinder: DI ATAS, langsung di bawah header -->
-        <div class="w-full max-w-[460px] flex flex-col items-center pt-3 shrink-0">
-          <div class="relative isolate w-full h-48 sm:h-56 rounded-2xl overflow-hidden border-2 border-emerald-400/80 shadow-2xl bg-black">
+        <!-- Viewfinder dengan fokus optimal untuk barcode -->
+        <div class="w-full max-w-[460px] flex flex-col items-center pt-4 shrink-0">
+          <!-- Container Camera Preview -->
+          <div class="relative isolate w-full h-56 sm:h-64 rounded-3xl overflow-hidden border-3 border-emerald-400 shadow-2xl bg-black" style="box-shadow: 0 0 30px rgba(52, 211, 153, 0.3);">
             <div id="qr-reader" class="w-full h-full"></div>
-            <!-- Overlay kotak bidik + garis laser (pointer-events-none agar tidak menghalangi) -->
-            <div class="absolute inset-0 z-10 pointer-events-none">
-              <!-- Sudut bidik -->
-              <div class="absolute left-4 top-4 w-8 h-8 border-l-3 border-t-3 border-emerald-300 rounded-tl-md"></div>
-              <div class="absolute right-4 top-4 w-8 h-8 border-r-3 border-t-3 border-emerald-300 rounded-tr-md"></div>
-              <div class="absolute left-4 bottom-4 w-8 h-8 border-l-3 border-b-3 border-emerald-300 rounded-bl-md"></div>
-              <div class="absolute right-4 bottom-4 w-8 h-8 border-r-3 border-b-3 border-emerald-300 rounded-br-md"></div>
-              <!-- Garis laser horizontal -->
-              <div class="absolute inset-x-6 top-1/2 h-0.5 bg-emerald-400 shadow-[0_0_10px_#34d399] animate-pulse"></div>
+            
+            <!-- Overlay: Sudut bidik + Garis panduan -->
+            <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+              <!-- Sudut keempat penjuru (corner brackets) -->
+              <div class="absolute left-3 top-3 w-8 h-8 border-l-4 border-t-4 border-emerald-300 rounded-tl-lg opacity-80"></div>
+              <div class="absolute right-3 top-3 w-8 h-8 border-r-4 border-t-4 border-emerald-300 rounded-tr-lg opacity-80"></div>
+              <div class="absolute left-3 bottom-3 w-8 h-8 border-l-4 border-b-4 border-emerald-300 rounded-bl-lg opacity-80"></div>
+              <div class="absolute right-3 bottom-3 w-8 h-8 border-r-4 border-b-4 border-emerald-300 rounded-br-lg opacity-80"></div>
+              
+              <!-- Garis horizontal center dengan animasi scanning -->
+              <div class="absolute inset-x-8 top-1/2 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-lg shadow-emerald-500/50" style="transform: translateY(-50%); animation: scan 2s ease-in-out infinite;"></div>
+              
+              <!-- Garis vertikal center (subtle) -->
+              <div class="absolute inset-y-8 left-1/2 w-0.5 bg-gradient-to-b from-transparent via-emerald-400/30 to-transparent opacity-50" style="transform: translateX(-50%);"></div>
+              
+              <!-- Area terang di tengah untuk fokus -->
+              <div class="absolute top-1/2 left-1/2 w-48 h-20 -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-emerald-300/40 rounded-lg opacity-50"></div>
             </div>
+            
+            <!-- Vignette (tepi gelap) untuk fokus ke tengah -->
+            <div class="absolute inset-0 z-5 pointer-events-none bg-gradient-to-r from-black/30 via-transparent to-black/30"></div>
           </div>
-
-          <!-- Panduan dinamis / pesan error -->
-          <p id="scanner-hint" class="text-xs text-white/90 text-center mt-2.5 px-5 leading-snug font-medium">
-            Geser barcode ke dalam kotak sampai terkunci
-          </p>
+          
+          <!-- Panduan teks dinamis -->
+          <div class="mt-4 text-center">
+            <p id="scanner-hint" class="text-sm text-white/90 font-medium leading-snug px-4">
+              🔍 Arahkan barcode ke tengah kotak
+            </p>
+            <p class="text-xs text-white/60 mt-2 px-4">
+              Jarak ideal: 15-20cm • Cahaya cukup • Posisi datar
+            </p>
+          </div>
 
           <!-- Tombol coba lagi (hanya tampil saat terjadi error) -->
           <button type="button" id="btn-scanner-retry"
@@ -1004,9 +1021,9 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     if (!hint) return;
     hint.textContent = text;
     if (type === 'error') {
-      hint.className = 'text-xs text-rose-300 text-center mt-2.5 px-4 leading-snug font-semibold';
+      hint.className = 'text-sm text-rose-300 text-center mt-4 px-4 leading-snug font-bold';
     } else {
-      hint.className = 'text-xs text-white/80 text-center mt-2.5 px-5 leading-snug font-medium';
+      hint.className = 'text-sm text-white/90 text-center mt-4 px-4 leading-snug font-medium';
     }
   }
 

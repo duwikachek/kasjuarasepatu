@@ -212,12 +212,33 @@ export function renderTambahOpnamePage(store) {
         </div>
       </div>
 
-      <div id="opname-qr-reader" class="w-full flex-1 max-h-[58vh] overflow-hidden rounded-2xl mx-4 border-2 border-primary/60 shadow-primary/20 shadow-lg relative"
-           style="width: calc(100% - 2rem);">
+      <!-- Viewfinder dengan fokus optimal untuk opname -->
+      <div class="w-full flex-1 flex flex-col items-center justify-center px-4 py-2">
+        <div class="relative isolate w-full h-full max-h-[50vh] rounded-3xl overflow-hidden border-3 border-emerald-400 shadow-2xl bg-black" style="box-shadow: 0 0 30px rgba(52, 211, 153, 0.3);">
+          <div id="opname-qr-reader" class="w-full h-full"></div>
+          
+          <!-- Overlay: Sudut bidik + Garis panduan -->
+          <div class="absolute inset-0 z-10 pointer-events-none flex items-center justify-center">
+            <!-- Sudut keempat penjuru (corner brackets) -->
+            <div class="absolute left-3 top-3 w-8 h-8 border-l-4 border-t-4 border-emerald-300 rounded-tl-lg opacity-80"></div>
+            <div class="absolute right-3 top-3 w-8 h-8 border-r-4 border-t-4 border-emerald-300 rounded-tr-lg opacity-80"></div>
+            <div class="absolute left-3 bottom-3 w-8 h-8 border-l-4 border-b-4 border-emerald-300 rounded-bl-lg opacity-80"></div>
+            <div class="absolute right-3 bottom-3 w-8 h-8 border-r-4 border-b-4 border-emerald-300 rounded-br-lg opacity-80"></div>
+            
+            <!-- Garis horizontal center dengan animasi scanning -->
+            <div class="absolute inset-x-8 top-1/2 h-1 bg-gradient-to-r from-transparent via-emerald-400 to-transparent shadow-lg shadow-emerald-500/50" style="transform: translateY(-50%); animation: scan 2s ease-in-out infinite;"></div>
+            
+            <!-- Area terang di tengah untuk fokus -->
+            <div class="absolute top-1/2 left-1/2 w-48 h-20 -translate-x-1/2 -translate-y-1/2 border-2 border-dashed border-emerald-300/40 rounded-lg opacity-50"></div>
+          </div>
+          
+          <!-- Vignette (tepi gelap) untuk fokus ke tengah -->
+          <div class="absolute inset-0 z-5 pointer-events-none bg-gradient-to-r from-black/30 via-transparent to-black/30"></div>
+        </div>
       </div>
 
       <div class="px-4 py-4 flex flex-col gap-2">
-        <p id="opname-scanner-status" class="text-xs text-white/80 text-center font-medium">Arahkan kamera ke barcode...</p>
+        <p id="opname-scanner-status" class="text-sm text-white/90 text-center font-medium">🔍 Arahkan barcode ke tengah kotak</p>
         <div id="opname-last-scanned" class="hidden text-center">
           <p class="text-xs text-neutral-500">Terakhir scan:</p>
           <p id="opname-last-scanned-text" class="text-emerald-400 font-bold font-mono text-sm"></p>

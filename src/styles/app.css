@@ -69,7 +69,15 @@
   border-bottom: 1px dashed #C9BBA5;
 }
 
-/* Smooth page transitions + latar foto aplikasi */
+/* Scan line animation for viewfinder */
+@keyframes scan {
+  0% { transform: translateY(-50%) scaleY(0); opacity: 0; }
+  10% { opacity: 0.8; }
+  50% { transform: translateY(0) scaleY(1); opacity: 1; }
+  90% { opacity: 0.8; }
+  100% { transform: translateY(50%) scaleY(0); opacity: 0; }
+}
+
 .page-fade-in {
   animation: fadeIn 0.22s ease-out forwards;
   /* Dark glass "film 60%": halaman dilapisi hijau kehitaman pekat.

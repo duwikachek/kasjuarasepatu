@@ -136,17 +136,14 @@ export function getQrbox2D() {
 
 /**
  * Constraint kamera: memaksa browser memakai resolusi setinggi mungkin
- * agar barcode kecil tetap terbaca, dengan autofocus & focus distance terbaik.
+ * agar barcode kecil tetap terbaca.
  */
 export function buildCameraConstraints() {
   return {
     facingMode: { ideal: 'environment' },
-    width: { ideal: 1280, min: 640 },
-    height: { ideal: 720, min: 480 },
-    frameRate: { ideal: 30, min: 8 },
-    // Optimalkan autofocus & focus distance untuk barcode
-    focusMode: 'continuous',
-    focusDistance: 0.15
+    width: { ideal: 1920, min: 1280 },
+    height: { ideal: 1080, min: 720 },
+    frameRate: { ideal: 30, min: 1 }
   };
 }
 
@@ -158,8 +155,7 @@ export function buildScannerConfig1D() {
     disableFlip: false,
     rememberLastUsedCamera: true,
     formatsToSupport: SUPPORTED_FORMATS,
-    verbose: false,
-    useBarCodeDetectorIfSupported: true
+    verbose: false
   };
 }
 
@@ -182,9 +178,9 @@ export function buildScannerConfig2D() {
  * Diterapkan lewat CSS filter pada elemen video.
  */
 export const VIDEO_ENHANCE_STYLE = {
-  contrast: '1.15',
-  brightness: '1.02',
-  saturate: '1.1'
+  contrast: '1.4',
+  brightness: '1.08',
+  saturate: '0.85'
 };
 
 /**
