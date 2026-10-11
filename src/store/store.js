@@ -575,6 +575,18 @@ class Store {
     }
 
     this.notify();
+
+    // Push segera ke Supabase agar penghapusan transaksi permanen
+    setTimeout(async () => {
+      try {
+        const ts = new Date().toISOString();
+        this._lastPushTimestamp = ts;
+        await pushStateToSupabase(this.state, ts);
+        console.log('[Store] deleteTransaction pushed to Supabase immediately');
+      } catch (e) {
+        console.warn('[Store] Failed to push deleteTransaction to Supabase:', e.message);
+      }
+    }, 500);
   }
 
   // Supplies (Barang Masuk)
