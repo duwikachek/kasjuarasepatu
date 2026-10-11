@@ -1,4 +1,4 @@
-import { formatRupiah } from '../store/store.js';
+﻿import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
@@ -157,43 +157,43 @@ export function renderLaporanPage(store, period = 'bulan') {
         subtitle: 'Buku Kas & Analisa Usaha'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-24 gap-4">
+      <div class="flex flex-col w-full px-4 pt-2.5 pb-20 gap-2.5">
         <!-- Period Switcher Row 1 -->
-        <div class="flex flex-col gap-2">
-          <div class="glass-track p-1 rounded-xl flex items-center gap-1">
-            <button type="button" data-period="hari" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'hari' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+        <div class="flex flex-col gap-1.5">
+          <div class="glass-track p-1 rounded-lg flex items-center gap-1">
+            <button type="button" data-period="hari" class="period-btn flex-1 py-1 px-1.5 rounded-md ${period === 'hari' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-[10px] transition-all text-center">
               Hari Ini
             </button>
-            <button type="button" data-period="minggu" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'minggu' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="minggu" class="period-btn flex-1 py-1 px-1.5 rounded-md ${period === 'minggu' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-[10px] transition-all text-center">
               7 Hari
             </button>
-            <button type="button" data-period="bulan" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'bulan' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="bulan" class="period-btn flex-1 py-1 px-1.5 rounded-md ${period === 'bulan' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-[10px] transition-all text-center">
               Bulan Ini
             </button>
-            <button type="button" data-period="semua" class="period-btn flex-1 py-1.5 px-2 rounded-lg ${period === 'semua' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+            <button type="button" data-period="semua" class="period-btn flex-1 py-1 px-1.5 rounded-md ${period === 'semua' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-[10px] transition-all text-center">
               Semua
             </button>
           </div>
 
           <!-- Period Switcher Row 2: Custom date/month pickers -->
-          <div class="flex items-center gap-2">
+          <div class="flex items-center gap-1.5">
             <button type="button" data-period="tanggal"
-              class="period-btn glass-chip-btn flex-1 py-1.5 px-3 rounded-xl text-on-surface-variant font-label-md text-xs flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">calendar_today</span>
+              class="period-btn glass-chip-btn flex-1 py-1 px-2 rounded-lg text-on-surface-variant font-label-md text-[10px] flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">calendar_today</span>
               <span id="btn-tanggal-label">Pilih Tanggal</span>
             </button>
             <button type="button" data-period="pilih-bulan"
-              class="period-btn glass-chip-btn flex-1 py-1.5 px-3 rounded-xl text-on-surface-variant font-label-md text-xs flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-[15px]">calendar_month</span>
+              class="period-btn glass-chip-btn flex-1 py-1 px-2 rounded-lg text-on-surface-variant font-label-md text-[10px] flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[13px]">calendar_month</span>
               <span id="btn-bulan-label">Pilih Bulan</span>
             </button>
           </div>
 
           <!-- Date Picker Panel (hidden by default) -->
-          <div id="date-picker-panel" class="hidden glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5">
+          <div id="date-picker-panel" class="hidden glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-xs text-on-surface flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px] text-primary">calendar_today</span>
+              <span class="font-bold text-[11px] text-on-surface flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">calendar_today</span>
                 Pilih Tanggal Laporan
               </span>
               <button type="button" id="btn-close-date-panel" class="text-on-surface-variant hover:text-on-surface transition-all active:scale-95">
@@ -201,21 +201,21 @@ export function renderLaporanPage(store, period = 'bulan') {
               </button>
             </div>
             <input type="date" id="input-custom-date"
-              class="glass-input w-full px-3 py-2 rounded-xl text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              class="glass-input w-full px-2.5 py-1.5 rounded-lg text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               value="${new Date().toISOString().split('T')[0]}"
             />
             <button type="button" id="btn-apply-date"
-              class="glass-primary glass-btn glass-sheen w-full py-2 rounded-xl text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">check_circle</span>
+              class="glass-primary glass-btn glass-sheen w-full py-1.5 rounded-lg text-primary-btn font-label-md text-[11px] font-bold flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
               Tampilkan Laporan Tanggal Ini
             </button>
           </div>
 
           <!-- Month Picker Panel (hidden by default) -->
-          <div id="month-picker-panel" class="hidden glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5">
+          <div id="month-picker-panel" class="hidden glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
-              <span class="font-bold text-xs text-on-surface flex items-center gap-1.5">
-                <span class="material-symbols-outlined text-[16px] text-primary">calendar_month</span>
+              <span class="font-bold text-[11px] text-on-surface flex items-center gap-1">
+                <span class="material-symbols-outlined text-[14px] text-primary">calendar_month</span>
                 Pilih Bulan & Tahun Laporan
               </span>
               <button type="button" id="btn-close-month-panel" class="text-on-surface-variant hover:text-on-surface transition-all active:scale-95">
@@ -223,12 +223,12 @@ export function renderLaporanPage(store, period = 'bulan') {
               </button>
             </div>
             <input type="month" id="input-custom-month"
-              class="glass-input w-full px-3 py-2 rounded-xl text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
+              class="glass-input w-full px-2.5 py-1.5 rounded-lg text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all"
               value="${new Date().toISOString().slice(0, 7)}"
             />
             <button type="button" id="btn-apply-month"
-              class="glass-primary glass-btn glass-sheen w-full py-2 rounded-xl text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px]">check_circle</span>
+              class="glass-primary glass-btn glass-sheen w-full py-1.5 rounded-lg text-primary-btn font-label-md text-[11px] font-bold flex items-center justify-center gap-1.5">
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
               Tampilkan Laporan Bulan Ini
             </button>
           </div>
@@ -238,156 +238,157 @@ export function renderLaporanPage(store, period = 'bulan') {
         <div id="laporan-dynamic-hero"></div>
 
         <!-- FITUR 1: Laporan Total Jumlah Sepatu Laku -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-sepatu-laku">
-          <div class="absolute -right-4 -top-4 w-20 h-20 rounded-full bg-emerald-500/10 pointer-events-none"></div>
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-sepatu-laku">
+          <div class="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-emerald-500/10 pointer-events-none"></div>
           
           <div class="flex items-center justify-between">
             <div>
-              <h3 class="font-bold text-sm text-on-surface">Laporan Sepatu Laku</h3>
-              <p class="text-[11px] text-on-surface-variant">Total pasang & nominal penjualan sepatu</p>
+              <h3 class="font-bold text-[11px] text-on-surface">Laporan Sepatu Laku</h3>
+              <p class="text-[10px] text-on-surface-variant">Total pasang & nominal penjualan</p>
             </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-emerald text-emerald-900 text-[10px] font-bold">
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-full glass-emerald text-emerald-900 text-[9px] font-bold">
               Terjual
             </span>
           </div>
 
           <!-- Total Pasang & Omset Grid -->
-          <div class="grid grid-cols-2 gap-2.5 mt-1">
-            <div class="glass-emerald rounded-xl p-3 flex flex-col justify-between">
-              <span class="text-[10px] text-emerald-900 font-bold uppercase tracking-wider">Total Sepatu Laku</span>
-              <div class="flex items-baseline gap-1 mt-1">
-                <span id="stat-total-sepatu-laku" class="text-2xl font-extrabold text-emerald-950 font-tabular">0</span>
-                <span class="text-xs font-bold text-emerald-800">Pasang</span>
+          <div class="grid grid-cols-2 gap-1 mt-0.5">
+            <div class="glass-emerald rounded-lg p-1.5 flex flex-col justify-between">
+              <span class="text-[9px] text-emerald-900 font-bold uppercase tracking-wider">Total Laku</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-total-sepatu-laku" class="text-lg font-extrabold text-emerald-950 font-tabular">0</span>
+                <span class="text-[10px] font-bold text-emerald-800">Psg</span>
               </div>
-              <span id="stat-count-trx-sepatu" class="text-[10px] text-emerald-800 mt-0.5">0 Transaksi Penjualan</span>
+              <span id="stat-count-trx-sepatu" class="text-[9px] text-emerald-800 mt-0.5">0 Transaksi</span>
             </div>
 
-            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between">
-              <span class="text-[10px] text-on-surface-variant font-bold uppercase tracking-wider">Total Omset Sepatu</span>
-              <div class="mt-1">
-                <span id="stat-omset-sepatu" class="text-base font-bold text-primary font-tabular truncate block">+Rp 0</span>
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between">
+              <span class="text-[9px] text-on-surface-variant font-bold uppercase tracking-wider">Total Omset</span>
+              <div class="mt-0.5">
+                <span id="stat-omset-sepatu" class="text-[11px] font-bold text-primary font-tabular truncate block">+Rp 0</span>
               </div>
-              <span id="stat-avg-price-sepatu" class="text-[10px] text-on-surface-variant mt-0.5">Rata-rata: Rp 0/psg</span>
+              <span id="stat-avg-price-sepatu" class="text-[9px] text-on-surface-variant mt-0.5">Avg: Rp 0/psg</span>
             </div>
           </div>
 
           <!-- Tombol Buka/Tutup Rincian Sepatu Laku -->
           <button type="button" id="btn-toggle-sepatu-list"
-            class="glass-chip-btn w-full py-2 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px] text-emerald-700">list_alt</span>
-              <span id="btn-toggle-sepatu-label">Lihat Rincian Sepatu Laku</span>
+            class="glass-chip-btn w-full py-1 px-2 rounded-lg text-on-surface text-[9px] font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px] text-emerald-700">list_alt</span>
+              <span id="btn-toggle-sepatu-label">Lihat Rincian</span>
             </div>
-            <span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-toggle-sepatu">expand_more</span>
+            <span class="material-symbols-outlined text-[14px] transition-transform duration-200" id="icon-toggle-sepatu">expand_more</span>
           </button>
 
           <!-- Container Daftar Sepatu Laku (Collapsible) -->
-          <div id="container-daftar-sepatu-laku" class="hidden flex flex-col gap-2 pt-1 border-t border-white/45"></div>
+          <div id="container-daftar-sepatu-laku" class="hidden flex flex-col gap-1.5 pt-1 border-t border-white/45"></div>
         </section>
 
         <!-- FITUR 2: Laporan Total Sisa Stock Yang Belum Terjual (Real Time) -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3 relative overflow-hidden" id="section-sisa-stock">
-          <div class="absolute -right-6 -top-6 w-24 h-24 rounded-full bg-cyan-500/10 pointer-events-none"></div>
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5 relative overflow-hidden" id="section-sisa-stock">
+          <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-cyan-500/10 pointer-events-none"></div>
 
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-9 h-9 rounded-xl bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[20px]">inventory_2</span>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 rounded-lg bg-cyan-500/20 text-cyan-400 border border-cyan-500/30 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[14px]">inventory_2</span>
               </div>
               <div>
-                <h3 class="font-bold text-sm text-on-surface">Laporan Sisa Stock (Real Time)</h3>
-                <p class="text-[11px] text-on-surface-variant">Sisa sepatu belum terjual & modal aset toko</p>
+                <h3 class="font-bold text-[11px] text-on-surface">Sisa Stock (Real Time)</h3>
+                <p class="text-[9px] text-on-surface-variant">Sisa sepatu belum terjual</p>
               </div>
             </div>
-            <span class="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full bg-emerald-500/20 text-emerald-300 text-[10px] font-bold border border-emerald-500/30">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse"></span>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-emerald-500/20 text-emerald-300 text-[9px] font-bold border border-emerald-500/30">
+              <span class="w-1 h-1 rounded-full bg-emerald-400 animate-pulse"></span>
               Live
             </span>
           </div>
 
           <!-- Total Sisa Pasang & Nilai Aset Modal Grid -->
-          <div class="grid grid-cols-2 gap-2.5 mt-1">
-            <div class="glass-card rounded-xl p-3 flex flex-col justify-between border border-emerald-500/30">
-              <span class="text-[10px] text-emerald-400 font-bold uppercase tracking-wider">Total Sisa Stok</span>
-              <div class="flex items-baseline gap-1 mt-1">
-                <span id="stat-sisa-total-pasang" class="text-2xl font-extrabold text-white font-tabular">0</span>
-                <span class="text-xs font-bold text-emerald-400">Pasang</span>
+          <div class="grid grid-cols-2 gap-1 mt-0.5">
+            <div class="glass-card rounded-lg p-1.5 flex flex-col justify-between border border-emerald-500/30">
+              <span class="text-[9px] text-emerald-400 font-bold uppercase tracking-wider">Total Sisa</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span id="stat-sisa-total-pasang" class="text-lg font-extrabold text-white font-tabular">0</span>
+                <span class="text-[10px] font-bold text-emerald-400">Psg</span>
               </div>
-              <span id="stat-sisa-total-varian" class="text-[10px] text-neutral-400 mt-0.5">0 Model Tersedia</span>
+              <span id="stat-sisa-total-varian" class="text-[9px] text-neutral-400 mt-0.5">0 Model</span>
             </div>
 
-            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
-              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Nilai Modal Aset</span>
-              <div class="mt-1">
-                <span id="stat-sisa-nilai-modal" class="text-base font-bold text-primary font-tabular truncate block">Rp 0</span>
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Nilai Modal</span>
+              <div class="mt-0.5">
+                <span id="stat-sisa-nilai-modal" class="text-[11px] font-bold text-primary font-tabular truncate block">Rp 0</span>
               </div>
-              <span class="text-[10px] text-neutral-400 mt-0.5">Modal beli tertahan</span>
+              <span class="text-[9px] text-neutral-400 mt-0.5">Modal tertahan</span>
+            </div>
+          </div>
+
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Omset</span>
+              <div class="mt-0.5">
+                <span id="stat-sisa-potensi-omset" class="text-[11px] font-bold text-cyan-300 font-tabular truncate block">Rp 0</span>
+              </div>
+              <span class="text-[9px] text-neutral-400 mt-0.5">Jika laku semua</span>
             </div>
 
-            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
-              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Omset</span>
-              <div class="mt-1">
-                <span id="stat-sisa-potensi-omset" class="text-sm font-bold text-cyan-300 font-tabular truncate block">Rp 0</span>
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Laba</span>
+              <div class="mt-0.5">
+                <span id="stat-sisa-potensi-laba" class="text-[11px] font-bold text-amber-300 font-tabular truncate block">+Rp 0</span>
               </div>
-              <span class="text-[10px] text-neutral-400 mt-0.5">Jika laku semua</span>
-            </div>
-
-            <div class="glass-panel rounded-xl p-3 flex flex-col justify-between border border-neutral-700/60">
-              <span class="text-[10px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Laba</span>
-              <div class="mt-1">
-                <span id="stat-sisa-potensi-laba" class="text-sm font-bold text-amber-300 font-tabular truncate block">+Rp 0</span>
-              </div>
-              <span id="stat-sisa-margin" class="text-[10px] text-amber-400/90 mt-0.5">Margin: ~0%</span>
+              <span id="stat-sisa-margin" class="text-[9px] text-amber-400/90 mt-0.5">Margin: ~0%</span>
             </div>
           </div>
 
           <!-- Quick Condition Breakdown Badges -->
-          <div class="flex items-center justify-between gap-1 text-[11px] pt-1 border-t border-neutral-800/80">
-            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-emerald-400"></span>
+          <div class="flex items-center justify-between gap-1 text-[10px] pt-1 border-t border-neutral-800/80">
+            <span class="text-neutral-400 text-[9px] flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
               <span id="stat-sisa-bagus">0 Bagus</span>
             </span>
-            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-amber-400"></span>
+            <span class="text-neutral-400 text-[9px] flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-amber-400"></span>
               <span id="stat-sisa-minus">0 Minus</span>
             </span>
-            <span class="text-neutral-400 text-[10px] flex items-center gap-1">
-              <span class="w-1.5 h-1.5 rounded-full bg-rose-400"></span>
+            <span class="text-neutral-400 text-[9px] flex items-center gap-1">
+              <span class="w-1 h-1 rounded-full bg-rose-400"></span>
               <span id="stat-sisa-menipis">0 Menipis</span>
             </span>
-            <button type="button" id="btn-goto-laporan-stock-detail" class="text-emerald-400 font-bold text-[11px] hover:underline flex items-center gap-0.5 ml-auto">
+            <button type="button" id="btn-goto-laporan-stock-detail" class="text-emerald-400 font-bold text-[10px] hover:underline flex items-center gap-0.5 ml-auto">
               <span>Slip Detail</span>
-              <span class="material-symbols-outlined text-[14px]">arrow_forward</span>
+              <span class="material-symbols-outlined text-[12px]">arrow_forward</span>
             </button>
           </div>
 
           <!-- Tombol Buka/Tutup Rincian Sisa Stock -->
           <button type="button" id="btn-toggle-sisa-stock"
-            class="glass-chip-btn w-full py-2 px-3 rounded-xl text-on-surface text-xs font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px] text-cyan-400">format_list_bulleted</span>
+            class="glass-chip-btn w-full py-1 px-2 rounded-lg text-on-surface text-[9px] font-bold flex items-center justify-between active:scale-[0.99] mt-0.5">
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-[12px] text-cyan-400">format_list_bulleted</span>
               <span id="btn-toggle-sisa-label">Lihat Rincian Sisa Stock</span>
             </div>
-            <span class="material-symbols-outlined text-[18px] transition-transform duration-200" id="icon-toggle-sisa">expand_more</span>
+            <span class="material-symbols-outlined text-[14px] transition-transform duration-200" id="icon-toggle-sisa">expand_more</span>
           </button>
 
           <!-- Container Daftar Sisa Stock (Collapsible) -->
-          <div id="container-daftar-sisa-stock" class="hidden flex flex-col gap-2 pt-1 border-t border-white/45"></div>
+          <div id="container-daftar-sisa-stock" class="hidden flex flex-col gap-1.5 pt-1 border-t border-white/45"></div>
         </section>
 
         <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-kategori-pengeluaran">
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-kategori-pengeluaran">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-9 h-9 rounded-xl glass-rose text-rose-700 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[20px]">category</span>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[14px]">category</span>
               </div>
               <div>
-                <h3 class="font-bold text-sm text-on-surface">Pengeluaran per Kategori</h3>
-                <p class="text-[11px] text-on-surface-variant">Filter & analisa biaya operasional toko</p>
+                <h3 class="font-bold text-[11px] text-on-surface">Pengeluaran per Kategori</h3>
+                <p class="text-[10px] text-on-surface-variant">Filter & analisa biaya</p>
               </div>
             </div>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-rose text-rose-900 text-[10px] font-bold">
+            <span class="inline-flex items-center px-1.5 py-0.2 rounded-full glass-rose text-rose-900 text-[9px] font-bold">
               Kas Keluar
             </span>
           </div>
@@ -398,58 +399,58 @@ export function renderLaporanPage(store, period = 'bulan') {
           </div>
 
           <!-- Highlight Kategori Terpilih -->
-          <div class="glass-rose rounded-xl p-3 flex items-center justify-between" id="expense-category-highlight">
+          <div class="glass-rose rounded-lg p-1.5 flex items-center justify-between" id="expense-category-highlight">
             <div class="flex flex-col min-w-0 pr-2">
-              <div class="flex items-center gap-1.5">
-                <span class="w-2.5 h-2.5 rounded-full bg-rose-600 shrink-0" id="selected-cat-dot"></span>
-                <span class="font-bold text-xs text-rose-950 truncate" id="selected-cat-name">Semua Kategori</span>
+              <div class="flex items-center gap-1">
+                <span class="w-2 h-2 rounded-full bg-rose-600 shrink-0" id="selected-cat-dot"></span>
+                <span class="font-bold text-[10px] text-rose-950 truncate" id="selected-cat-name">Semua Kategori</span>
               </div>
-              <span class="text-[10px] text-rose-700 mt-0.5" id="selected-cat-meta">0 transaksi pengeluaran</span>
+              <span class="text-[9px] text-rose-700 mt-0.5" id="selected-cat-meta">0 transaksi</span>
             </div>
             <div class="flex flex-col items-end shrink-0">
-              <span class="text-base font-extrabold text-rose-800 font-tabular" id="selected-cat-total">-Rp 0</span>
-              <span class="text-[10px] font-semibold text-rose-700" id="selected-cat-percent">100% total biaya</span>
+              <span class="text-xs font-extrabold text-rose-800 font-tabular" id="selected-cat-total">-Rp 0</span>
+              <span class="text-[9px] font-semibold text-rose-700" id="selected-cat-percent">100% total</span>
             </div>
           </div>
 
           <!-- Visual Bar Breakdown Proporsi Biaya -->
-          <div class="flex flex-col gap-1.5 mt-0.5">
-            <div class="h-2.5 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="expense-progress-bar">
+          <div class="flex flex-col gap-1 mt-0.5">
+            <div class="h-2 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="expense-progress-bar">
               <!-- Colored segments populated by JS -->
             </div>
-            <div class="flex items-center justify-between text-[10px] text-on-surface-variant">
-              <span>Proporsi Beban Pengeluaran</span>
+            <div class="flex items-center justify-between text-[9px] text-on-surface-variant">
+              <span>Proporsi Beban</span>
               <span id="expense-total-label" class="font-bold text-rose-800 font-tabular">Total: -Rp 0</span>
             </div>
           </div>
 
           <!-- Daftar Rincian Transaksi Pengeluaran Sesuai Filter -->
-          <div class="flex flex-col gap-2 pt-2 border-t border-white/45">
+          <div class="flex flex-col gap-1.5 pt-1.5 border-t border-white/45">
             <div class="flex items-center justify-between">
-              <span class="text-xs font-bold text-on-surface">Rincian Transaksi Pengeluaran</span>
-              <span class="text-[10px] text-on-surface-variant" id="expense-list-count">0 catatan</span>
+              <span class="text-[11px] font-bold text-on-surface">Rincian Pengeluaran</span>
+              <span class="text-[9px] text-on-surface-variant" id="expense-list-count">0 catatan</span>
             </div>
-            <div id="expense-transaction-list" class="flex flex-col gap-2 max-h-72 overflow-y-auto pr-0.5">
+            <div id="expense-transaction-list" class="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-0.5">
               <!-- Populated via JS -->
             </div>
           </div>
         </section>
 
         <!-- SVG Visual Arus Kas 7 Hari -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-primary text-[18px]">bar_chart</span>
-              <h3 class="font-title-ledger text-sm font-bold text-on-surface">Tren Arus Kas 7 Hari</h3>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary text-[14px]">bar_chart</span>
+              <h3 class="font-title-ledger text-xs font-bold text-on-surface">Tren Arus Kas 7 Hari</h3>
             </div>
-            <div class="flex items-center gap-3 text-[10px] text-on-surface-variant font-semibold">
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-600"></span> Masuk</span>
-              <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-rose-500"></span> Keluar</span>
+            <div class="flex items-center gap-2 text-[9px] text-on-surface-variant font-semibold">
+              <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Masuk</span>
+              <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Keluar</span>
             </div>
           </div>
 
           <!-- Interactive Bar Chart Visual -->
-          <div class="h-36 w-full flex items-end justify-between gap-2 pt-4 px-1 pb-1">
+          <div class="h-24 w-full flex items-end justify-between gap-1 pt-1.5 px-1 pb-1">
             ${[
               { day: 'Sen', m: 85, k: 30 },
               { day: 'Sel', m: 60, k: 45 },
@@ -461,12 +462,12 @@ export function renderLaporanPage(store, period = 'bulan') {
             ]
               .map(
                 (bar) => `
-              <div class="flex-1 flex flex-col items-center gap-1 h-full justify-end">
-                <div class="w-full flex items-end justify-center gap-1 h-24">
-                  <div class="w-2.5 rounded-t-sm bg-emerald-600 hover:opacity-80 transition-all" style="height: ${bar.m * 0.7}px;" title="Masuk"></div>
-                  <div class="w-2.5 rounded-t-sm bg-rose-500 hover:opacity-80 transition-all" style="height: ${bar.k * 0.7}px;" title="Keluar"></div>
+              <div class="flex-1 flex flex-col items-center gap-0.5 h-full justify-end">
+                <div class="w-full flex items-end justify-center gap-0.5 h-16">
+                  <div class="w-2 rounded-t-sm bg-emerald-600 hover:opacity-80 transition-all" style="height: ${bar.m * 0.6}px;" title="Masuk"></div>
+                  <div class="w-2 rounded-t-sm bg-rose-500 hover:opacity-80 transition-all" style="height: ${bar.k * 0.6}px;" title="Keluar"></div>
                 </div>
-                <span class="font-label-sm text-[10px] text-on-surface-variant font-semibold mt-1">${bar.day}</span>
+                <span class="font-label-sm text-[9px] text-on-surface-variant font-semibold mt-0.5">${bar.day}</span>
               </div>
             `
               )
@@ -475,20 +476,20 @@ export function renderLaporanPage(store, period = 'bulan') {
         </section>
 
         <!-- Rekapitulasi Belanja Stock -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
-            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Rekap Pengadaan (Stock Sepatu)</h3>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
+            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Rekap Pengadaan</h3>
+            <span class="font-label-sm text-[9px] px-1.5 py-0.2 rounded-full glass-chip text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
           </div>
 
-          <div class="grid grid-cols-2 gap-2 mt-1">
-            <div class="glass-panel rounded-xl p-2.5 flex flex-col">
-              <span class="text-[10px] text-on-surface-variant">Total Belanja Stock</span>
-              <span class="font-bold text-sm text-primary font-tabular mt-0.5">${formatRupiah(totalBelanja)}</span>
+          <div class="grid grid-cols-2 gap-1 mt-0.5">
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+              <span class="text-[9px] text-on-surface-variant">Total Belanja</span>
+              <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${formatRupiah(totalBelanja)}</span>
             </div>
-            <div class="glass-panel rounded-xl p-2.5 flex flex-col">
-              <span class="text-[10px] text-on-surface-variant">Total Sepatu Masuk</span>
-              <span class="font-bold text-sm text-primary font-tabular mt-0.5">${totalItems} Pasang</span>
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+              <span class="text-[9px] text-on-surface-variant">Total Masuk</span>
+              <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${totalItems} Psg</span>
             </div>
           </div>
         </section>
@@ -497,9 +498,9 @@ export function renderLaporanPage(store, period = 'bulan') {
         <button 
           type="button" 
           id="btn-cetak-laporan"
-          class="glass-neutral glass-btn glass-sheen w-full py-3.5 px-4 rounded-xl text-primary font-label-md text-xs font-bold flex items-center justify-center gap-2 active:scale-[0.99]"
+          class="glass-neutral glass-btn glass-sheen w-full py-2 px-3 rounded-lg text-primary font-label-md text-[10px] font-bold flex items-center justify-center gap-1.5 active:scale-[0.99]"
         >
-          <span class="material-symbols-outlined text-[18px]">print</span>
+          <span class="material-symbols-outlined text-[16px]">print</span>
           <span>Unduh Rekap Laporan Kas</span>
         </button>
       </div>
@@ -563,7 +564,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     const heroEl = g('laporan-dynamic-hero');
     if (heroEl) {
       heroEl.innerHTML = `
-        <section class="glass-dark glass-sheen rounded-2xl p-4 text-surface-container-lowest">
+        <section class="glass-dark glass-sheen rounded-xl p-3 text-surface-container-lowest">
           <div class="flex items-center justify-between mb-1">
             <span class="font-label-md text-xs text-primary-fixed-dim tracking-wider uppercase font-semibold">
               Surplus / Arus Kas Bersih
@@ -574,20 +575,20 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
           </div>
 
           <div class="flex items-baseline gap-2 my-1">
-            <span class="font-currency-display text-3xl text-surface-bright font-bold tracking-tight font-tabular">
+            <span class="font-currency-display text-2xl text-surface-bright font-bold tracking-tight font-tabular">
               ${netProfit >= 0 ? '+' : ''}${formatRupiah(netProfit)}
             </span>
           </div>
-          <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-3">Selisih total kas masuk dikurangi kas keluar (${getPeriodDesc()})</p>
+          <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-2">Selisih total kas masuk dikurangi kas keluar (${getPeriodDesc()})</p>
 
-          <div class="grid grid-cols-2 gap-2 pt-2 border-t border-white/20">
+          <div class="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-white/20">
             <div class="flex flex-col">
               <span class="text-[10px] text-emerald-300 font-bold uppercase">Total Kas Masuk</span>
-              <span class="font-bold text-sm text-surface-bright font-tabular">+${formatRupiah(totalMasuk, '')}</span>
+              <span class="font-bold text-xs text-surface-bright font-tabular">+${formatRupiah(totalMasuk, '')}</span>
             </div>
             <div class="flex flex-col">
               <span class="text-[10px] text-rose-300 font-bold uppercase">Total Kas Keluar</span>
-              <span class="font-bold text-sm text-surface-bright font-tabular">-${formatRupiah(totalKeluar, '')}</span>
+              <span class="font-bold text-xs text-surface-bright font-tabular">-${formatRupiah(totalKeluar, '')}</span>
             </div>
           </div>
         </section>
@@ -632,22 +633,22 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
         containerShoesList.innerHTML = soldShoes
           .map(
             (shoe, idx) => `
-          <div class="glass-panel rounded-xl p-2.5 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg glass-emerald text-emerald-900 flex items-center justify-center shrink-0 font-bold text-xs">
+          <div class="glass-panel rounded-lg p-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-lg glass-emerald text-emerald-900 flex items-center justify-center shrink-0 font-bold text-xs">
                 ${idx + 1}
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="font-bold text-xs text-on-surface truncate">${shoe.name}</span>
+                <span class="font-bold text-[11px] text-on-surface truncate">${shoe.name}</span>
                 <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
                   <span class="font-mono glass-chip px-1 py-0.2 rounded">${shoe.barcode}</span>
                   <span>${shoe.date}</span>
-                  ${shoe.kondisi === 'Minus' ? '<span class="text-amber-700 font-bold">⚠ Minus</span>' : '<span class="text-emerald-700 font-semibold">✓ Bagus</span>'}
+                  ${shoe.kondisi === 'Minus' ? '<span class="text-amber-700 font-bold">âš  Minus</span>' : '<span class="text-emerald-700 font-semibold">âœ“ Bagus</span>'}
                 </div>
               </div>
             </div>
             <div class="flex flex-col items-end shrink-0">
-              <span class="font-bold text-xs text-emerald-800 font-tabular">+${formatRupiah(shoe.price, '')}</span>
+              <span class="font-bold text-[11px] text-emerald-800 font-tabular">+${formatRupiah(shoe.price, '')}</span>
               <span class="text-[9px] text-on-surface-variant truncate max-w-[80px]">${shoe.nota || shoe.buyer}</span>
             </div>
           </div>
@@ -707,22 +708,22 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
         containerSisaList.innerHTML = stockReport.unsoldItems
           .map(
             (item, idx) => `
-          <div class="glass-panel rounded-xl p-2.5 flex items-center justify-between gap-2">
-            <div class="flex items-center gap-2.5 min-w-0">
-              <div class="w-8 h-8 rounded-lg ${item.kondisi === 'Minus' ? 'glass-amber text-amber-900' : 'glass-emerald text-emerald-900'} flex items-center justify-center shrink-0 font-bold text-xs">
+          <div class="glass-panel rounded-lg p-2 flex items-center justify-between gap-2">
+            <div class="flex items-center gap-2 min-w-0">
+              <div class="w-7 h-7 rounded-lg ${item.kondisi === 'Minus' ? 'glass-amber text-amber-900' : 'glass-emerald text-emerald-900'} flex items-center justify-center shrink-0 font-bold text-xs">
                 ${idx + 1}
               </div>
               <div class="flex flex-col min-w-0">
-                <span class="font-bold text-xs text-on-surface truncate">${item.name}</span>
+                <span class="font-bold text-[11px] text-on-surface truncate">${item.name}</span>
                 <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
                   <span class="font-mono glass-chip px-1 py-0.2 rounded">${item.barcode}</span>
                   <span class="font-bold ${item.sisaStock <= 2 ? 'text-rose-600' : 'text-emerald-700'}">Sisa: ${item.sisaStock} psg</span>
-                  ${item.kondisi === 'Minus' ? `<span class="text-amber-700 font-bold">⚠ ${item.catatanMinus || 'Minus'}</span>` : '<span class="text-emerald-700 font-semibold">✓ Bagus</span>'}
+                  ${item.kondisi === 'Minus' ? `<span class="text-amber-700 font-bold">âš  ${item.catatanMinus || 'Minus'}</span>` : '<span class="text-emerald-700 font-semibold">âœ“ Bagus</span>'}
                 </div>
               </div>
             </div>
             <div class="flex flex-col items-end shrink-0">
-              <span class="font-bold text-xs text-primary font-tabular">Modal: ${formatRupiah(item.buyPrice, '')}</span>
+              <span class="font-bold text-[11px] text-primary font-tabular">Modal: ${formatRupiah(item.buyPrice, '')}</span>
               <span class="text-[9px] text-on-surface-variant">Jual: ${formatRupiah(item.sellPrice, '')}</span>
             </div>
           </div>
@@ -869,17 +870,17 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
         listEl.innerHTML = filteredExpenseList
           .map((t) => {
             return `
-            <div class="glass-panel glass-row rounded-xl p-3 flex items-start justify-between gap-2 transition-all">
-              <div class="flex items-start gap-2.5 min-w-0">
-                <div class="w-8 h-8 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
+            <div class="glass-panel glass-row rounded-lg p-2 flex items-start justify-between gap-2 transition-all">
+              <div class="flex items-start gap-2 min-w-0">
+                <div class="w-7 h-7 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0 mt-0.5">
                   <span class="material-symbols-outlined text-[16px]">arrow_upward</span>
                 </div>
                 <div class="flex flex-col min-w-0">
-                  <span class="font-bold text-xs text-on-surface truncate">${t.title || t.keterangan || t.category}</span>
+                  <span class="font-bold text-[11px] text-on-surface truncate">${t.title || t.keterangan || t.category}</span>
                   <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
                     <span class="px-1.5 py-0.2 rounded font-bold glass-rose text-rose-800 text-[9px]">${t.category}</span>
                     <span>${t.date} ${t.time || ''}</span>
-                    <span class="text-on-surface-variant/80">• ${t.paymentMethod || 'Tunai'}</span>
+                    <span class="text-on-surface-variant/80">â€¢ ${t.paymentMethod || 'Tunai'}</span>
                   </div>
                 </div>
               </div>
@@ -955,7 +956,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     });
   }
 
-  // ── Period switch buttons (rows 1 & 2) ──
+  // â”€â”€ Period switch buttons (rows 1 & 2) â”€â”€
   const ACTIVE_ROW1 = 'period-btn flex-1 py-1.5 px-2 rounded-lg glass-seg-active text-on-surface font-bold font-label-md text-xs transition-all text-center';
   const IDLE_ROW1   = 'period-btn flex-1 py-1.5 px-2 rounded-lg text-on-surface-variant font-label-md text-xs transition-all text-center';
   const ACTIVE_ROW2 = 'period-btn glass-primary flex-1 py-1.5 px-3 rounded-xl text-primary-btn font-label-md text-xs flex items-center justify-center gap-1.5';
@@ -1008,7 +1009,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     });
   });
 
-  // ── Date picker apply ──
+  // â”€â”€ Date picker apply â”€â”€
   const btnApplyDate = g('btn-apply-date');
   if (btnApplyDate) {
     btnApplyDate.addEventListener('click', () => {
@@ -1030,7 +1031,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     btnCloseDatePanel.addEventListener('click', () => showPanel(null));
   }
 
-  // ── Month picker apply ──
+  // â”€â”€ Month picker apply â”€â”€
   const btnApplyMonth = g('btn-apply-month');
   if (btnApplyMonth) {
     btnApplyMonth.addEventListener('click', () => {
@@ -1076,3 +1077,4 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     }
   });
 }
+
