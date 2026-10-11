@@ -6,7 +6,28 @@ import logoJuara from '../assets/logo-juara.png';
 export function renderDashboardPage(store) {
   const shop = store.getShop();
   const summary = store.getBalanceSummary();
-  const recentTransactions = store.getTransactions().slice(0, 4);
+  const transactions = store.getTransactions();
+  
+  // Group transactions by nota (same logic as transaksi-list.js)
+  const groupedTransactions = {};
+  transactions.forEach(trx => {
+    if (trx.nota && (trx.nota.startsWith('#FAK-') || trx.nota.startsWith('#BLJ-'))) {
+      if (!groupedTransactions[trx.nota]) {
+        groupedTransactions[trx.nota] = [];
+      }
+      groupedTransactions[trx.nota].push(trx);
+    }
+  });
+  
+  // Get top 4 groups (or less if less groups exist)
+  const recentGroups = Object.entries(groupedTransactions)
+    .slice(0, 4)
+    .map(([nota, groupTransactions]) => ({
+      nota,
+      transactions: groupTransactions,
+      totalAmount: groupTransactions.reduce((sum, t) => sum + t.amount, 0)
+    }));
+
   // Data ringan — tidak memerlukan kalkulasi berat
   const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
   const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
@@ -273,34 +294,70 @@ export function renderDashboardPage(store) {
           </div>
 
           <div class="glass-card glass-sheen relative overflow-hidden rounded-xl divide-y divide-white/50">
-            ${recentTransactions.length === 0 ? `
+            ${recentGroups.length === 0 ? `
               <div class="p-4 text-center text-on-surface-variant text-xs">Belum ada transaksi tercatat.</div>
-            ` : recentTransactions.map((trx) => {
-              const isMasuk = trx.type === 'masuk';
-              return `
-                <div class="glass-row flex items-center justify-between p-2.5 transition-colors">
-                  <div class="flex items-center gap-2 min-w-0">
-                    <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
-                      <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'point_of_sale' : 'shopping_bag'}</span>
+            ` : recentGroups.map((group) => {
+              const firstTrx = group.transactions[0];
+              const isMasuk = firstTrx.type === 'masuk';
+              const itemCount = group.transactions.length;
+              
+              if (itemCount === 1) {
+                // Single transaction - render directly
+                const trx = group.transactions[0];
+                return `
+                  <div class="glass-row flex items-center justify-between p-2.5 transition-colors">
+                    <div class="flex items-center gap-2 min-w-0">
+                      <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
+                        <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'point_of_sale' : 'shopping_bag'}</span>
+                      </div>
+                      <div class="flex flex-col min-w-0">
+                        <span class="font-title-ledger text-xs font-semibold text-on-surface truncate">${trx.title}</span>
+                        <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
+                          <span class="truncate">${trx.category}</span>
+                          <span>•</span>
+                          <span class="shrink-0">${trx.time}</span>
+                        </div>
+                      </div>
                     </div>
-                    <div class="flex flex-col min-w-0">
-                      <span class="font-title-ledger text-xs font-semibold text-on-surface truncate">${trx.title}</span>
-                      <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
-                        <span class="truncate">${trx.category}</span>
-                        <span>•</span>
-                        <span class="shrink-0">${trx.time}</span>
+
+                    <div class="flex flex-col items-end shrink-0 pl-2">
+                      <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
+                        ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
+                      </span>
+                      <span class="font-label-sm text-[9px] text-on-surface-variant">${trx.paymentMethod || 'Tunai'}</span>
+                    </div>
+                  </div>
+                `;
+              } else {
+                // Multiple transactions - render as group
+                const totalAmount = group.transactions.reduce((sum, t) => sum + t.amount, 0);
+                return `
+                  <div class="glass-row flex flex-col p-2.5 transition-colors">
+                    <div class="flex items-center justify-between">
+                      <div class="flex items-center gap-2 min-w-0">
+                        <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
+                          <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'folder' : 'folder'}</span>
+                        </div>
+                        <div class="flex flex-col min-w-0">
+                          <span class="font-title-ledger text-xs font-semibold text-on-surface">${group.nota}</span>
+                          <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
+                            <span class="shrink-0">${itemCount} barang</span>
+                            <span>•</span>
+                            <span class="shrink-0">${firstTrx.time}</span>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div class="flex flex-col items-end shrink-0 pl-2">
+                        <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
+                          ${isMasuk ? '+' : '-'}${formatRupiah(totalAmount, '')}
+                        </span>
+                        <span class="font-label-sm text-[9px] text-on-surface-variant">Total</span>
                       </div>
                     </div>
                   </div>
-
-                  <div class="flex flex-col items-end shrink-0 pl-2">
-                    <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
-                      ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
-                    </span>
-                    <span class="font-label-sm text-[9px] text-on-surface-variant">${trx.paymentMethod || 'Tunai'}</span>
-                  </div>
-                </div>
-              `;
+                `;
+              }
             }).join('')}
           </div>
 
