@@ -323,7 +323,6 @@ export function renderLaporanPage(store, period = 'bulan') {
               </div>
               <span class="text-[9px] text-neutral-400 mt-0.5">Modal tertahan</span>
             </div>
-          </div>
 
             <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
               <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Omset</span>
@@ -343,7 +342,7 @@ export function renderLaporanPage(store, period = 'bulan') {
           </div>
 
           <!-- Quick Condition Breakdown Badges -->
-          <div class="flex items-center justify-between gap-1 text-[10px] pt-1 border-t border-neutral-800/80">
+          <div class="flex items-center justify-between gap-1 text-[10px] pt-0.5 border-t border-neutral-800/80">
             <span class="text-neutral-400 text-[9px] flex items-center gap-1">
               <span class="w-1 h-1 rounded-full bg-emerald-400"></span>
               <span id="stat-sisa-bagus">0 Bagus</span>
