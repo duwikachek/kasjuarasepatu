@@ -1,4 +1,4 @@
-﻿import { formatRupiah } from '../store/store.js';
+﻿import { formatRupiah, store } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
@@ -620,7 +620,30 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     
     // Filter berdasarkan faktur jika dipilih
     if (currentFaktur !== 'all') {
-      soldShoes = soldShoes.filter(shoe => shoe.nota === currentFaktur);
+      // Ambil supplies dari localStorage untuk mapping barcode -> invoiceNo
+      const mainData = JSON.parse(localStorage.getItem('kas_juara_sepatu_data_v1') || '{}');
+      const supplies = mainData.supplies || [];
+      const barcodeToInvoice = new Map();
+      
+      // Build mapping dari supplies data
+      supplies.forEach(supply => {
+        const invoiceNo = supply.invoiceNo;
+        if (supply.items && Array.isArray(supply.items)) {
+          supply.items.forEach(item => {
+            if (item.barcode) {
+              const bc = item.barcode.toString().trim().toUpperCase();
+              barcodeToInvoice.set(bc, invoiceNo);
+            }
+          });
+        }
+      });
+      
+      // Filter soldShoes: hanya tampilkan yang barcodenya berasal dari faktur terpilih
+      soldShoes = soldShoes.filter(shoe => {
+        if (!shoe.barcode || shoe.barcode === '-') return false;
+        const bc = shoe.barcode.toString().trim().toUpperCase();
+        return barcodeToInvoice.get(bc) === currentFaktur;
+      });
     }
     
     const totalShoesCount = soldShoes.length;
@@ -690,7 +713,29 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     // Filter berdasarkan faktur jika dipilih
     let filteredUnsoldItems = stockReport.unsoldItems;
     if (currentFaktur !== 'all') {
-      filteredUnsoldItems = stockReport.unsoldItems.filter(item => item.lastInvoiceNo === currentFaktur);
+      // Gunakan barcode mapping dari supplies untuk filter
+      const mainData = JSON.parse(localStorage.getItem('kas_juara_sepatu_data_v1') || '{}');
+      const supplies = mainData.supplies || [];
+      const barcodeToInvoice = new Map();
+      
+      supplies.forEach(supply => {
+        const invoiceNo = supply.invoiceNo;
+        if (supply.items && Array.isArray(supply.items)) {
+          supply.items.forEach(item => {
+            if (item.barcode) {
+              const bc = item.barcode.toString().trim().toUpperCase();
+              barcodeToInvoice.set(bc, invoiceNo);
+            }
+          });
+        }
+      });
+      
+      // Filter hanya item yang barcodenya berasal dari faktur terpilih
+      filteredUnsoldItems = stockReport.unsoldItems.filter(item => {
+        if (!item.barcode) return false;
+        const bc = item.barcode.toString().trim().toUpperCase();
+        return barcodeToInvoice.get(bc) === currentFaktur;
+      });
     }
     
     // Hitung ulang summary berdasarkan filter
