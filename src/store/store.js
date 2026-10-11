@@ -752,6 +752,19 @@ class Store {
     }
 
     this.notify();
+    
+    // Push segera ke Supabase (jangan tunggu 5 detik debounce)
+    // untuk memastikan perubahan langsung tersimpan permanent
+    setTimeout(async () => {
+      try {
+        const ts = new Date().toISOString();
+        this._lastPushTimestamp = ts;
+        await pushStateToSupabase(this.state, ts);
+        console.log('[Store] deleteSupply pushed to Supabase immediately');
+      } catch (e) {
+        console.warn('[Store] Failed to push deleteSupply to Supabase:', e.message);
+      }
+    }, 500);
   }
 
   // Master Catalog Products (Indexed by Barcode Code 39)
