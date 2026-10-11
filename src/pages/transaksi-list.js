@@ -306,51 +306,51 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
       const isMasuk = trx.type === 'masuk';
       const isOpen = expandedTrx.has(trx.id);
       return `
-        <div class="glass-card glass-sheen rounded-xl p-3.5 flex flex-col gap-2 hover:border-white/80 transition-all">
-          <div class="flex items-start justify-between gap-3">
-            <div class="flex items-start gap-3 min-w-0">
+        <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5 hover:border-white/80 transition-all">
+          <div class="flex items-start justify-between gap-2">
+            <div class="flex items-start gap-2 min-w-0">
               ${trx.photo ? `
-                <img src="${trx.photo}" alt="Foto Sepatu" class="w-10 h-10 rounded-xl object-cover shrink-0 border border-surface-container-high shadow-sm" />
+                <img src="${trx.photo}" alt="Foto Sepatu" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" />
               ` : `
-                <div class="w-10 h-10 rounded-xl ${isMasuk ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[20px]">${isMasuk ? 'arrow_downward' : 'arrow_upward'}</span>
+                <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'arrow_downward' : 'arrow_upward'}</span>
                 </div>
               `}
               <div class="flex flex-col min-w-0">
-                <span class="font-title-ledger text-sm font-bold text-on-surface truncate">${trx.title}</span>
+                <span class="font-title-ledger text-xs font-bold text-on-surface truncate">${trx.title}</span>
                 
                 <!-- Metadata Badges: Buyer, Ongkir, Barcode -->
-                <div class="flex items-center gap-1.5 text-on-surface-variant text-[11px] mt-0.5 flex-wrap">
+                <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5 flex-wrap">
                   ${trx.buyer ? `
-                    <span class="px-1.5 py-0.2 rounded glass-chip text-on-secondary-fixed font-bold text-[10px] flex items-center gap-0.5">
-                      <span class="material-symbols-outlined text-[11px]">person</span>
+                    <span class="px-1 py-0.2 rounded glass-chip text-on-secondary-fixed font-bold text-[9px] flex items-center gap-0.5">
+                      <span class="material-symbols-outlined text-[10px]">person</span>
                       <span>${trx.buyer}</span>
                     </span>
                   ` : ''}
 
                   ${trx.ongkir ? `
-                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] glass-chip ${trx.ongkir === 'FO' ? 'text-emerald-900' : (trx.ongkir === 'COD' ? 'text-amber-900' : 'text-orange-900')}">
+                    <span class="px-1 py-0.2 rounded font-bold text-[9px] glass-chip ${trx.ongkir === 'FO' ? 'text-emerald-900' : (trx.ongkir === 'COD' ? 'text-amber-900' : 'text-orange-900')}">
                       ${trx.ongkir}
                     </span>
                   ` : ''}
 
                   ${trx.kondisi ? `
-                    <span class="px-1.5 py-0.2 rounded font-bold text-[10px] glass-chip ${trx.kondisi === 'Minus' ? 'text-amber-800' : 'text-emerald-800'}">
+                    <span class="px-1 py-0.2 rounded font-bold text-[9px] glass-chip ${trx.kondisi === 'Minus' ? 'text-amber-800' : 'text-emerald-800'}">
                       ${trx.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                     </span>
                   ` : ''}
 
                   ${!isMasuk && trx.category ? `
-                    <span class="px-1.5 py-0.2 rounded glass-chip text-rose-900 font-bold text-[10px]">
+                    <span class="px-1 py-0.2 rounded glass-chip text-rose-900 font-bold text-[9px]">
                       ${trx.category}
                     </span>
                   ` : ''}
 
-                  <span class="text-on-surface-variant/70 text-[10px]">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' \u2022 '; } catch(e) { return trx.date + ' \u2022 '; } })() : ''}${trx.time}</span>
+                  <span class="text-on-surface-variant/70 text-[9px]">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' \u2022 '; } catch(e) { return trx.date + ' \u2022 '; } })() : ''}${trx.time}</span>
                 </div>
 
                 ${trx.note ? `
-                  <span class="text-[10px] text-on-surface-variant italic mt-0.5 block truncate">
+                  <span class="text-[9px] text-on-surface-variant italic mt-0.5 block truncate">
                     Note: ${trx.note}
                   </span>
                 ` : ''}
@@ -358,7 +358,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
             </div>
 
             <div class="flex flex-col items-end shrink-0 pl-1">
-              <span class="font-currency-item text-sm font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
+              <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
                 ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
               </span>
               <div class="flex items-center gap-1 mt-1">
@@ -366,10 +366,10 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                   <button
                     type="button"
                     data-add-item-trx="${trx.id}"
-                    class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-emerald-700 text-xs font-semibold"
+                    class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
                     title="Tambah Barang ke Transaksi Ini"
                   >
-                    <span class="material-symbols-outlined text-[14px]">add_shopping_cart</span>
+                    <span class="material-symbols-outlined text-[12px]">add_shopping_cart</span>
                     <span>+ Barang</span>
                   </button>
                 ` : ''}
@@ -377,19 +377,19 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                   type="button" 
                   data-edit-trx="${trx.id}"
                   data-type="${trx.type}"
-                  class="glass-chip-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-primary text-xs font-semibold"
+                  class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
                   title="Edit Transaksi"
                 >
-                  <span class="material-symbols-outlined text-[14px]">edit</span>
+                  <span class="material-symbols-outlined text-[12px]">edit</span>
                   <span>Edit</span>
                 </button>
                 <button 
                   type="button" 
                   data-delete-trx="${trx.id}"
-                  class="glass-rose glass-btn inline-flex items-center gap-0.5 px-2 py-1 rounded-lg text-rose-700 text-xs font-semibold"
+                  class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
                   title="Hapus Transaksi"
                 >
-                  <span class="material-symbols-outlined text-[14px]">delete</span>
+                  <span class="material-symbols-outlined text-[12px]">delete</span>
                   <span>Hapus</span>
                 </button>
               </div>
@@ -400,45 +400,45 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
           ${trx.items && trx.items.length > 0 ? `
             <button
               type="button"
-              class="btn-toggle-items-breakdown w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-white/45 active:scale-[0.99] transition-all"
+              class="btn-toggle-items-breakdown w-full flex items-center justify-between gap-1.5 text-[10px] pt-1.5 border-t border-white/45 active:scale-[0.99] transition-all"
               data-target="breakdown-${trx.id}"
               data-trx-id="${trx.id}"
               aria-expanded="${isOpen ? 'true' : 'false'}"
               aria-controls="breakdown-${trx.id}"
             >
-              <span class="flex items-center gap-1.5 min-w-0">
-                <span class="material-symbols-outlined text-[16px] text-primary">receipt_long</span>
+              <span class="flex items-center gap-1 min-w-0">
+                <span class="material-symbols-outlined text-[14px] text-primary">receipt_long</span>
                 <span class="font-bold text-primary">Breakdown</span>
                 <span class="text-on-surface-variant truncate">• ${trx.items.length} Pasang • ${trx.paymentMethod || 'Tunai'}</span>
               </span>
               <span class="flex items-center gap-1 shrink-0">
                 <span class="text-on-surface-variant">Total:</span>
-                <span class="font-currency-item text-base font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}</span>
-                <span class="chevron-icon material-symbols-outlined text-[18px] text-on-surface-variant transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}">expand_more</span>
+                <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}</span>
+                <span class="chevron-icon material-symbols-outlined text-[14px] text-on-surface-variant transition-transform duration-200 ${isOpen ? 'rotate-180' : ''}">expand_more</span>
               </span>
             </button>
 
             <!-- Rincian Sepatu Terjual (tersembunyi sampai tombol Breakdown diklik) -->
-            <div id="breakdown-${trx.id}" class="trx-items-breakdown ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2.5 flex flex-col gap-2 text-xs">
+            <div id="breakdown-${trx.id}" class="trx-items-breakdown ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2 flex flex-col gap-1.5 text-[11px]">
               ${trx.items.map((it) => `
-                <div class="flex items-start gap-2.5">
+                <div class="flex items-start gap-2">
                   ${it.photo ? `
-                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-white/70 shrink-0" />
+                    <img src="${it.photo}" alt="Foto Sepatu" class="w-8 h-8 rounded-md object-cover border border-white/70 shrink-0" />
                   ` : ''}
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between">
-                      <span class="font-semibold text-on-surface truncate">${(Number(it.qty) || 1)}x ${it.name || 'Sepatu Tanpa Nama'}</span>
-                      <span class="font-bold font-tabular text-primary ml-2">${formatRupiah((Number(it.price) || 0) * (Number(it.qty) || 1))}</span>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-semibold text-on-surface truncate text-[11px]">${(Number(it.qty) || 1)}x ${it.name || 'Sepatu Tanpa Nama'}</span>
+                      <span class="font-bold font-tabular text-primary ml-2 text-[11px] shrink-0">${formatRupiah((Number(it.price) || 0) * (Number(it.qty) || 1))}</span>
                     </div>
-                    <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <div class="flex items-center gap-1 mt-0.5 flex-wrap">
                       ${it.barcode ? `
-                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded glass-chip text-on-surface text-[10px] font-mono font-bold">
-                          <span class="material-symbols-outlined text-[12px] text-primary">qr_code</span>
+                        <span class="inline-flex items-center gap-0.5 px-1 py-0.2 rounded glass-chip text-on-surface text-[9px] font-mono font-bold">
+                          <span class="material-symbols-outlined text-[10px] text-primary">qr_code</span>
                           <span>${it.barcode}</span>
                         </span>
                       ` : ''}
                       ${it.kondisi ? `
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
+                        <span class="inline-flex items-center px-1 py-0.2 rounded text-[9px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
                           ${it.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                         </span>
                       ` : ''}

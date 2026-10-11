@@ -30,27 +30,27 @@ function renderSaleItemCard(item, index, totalItems) {
   const num = index + 1;
   const priceVal = item.price ? formatRupiah(item.price, '') : '';
   return `
- <div class="sale-item-card glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-2.5" data-sale-item-id="${item.id}">
-      <div class="flex items-center justify-between border-b border-white/45 pb-2">
-        <div class="flex items-center gap-2">
-          <span class="w-6 h-6 rounded-full bg-primary/10 text-primary font-bold text-xs flex items-center justify-center">${num}</span>
-          <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Sepatu #${num}</span>
- ${item.barcode ? `<span class="font-mono text-[10px] text-on-surface-variant glass-chip px-1.5 py-0.5 rounded">${item.barcode}</span>` : ''}
+ <div class="sale-item-card glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-2" data-sale-item-id="${item.id}">
+      <div class="flex items-center justify-between border-b border-white/45 pb-1.5">
+        <div class="flex items-center gap-1.5">
+          <span class="w-5 h-5 rounded-full bg-primary/10 text-primary font-bold text-[11px] flex items-center justify-center">${num}</span>
+          <span class="font-label-md text-[11px] text-primary font-bold uppercase tracking-wider">Sepatu #${num}</span>
+ ${item.barcode ? `<span class="font-mono text-[9px] text-on-surface-variant glass-chip px-1 py-0.5 rounded">${item.barcode}</span>` : ''}
         </div>
-        ${totalItems > 1 ? `<button type="button" class="btn-remove-sale-item text-rose-600 hover:text-rose-800 text-xs font-semibold flex items-center gap-0.5 px-2 py-1 rounded-lg hover:bg-rose-50 active:scale-95 transition-all" data-sale-item-id="${item.id}"><span class="material-symbols-outlined text-[15px]">delete</span><span>Hapus</span></button>` : ''}
+        ${totalItems > 1 ? `<button type="button" class="btn-remove-sale-item text-rose-600 hover:text-rose-800 text-[10px] font-semibold flex items-center gap-0.5 px-1.5 py-0.5 rounded-md hover:bg-rose-50 active:scale-95 transition-all" data-sale-item-id="${item.id}"><span class="material-symbols-outlined text-[13px]">delete</span><span>Hapus</span></button>` : ''}
       </div>
-      <div class="sale-item-name-row ${item.name ? 'flex' : 'hidden'} items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-xl px-3 py-2" data-sale-item-id="${item.id}">
-        <span class="sale-item-name-label font-label-md text-xs font-bold text-emerald-900 truncate">${item.name || ''}</span>
-        ${item.kondisi === 'Minus' ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-1.5 py-0.2 rounded-full">⚠ Minus</span>' : (item.name ? '<span class="kondisi-badge ml-auto shrink-0 text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1.5 py-0.2 rounded-full">✓ Bagus</span>' : '')}
+      <div class="sale-item-name-row ${item.name ? 'flex' : 'hidden'} items-center gap-1.5 bg-emerald-50 border border-emerald-200 rounded-lg px-2.5 py-1.5" data-sale-item-id="${item.id}">
+        <span class="sale-item-name-label font-label-md text-[11px] font-bold text-emerald-900 truncate">${item.name || ''}</span>
+        ${item.kondisi === 'Minus' ? '<span class="kondisi-badge ml-auto shrink-0 text-[9px] font-bold bg-amber-100 text-amber-800 border border-amber-300 px-1 py-0.2 rounded-full">⚠ Minus</span>' : (item.name ? '<span class="kondisi-badge ml-auto shrink-0 text-[9px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 px-1 py-0.2 rounded-full">✓ Bagus</span>' : '')}
       </div>
       <!-- Input Barcode & List Stok Belum Terjual -->
       <div class="stock-dropdown-wrapper flex flex-col w-full">
-        <div class="flex items-center gap-2">
+        <div class="flex items-center gap-1.5">
           <div class="relative flex-1">
-            <span class="absolute left-3 top-2.5 text-on-surface-variant pointer-events-none"><span class="material-symbols-outlined text-[17px]">qr_code</span></span>
+            <span class="absolute left-2.5 top-2 text-on-surface-variant pointer-events-none"><span class="material-symbols-outlined text-[14px]">qr_code</span></span>
             <input 
               type="text" 
- class="sale-item-barcode w-full pl-9 pr-8 py-2 rounded-xl glass-input text-on-surface font-mono text-sm font-semibold focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
+ class="sale-item-barcode w-full pl-8 pr-7 py-1.5 rounded-lg glass-input text-on-surface font-mono text-xs font-semibold focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all" 
               placeholder="Scan / ketik / pilih dari stok..." 
               value="${item.barcode || ''}" 
               data-sale-item-id="${item.id}"
@@ -58,41 +58,41 @@ function renderSaleItemCard(item, index, totalItems) {
             />
             <button 
               type="button" 
-              class="btn-toggle-stock-dropdown absolute right-2 top-2 text-on-surface-variant hover:text-primary transition-all p-0.5 rounded active:scale-95" 
+              class="btn-toggle-stock-dropdown absolute right-1.5 top-1.5 text-on-surface-variant hover:text-primary transition-all p-0.5 rounded active:scale-95" 
               data-sale-item-id="${item.id}" 
               title="Tampilkan daftar sepatu di stok yang belum terjual"
             >
-              <span class="material-symbols-outlined text-[20px] pointer-events-none">arrow_drop_down</span>
+              <span class="material-symbols-outlined text-[16px] pointer-events-none">arrow_drop_down</span>
             </button>
           </div>
           <button 
             type="button" 
- class="btn-sale-item-camera px-3 py-2 rounded-xl glass-primary glass-btn text-primary-btn font-label-md text-xs font-bold flex items-center gap-1 shrink-0" 
+ class="btn-sale-item-camera px-2.5 py-1.5 rounded-lg glass-primary glass-btn text-primary-btn font-label-md text-[11px] font-bold flex items-center gap-1 shrink-0" 
             data-sale-item-id="${item.id}"
             title="Scan Barcode via Kamera HP"
           >
-            <span class="material-symbols-outlined text-[17px]">photo_camera</span>
+            <span class="material-symbols-outlined text-[14px]">photo_camera</span>
             <span>Scan</span>
           </button>
         </div>
 
         <!-- LIST SEPATU DI STOK (IN-FLOW EXPANDABLE, BEBAS TUMPANG TINDIH) -->
         <div 
- class="stock-dropdown-popup hidden w-full mt-2 max-h-72 overflow-y-auto glass-sheet rounded-2xl p-2 flex flex-col gap-1 transition-all border border-white/30" 
+ class="stock-dropdown-popup hidden w-full mt-1.5 max-h-60 overflow-y-auto glass-sheet rounded-xl p-1.5 flex flex-col gap-0.5 transition-all border border-white/30" 
           data-sale-item-id="${item.id}"
         >
         </div>
       </div>
 
       <!-- Warning Barcode Dobel di Daftar Sepatu Terjual -->
-      <div class="sale-item-barcode-warning hidden text-xs font-medium text-rose-700 bg-rose-50 border border-rose-300 rounded-xl p-2.5 flex items-start gap-1.5 shadow-xs transition-all" data-sale-item-id="${item.id}">
-        <span class="material-symbols-outlined text-rose-600 text-base leading-none shrink-0 mt-0.5">warning</span>
+      <div class="sale-item-barcode-warning hidden text-[11px] font-medium text-rose-700 bg-rose-50 border border-rose-300 rounded-lg p-2 flex items-start gap-1.5 shadow-xs transition-all" data-sale-item-id="${item.id}">
+        <span class="material-symbols-outlined text-rose-600 text-sm leading-none shrink-0 mt-0.5">warning</span>
         <div class="sale-item-warning-text leading-snug flex-1"></div>
       </div>
-      <div class="flex items-center gap-2">
+      <div class="flex items-center gap-1.5">
         <div class="relative flex-1">
-          <span class="absolute left-3 top-2.5 text-xs text-on-surface-variant font-bold">Rp</span>
- <input type="text" class="sale-item-price w-full pl-8 pr-3 py-2 rounded-xl glass-input text-on-surface font-bold text-sm font-tabular focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" placeholder="Harga jual..." value="${priceVal}" inputmode="numeric" data-sale-item-id="${item.id}" />
+          <span class="absolute left-2.5 top-2 text-[11px] text-on-surface-variant font-bold">Rp</span>
+ <input type="text" class="sale-item-price w-full pl-7 pr-2.5 py-1.5 rounded-lg glass-input text-on-surface font-bold text-xs font-tabular focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" placeholder="Harga jual..." value="${priceVal}" inputmode="numeric" data-sale-item-id="${item.id}" />
         </div>
         <span class="text-[10px] text-on-surface-variant font-semibold shrink-0">Harga Jual</span>
       </div>
@@ -149,9 +149,9 @@ export function renderTambahTransaksiPage(store, params = {}) {
         </div>
 
         <!-- KAS MASUK -->
-        <div id="masuk-wrapper" class="${initialType === 'masuk' ? 'flex' : 'hidden'} flex-col gap-4">
+        <div id="masuk-wrapper" class="${initialType === 'masuk' ? 'flex' : 'hidden'} flex-col gap-3">
           <!-- TANGGAL TRANSAKSI KAS MASUK -->
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-1">
             <div class="flex items-center justify-between">
               <label for="input-trx-date-masuk" class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[18px]">calendar_today</span>
@@ -168,16 +168,16 @@ export function renderTambahTransaksiPage(store, params = {}) {
             />
           </div>
 
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-1">
             <div class="flex items-center justify-between">
-              <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">person</span><span>Nama Pembeli</span></label>
-              <span class="font-label-sm text-[10px] text-on-surface-variant">Pelanggan Toko</span>
+              <label class="font-label-md text-[11px] text-on-surface font-bold flex items-center gap-1"><span class="material-symbols-outlined text-primary text-[16px]">person</span><span>Nama Pembeli</span></label>
+              <span class="font-label-sm text-[9px] text-on-surface-variant">Pelanggan Toko</span>
             </div>
- <input type="text" id="input-buyer-name" placeholder="Contoh: Mas Budi / Kak Anisa..." value="${defaultBuyer}" class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" />
+ <input type="text" id="input-buyer-name" placeholder="Contoh: Mas Budi / Kak Anisa..." value="${defaultBuyer}" class="w-full px-3 py-2 rounded-lg glass-input text-on-surface font-body-md text-xs focus:outline-none focus:ring-2 focus:ring-on-tertiary-container" />
           </div>
 
           <!-- MULTI-ITEM CART -->
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
+ <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <div class="flex items-center gap-1.5">
                 <span class="material-symbols-outlined text-primary text-[20px]">shopping_cart</span>
@@ -197,7 +197,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
           </div>
 
           <!-- ONGKIR -->
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
+ <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-2">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">local_shipping</span><span>Ongkir / Pengiriman</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Pilih Layanan</span>
@@ -210,7 +210,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
           </div>
 
           <!-- NOTE -->
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-1.5">
+ <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-1">
             <div class="flex items-center justify-between">
               <label class="font-label-md text-xs text-on-surface font-bold flex items-center gap-1.5"><span class="material-symbols-outlined text-primary text-[18px]">edit_note</span><span>Note</span></label>
               <span class="font-label-sm text-[10px] text-on-surface-variant">Catatan Transaksi</span>
