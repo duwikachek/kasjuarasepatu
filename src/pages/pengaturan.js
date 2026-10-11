@@ -19,13 +19,13 @@ export function renderPengaturanPage(store) {
         backRoute: 'dashboard'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-4">
+      <div class="flex flex-col w-full px-4 pt-2.5 pb-20 gap-2.5">
         <!-- Modal / Saldo Kas Awal Toko Card -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-primary text-[20px]">account_balance_wallet</span>
-              <h3 class="font-title-ledger text-sm font-bold text-on-surface">Modal / Saldo Kas Awal Toko</h3>
+              <span class="material-symbols-outlined text-primary text-[16px]">account_balance_wallet</span>
+              <h3 class="font-title-ledger text-xs font-bold text-on-surface">Modal / Saldo Kas Awal Toko</h3>
             </div>
             <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-primary font-bold">Saldo Awal</span>
           </div>
@@ -34,7 +34,7 @@ export function renderPengaturanPage(store) {
             Tentukan modal kas toko saat pertama kali pembukuan dimulai. Rumus saldo: <strong>Saldo Kas Awal + Pemasukan - Pengeluaran</strong>.
           </p>
 
-          <div class="flex flex-col gap-2.5 mt-0.5">
+          <div class="flex flex-col gap-1.5 mt-0.5">
             <div class="flex flex-col gap-1">
               <label class="font-label-sm text-xs text-on-surface-variant flex items-center justify-between">
                 <span>Kas Awal di Rek Tampungan</span>
@@ -46,7 +46,7 @@ export function renderPengaturanPage(store) {
                   id="input-initial-laci" 
                   inputmode="numeric"
                   value="${formatRupiah(initialLaci, '')}" 
-                  class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-bold text-base font-tabular focus:outline-primary"
+                  class="w-full px-2.5 py-1.5 rounded-lg glass-input text-on-surface font-bold text-sm font-tabular focus:outline-primary"
                   placeholder="0"
                 />
               </div>
@@ -63,24 +63,24 @@ export function renderPengaturanPage(store) {
                   id="input-initial-bank" 
                   inputmode="numeric"
                   value="${formatRupiah(initialBank, '')}" 
-                  class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-bold text-base font-tabular focus:outline-primary"
+                  class="w-full px-2.5 py-1.5 rounded-lg glass-input text-on-surface font-bold text-sm font-tabular focus:outline-primary"
                   placeholder="0"
                 />
               </div>
             </div>
 
             <!-- Total Preview & Quick 0 Button -->
-            <div class="glass-panel rounded-xl p-3 flex items-center justify-between">
+            <div class="glass-panel rounded-lg p-2.5 flex items-center justify-between">
               <div class="flex flex-col">
                 <span class="text-[11px] text-on-surface-variant">Total Saldo Kas Awal</span>
-                <span id="preview-total-initial" class="text-base font-bold text-primary font-tabular">
+                <span id="preview-total-initial" class="text-sm font-bold text-primary font-tabular">
                   ${formatRupiah(initialTotal)}
                 </span>
               </div>
               <button 
                 type="button" 
                 id="btn-set-zero-initial" 
-                class="px-2.5 py-1.5 rounded-lg glass-chip-btn text-on-surface text-xs font-semibold"
+                class="px-2 py-1 rounded-lg glass-chip-btn text-on-surface text-[11px] font-semibold"
                 title="Atur modal awal menjadi 0 rupiah"
               >
                 Setel ke Rp 0
@@ -90,29 +90,29 @@ export function renderPengaturanPage(store) {
             <button 
               type="button" 
               id="btn-save-initial-balance" 
-              class="mt-1 w-full py-2.5 rounded-xl glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
+              class="mt-0.5 w-full py-1.5 rounded-lg glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-[11px] font-bold flex items-center justify-center gap-1.5"
             >
-              <span class="material-symbols-outlined text-[16px]">save</span>
+              <span class="material-symbols-outlined text-[14px]">save</span>
               <span>Simpan Saldo Kas Awal</span>
             </button>
           </div>
         </section>
 
         <!-- Profil Toko Form Card -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">store</span>
-            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Profil Toko Sepatu</h3>
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">store</span>
+            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Profil Toko Sepatu</h3>
           </div>
 
-          <div class="flex flex-col gap-2.5">
+          <div class="flex flex-col gap-1.5">
             <div class="flex flex-col gap-1">
               <label class="font-label-sm text-xs text-on-surface-variant">Nama Toko</label>
               <input 
                 type="text" 
                 id="input-shop-name" 
                 value="${shop.name}" 
-                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
+                class="w-full px-2.5 py-1.5 rounded-lg glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
@@ -122,7 +122,7 @@ export function renderPengaturanPage(store) {
                 type="text" 
                 id="input-shop-owner" 
                 value="${shop.owner || 'Pak Hendra'}" 
-                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
+                class="w-full px-2.5 py-1.5 rounded-lg glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
@@ -132,14 +132,14 @@ export function renderPengaturanPage(store) {
                 type="text" 
                 id="input-shop-address" 
                 value="${shop.address || 'Jl. Veteran No. 45, Bandung'}" 
-                class="w-full px-3 py-2 rounded-xl glass-input text-on-surface font-body-md text-sm"
+                class="w-full px-2.5 py-1.5 rounded-lg glass-input text-on-surface font-body-md text-sm"
               />
             </div>
 
             <button 
               type="button" 
               id="btn-save-shop-profile" 
-              class="mt-1 w-full py-2.5 rounded-xl glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-xs font-bold"
+              class="mt-0.5 w-full py-1.5 rounded-lg glass-primary glass-btn glass-sheen text-primary-btn font-label-md text-[11px] font-bold"
             >
               Simpan Profil Toko
             </button>
@@ -147,10 +147,10 @@ export function renderPengaturanPage(store) {
         </section>
 
         <!-- Keamanan & PIN -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">security</span>
-            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Keamanan & Akses Kasir</h3>
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">security</span>
+            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Keamanan & Akses Kasir</h3>
           </div>
 
           <div class="flex flex-col gap-2 divide-y divide-white/45">
@@ -182,24 +182,24 @@ export function renderPengaturanPage(store) {
         </section>
 
         <!-- Integrasi Google Spreadsheet Card -->
-        <section class="glass-emerald glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-google-sheets">
+        <section class="glass-emerald glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5" id="section-google-sheets">
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-2">
-              <div class="w-8 h-8 rounded-xl glass-emerald text-emerald-900 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[20px]">table_chart</span>
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 rounded-lg glass-emerald text-emerald-900 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[16px]">table_chart</span>
               </div>
               <div>
-                <h3 class="font-title-ledger text-sm font-bold text-on-surface">Integrasi Google Spreadsheet</h3>
-                <p class="text-[11px] text-on-surface-variant">Kirim & sinkronkan data kas langsung ke Google Sheets</p>
+                <h3 class="font-title-ledger text-xs font-bold text-on-surface">Integrasi Google Spreadsheet</h3>
+                <p class="text-[10px] text-on-surface-variant">Kirim & sinkronkan data kas langsung ke Google Sheets</p>
               </div>
             </div>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full glass-chip text-emerald-800 font-bold">
+            <span class="font-label-sm text-[9px] px-1.5 py-0.5 rounded-full glass-chip text-emerald-800 font-bold">
               Google Cloud API
             </span>
           </div>
 
           <!-- Email Service Account Box -->
-          <div class="glass-emerald rounded-xl p-3 flex flex-col gap-1.5">
+          <div class="glass-emerald rounded-lg p-2.5 flex flex-col gap-1.5">
             <div class="flex items-center justify-between">
               <span class="text-[10px] text-emerald-900 font-bold uppercase tracking-wider flex items-center gap-1">
                 <span class="material-symbols-outlined text-[14px]">shield_person</span>
@@ -289,25 +289,25 @@ export function renderPengaturanPage(store) {
           </div>
 
           <!-- Input Spreadsheet ID / URL -->
-          <div class="flex flex-col gap-1.5">
+          <div class="flex flex-col gap-1">
             <label class="font-label-sm text-xs text-on-surface font-semibold flex items-center justify-between">
               <span>Link atau ID Google Spreadsheet</span>
-              <span class="text-[10px] text-on-surface-variant font-normal">docs.google.com/spreadsheets/d/...</span>
+              <span class="text-[9px] text-on-surface-variant font-normal">docs.google.com/spreadsheets/d/...</span>
             </label>
             <input 
               type="text" 
               id="input-spreadsheet-id"
               value="${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) || ''}"
-              class="glass-input w-full px-3.5 py-2.5 rounded-xl text-on-surface font-body-md text-xs focus:outline-emerald-600"
+              class="glass-input w-full px-2.5 py-1.5 rounded-lg text-on-surface font-body-md text-xs focus:outline-emerald-600"
               placeholder="Tempel link Google Spreadsheet (URL penuh) atau ID-nya di sini..."
             />
           </div>
 
           <!-- Toggle Auto-Sync -->
-          <div class="flex items-center justify-between p-2.5 rounded-xl glass-panel">
+          <div class="flex items-center justify-between p-2 rounded-lg glass-panel">
             <div class="flex flex-col">
               <span class="font-bold text-xs text-on-surface">Auto-Sync Otomatis</span>
-              <span class="text-[10px] text-on-surface-variant">Kirim otomatis saat ada perubahan transaksi</span>
+              <span class="text-[9px] text-on-surface-variant">Kirim otomatis saat ada perubahan transaksi</span>
             </div>
             <label class="relative inline-flex items-center cursor-pointer">
               <input type="checkbox" id="check-auto-sync" class="sr-only peer" ${
@@ -318,9 +318,9 @@ export function renderPengaturanPage(store) {
           </div>
 
           <!-- Status Sinkronisasi -->
-          <div class="flex items-center justify-between text-xs py-1 px-1" id="sheets-sync-status-box">
-            <div class="flex items-center gap-1.5 text-[11px] text-on-surface-variant">
-              <span class="material-symbols-outlined text-[15px] text-emerald-700">sync</span>
+          <div class="flex items-center justify-between text-xs py-0.5 px-1" id="sheets-sync-status-box">
+            <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
+              <span class="material-symbols-outlined text-[13px] text-emerald-700">sync</span>
               <span id="text-last-sync">Terakhir sinkron: ${
                 (store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().lastSync) || 'Belum pernah'
               }</span>
@@ -333,50 +333,50 @@ export function renderPengaturanPage(store) {
               class="text-xs font-bold text-emerald-700 hover:text-emerald-900 flex items-center gap-0.5 ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? '' : 'hidden'}"
             >
               <span>Buka Sheet</span>
-              <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+              <span class="material-symbols-outlined text-[12px]">open_in_new</span>
             </a>
           </div>
 
           <!-- Action Buttons -->
-          <div class="grid grid-cols-2 gap-2 mt-1">
+          <div class="grid grid-cols-2 gap-1.5 mt-0.5">
             <button 
               type="button" 
               id="btn-test-sheets-conn" 
-              class="py-2.5 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
+              class="py-1.5 px-2.5 rounded-lg glass-chip-btn text-on-surface font-label-md text-[11px] font-bold flex items-center justify-center gap-1"
             >
-              <span class="material-symbols-outlined text-[16px]">sensors</span>
+              <span class="material-symbols-outlined text-[14px]">sensors</span>
               <span>Tes Koneksi</span>
             </button>
             <button 
               type="button" 
               id="btn-sync-sheets-now" 
-              class="py-2.5 px-3 rounded-xl glass-emerald text-emerald-900 font-label-md text-xs font-bold flex items-center justify-center gap-1.5"
+              class="py-1.5 px-2.5 rounded-lg glass-emerald text-emerald-900 font-label-md text-[11px] font-bold flex items-center justify-center gap-1"
             >
-              <span class="material-symbols-outlined text-[16px]" id="icon-sync-btn">cloud_upload</span>
+              <span class="material-symbols-outlined text-[14px]" id="icon-sync-btn">cloud_upload</span>
               <span id="text-sync-btn">Sinkronkan Sekarang</span>
             </button>
           </div>
         </section>
 
         <!-- Backup & Restore Data -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">cloud_sync</span>
-            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Cadangan & Pemulihan Data</h3>
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">cloud_sync</span>
+            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Cadangan & Pemulihan Data</h3>
           </div>
 
-          <div class="grid grid-cols-2 gap-2">
+          <div class="grid grid-cols-2 gap-1.5">
             <button 
               type="button" 
               id="btn-export-json"
-              class="py-3 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center"
+              class="py-2 px-2.5 rounded-lg glass-chip-btn text-on-surface font-label-md text-[11px] font-semibold flex flex-col items-center justify-center gap-1 text-center"
             >
-              <span class="material-symbols-outlined text-[20px] text-primary">download</span>
+              <span class="material-symbols-outlined text-[16px] text-primary">download</span>
               <span>Cadangkan Data (JSON)</span>
             </button>
 
             <label 
-              class="cursor-pointer py-3 px-3 rounded-xl glass-chip-btn text-on-surface font-label-md text-xs font-semibold flex flex-col items-center justify-center gap-1.5 text-center"
+              class="cursor-pointer py-2 px-2.5 rounded-lg glass-chip-btn text-on-surface font-label-md text-[11px] font-semibold flex flex-col items-center justify-center gap-1 text-center"
             >
               <input type="file" id="input-import-json" accept=".json" class="hidden"/>
               <span class="material-symbols-outlined text-[20px] text-primary">upload</span>
@@ -414,72 +414,72 @@ export function renderPengaturanPage(store) {
 
 
         <!-- Tampilan Background App -->
-        <section class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3" id="section-background">
-          <div class="flex items-center gap-2">
-            <span class="material-symbols-outlined text-primary text-[20px]">wallpaper</span>
-            <h3 class="font-title-ledger text-sm font-bold text-on-surface">Tampilan Background</h3>
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5" id="section-background">
+          <div class="flex items-center gap-1.5">
+            <span class="material-symbols-outlined text-primary text-[16px]">wallpaper</span>
+            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Tampilan Background</h3>
           </div>
-          <p class="text-xs text-on-surface-variant leading-relaxed">
+          <p class="text-[9px] text-on-surface-variant leading-relaxed">
             Ganti gambar latar belakang aplikasi sesuai selera. Upload foto sendiri atau pilih dari tema preset yang tersedia.
           </p>
 
           <!-- Preview Background Saat Ini -->
-          <div class="relative w-full h-28 rounded-xl overflow-hidden border border-white/40 shadow-sm">
+          <div class="relative w-full h-20 rounded-lg overflow-hidden border border-white/40 shadow-sm">
             <div id="bg-preview-box" class="absolute inset-0 bg-cover bg-center bg-no-repeat" style="background-image:url('./assets/background-sepatu-kulit.jpg');background-color:#0d1f16;"></div>
             <div class="absolute inset-0 bg-black/30 flex items-center justify-center">
-              <span class="text-white text-xs font-bold bg-black/50 px-3 py-1.5 rounded-full backdrop-blur-sm">Preview Background</span>
+              <span class="text-white text-[9px] font-bold bg-black/50 px-2.5 py-1 rounded-full backdrop-blur-sm">Preview Background</span>
             </div>
           </div>
 
           <!-- Upload Foto Sendiri -->
-          <div class="flex flex-col gap-1.5">
-            <span class="font-label-sm text-xs text-on-surface-variant font-semibold uppercase tracking-wide">Upload Foto Sendiri</span>
+          <div class="flex flex-col gap-1">
+            <span class="font-label-sm text-[9px] text-on-surface-variant font-semibold uppercase tracking-wide">Upload Foto Sendiri</span>
             <label for="input-bg-upload"
-              class="w-full py-2.5 px-4 rounded-xl glass-neutral glass-btn glass-sheen cursor-pointer flex items-center justify-center gap-2 text-on-surface font-label-md text-sm font-semibold active:scale-[0.98] transition-transform"
+              class="w-full py-1.5 px-2.5 rounded-lg glass-neutral glass-btn glass-sheen cursor-pointer flex items-center justify-center gap-1.5 text-on-surface font-label-md text-[9px] font-semibold active:scale-[0.98] transition-transform"
             >
-              <span class="material-symbols-outlined text-[20px] text-primary">add_photo_alternate</span>
+              <span class="material-symbols-outlined text-[14px] text-primary">add_photo_alternate</span>
               <span>Pilih Foto dari Galeri</span>
               <input type="file" id="input-bg-upload" accept="image/*" class="hidden" />
             </label>
           </div>
 
           <!-- Preset Tema -->
-          <div class="flex flex-col gap-2">
-            <span class="font-label-sm text-xs text-on-surface-variant font-semibold uppercase tracking-wide">Atau Pilih Tema Preset</span>
-            <div class="grid grid-cols-4 gap-2" id="bg-preset-grid">
+          <div class="flex flex-col gap-1.5">
+            <span class="font-label-sm text-[9px] text-on-surface-variant font-semibold uppercase tracking-wide">Atau Pilih Tema Preset</span>
+            <div class="grid grid-cols-4 gap-1.5" id="bg-preset-grid">
               <!-- Default: Foto Sepatu Kulit -->
-              <button type="button" data-bg-preset="default" class="bg-preset-btn relative h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all">
+              <button type="button" data-bg-preset="default" class="bg-preset-btn relative h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all">
                 <div class="absolute inset-0 bg-cover bg-center" style="background-image:url('./assets/background-sepatu-kulit.jpg')"></div>
                 <div class="absolute inset-0 bg-black/20"></div>
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center drop-shadow">Default</span>
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center drop-shadow">Default</span>
               </button>
               <!-- Hitam Solid -->
-              <button type="button" data-bg-preset="solid-black" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#000000;">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Hitam</span>
+              <button type="button" data-bg-preset="solid-black" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#000000;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Hitam</span>
               </button>
               <!-- Hijau Gelap -->
-              <button type="button" data-bg-preset="solid-green" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0d1f16;">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Hijau</span>
+              <button type="button" data-bg-preset="solid-green" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0d1f16;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Hijau</span>
               </button>
               <!-- Navy -->
-              <button type="button" data-bg-preset="solid-navy" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0f172a;">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Navy</span>
+              <button type="button" data-bg-preset="solid-navy" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#0f172a;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Navy</span>
               </button>
               <!-- Coklat Tua -->
-              <button type="button" data-bg-preset="solid-brown" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#3d2619;">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Coklat</span>
+              <button type="button" data-bg-preset="solid-brown" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:#3d2619;">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Coklat</span>
               </button>
               <!-- Gradien Sunset -->
-              <button type="button" data-bg-preset="gradient-sunset" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#1a0000,#3d1a00,#1f0a00);">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Sunset</span>
+              <button type="button" data-bg-preset="gradient-sunset" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#1a0000,#3d1a00,#1f0a00);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Sunset</span>
               </button>
               <!-- Gradien Midnight -->
-              <button type="button" data-bg-preset="gradient-midnight" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Midnight</span>
+              <button type="button" data-bg-preset="gradient-midnight" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0f0c29,#302b63,#24243e);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Midnight</span>
               </button>
               <!-- Gradien Forest -->
-              <button type="button" data-bg-preset="gradient-forest" class="bg-preset-btn h-14 rounded-xl overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0a2012,#1a4a2e,#0d2e1a);">
-                <span class="absolute bottom-0.5 left-0 right-0 text-[8px] text-white font-bold text-center">Forest</span>
+              <button type="button" data-bg-preset="gradient-forest" class="bg-preset-btn h-11 rounded-lg overflow-hidden border-2 border-transparent active:scale-95 transition-all relative" style="background:linear-gradient(135deg,#0a2012,#1a4a2e,#0d2e1a);">
+                <span class="absolute bottom-0.5 left-0 right-0 text-[7px] text-white font-bold text-center">Forest</span>
               </button>
             </div>
           </div>
@@ -488,15 +488,15 @@ export function renderPengaturanPage(store) {
           <button
             type="button"
             id="btn-reset-background"
-            class="w-full py-2 rounded-xl glass-neutral glass-btn text-on-surface-variant font-label-md text-xs font-semibold flex items-center justify-center gap-1.5"
+            class="w-full py-1.5 rounded-lg glass-neutral glass-btn text-on-surface-variant font-label-md text-[9px] font-semibold flex items-center justify-center gap-1"
           >
-            <span class="material-symbols-outlined text-[15px]">restart_alt</span>
+            <span class="material-symbols-outlined text-[13px]">restart_alt</span>
             <span>Reset ke Background Default</span>
           </button>
         </section>
 
         <!-- Informasi Aplikasi -->
-        <section class="p-3 text-center text-xs text-on-surface-variant/80 flex flex-col items-center gap-1">
+        <section class="p-2.5 text-center text-[9px] text-on-surface-variant/80 flex flex-col items-center gap-0.5">
           <span class="font-bold text-on-surface">Kas Juara Sepatu v1.0.0</span>
           <span>Desain Retro Modern Warm Vintage Ledger</span>
           <span>Format Siap Bungkus ke Android APK (Capacitor)</span>
