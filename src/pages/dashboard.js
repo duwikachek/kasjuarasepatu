@@ -30,33 +30,33 @@ export function renderDashboardPage(store) {
         subtitle: shop.subName || 'Buku Kas Utama'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-4">
+      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3">
         <!-- Greeting & Status -->
         <section class="flex items-center justify-between pt-1">
           <div class="flex flex-col min-w-0">
-            <div class="flex items-center gap-1.5 mb-0.5 text-on-surface-variant">
-              <span class="material-symbols-outlined text-primary text-[15px]">calendar_today</span>
-              <span class="font-label-sm text-[11px] uppercase tracking-wide">${todayStr}</span>
+            <div class="flex items-center gap-1 mb-0.5 text-on-surface-variant">
+              <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span>
+              <span class="font-label-sm text-[10px] uppercase tracking-wide">${todayStr}</span>
             </div>
-            <h1 class="font-headline-md text-xl font-bold text-on-surface truncate">
+            <h1 class="font-headline-md text-lg font-bold text-on-surface truncate">
               Halo, ${shop.owner || 'Pak Hendra'}
             </h1>
-            <span class="font-body-sm text-xs text-on-surface-variant flex items-center gap-1">
+            <span class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
               Pemilik • ${shop.name}
             </span>
           </div>
 
-          <div class="flex flex-col items-end shrink-0 gap-1">
-            <div class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full bg-surface-container-high shadow-sm">
-              <span class="w-2 h-2 rounded-full bg-emerald-600 animate-pulse"></span>
-              <span class="font-label-sm text-xs text-on-surface font-semibold">Toko Buka</span>
+          <div class="flex flex-col items-end shrink-0 gap-0.5">
+            <div class="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-surface-container-high shadow-xs">
+              <span class="w-1.5 h-1.5 rounded-full bg-emerald-600 animate-pulse"></span>
+              <span class="font-label-sm text-[11px] text-on-surface font-semibold">Toko Buka</span>
             </div>
-            <span class="font-label-sm text-[10px] text-on-surface-variant">Bismillahirrahmanirrahim</span>
+            <span class="font-label-sm text-[9px] text-on-surface-variant">Bismillahirrahmanirrahim</span>
           </div>
         </section>
 
         <!-- Main Ledger Card (Glassmorphism + Logo Watermark) -->
-        <section class="glass-dark glass-sheen rounded-2xl text-surface-container-lowest p-4 relative overflow-hidden isolate">
+        <section class="glass-dark glass-sheen rounded-xl text-surface-container-lowest p-3 relative overflow-hidden isolate">
           <!-- Lapisan sinematik: gradasi + watermark logo penuh (dekoratif, di bawah konten) -->
           <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-tr from-black/45 via-black/15 to-white/10"></div>
           <img
@@ -84,16 +84,16 @@ export function renderDashboardPage(store) {
           </div>
 
           <!-- Balance Value -->
-          <div class="flex items-baseline gap-2 my-1">
-            <span class="font-currency-display text-2xl sm:text-[28px] text-surface-bright font-bold tracking-tight font-tabular" id="balance-value" data-real="${formatRupiah(summary.currentBalance)}">
+          <div class="flex items-baseline gap-1.5 my-0.5">
+            <span class="font-currency-display text-xl sm:text-2xl text-surface-bright font-bold tracking-tight font-tabular" id="balance-value" data-real="${formatRupiah(summary.currentBalance)}">
               ${formatRupiah(summary.currentBalance)}
             </span>
-            <span class="font-label-sm text-xs text-tertiary-fixed-dim font-normal">IDR</span>
+            <span class="font-label-sm text-[11px] text-tertiary-fixed-dim font-normal">IDR</span>
           </div>
-          <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-3">Tercatat di pembukuan lokal hari ini</p>
+          <p class="font-body-sm text-[10px] text-primary-fixed-dim/80 mb-2">Tercatat di pembukuan lokal hari ini</p>
 
           <!-- Sub Stats -->
-          <div class="grid grid-cols-2 gap-2 pt-2.5 rounded-xl bg-white/10 backdrop-blur-md border border-white/20 p-2.5">
+          <div class="grid grid-cols-2 gap-1.5 pt-2 rounded-lg bg-white/10 backdrop-blur-md border border-white/20 p-2">
             <!-- Pemasukan -->
             <div class="flex flex-col min-w-0 pr-2 border-r border-surface-container-high/20">
               <div class="flex items-center gap-1 text-emerald-300 mb-0.5">
@@ -121,83 +121,83 @@ export function renderDashboardPage(store) {
         </section>
 
         <!-- Quick Action Buttons -->
-        <section class="grid grid-cols-2 gap-2.5">
+        <section class="grid grid-cols-2 gap-2">
           <button 
             type="button" 
             data-action="tambah-masuk"
-            class="glass-primary glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-primary-btn font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
+            class="glass-primary glass-btn glass-sheen relative overflow-hidden h-11 rounded-lg text-primary-btn font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
-            <span class="material-symbols-outlined text-[20px]">add_circle</span>
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
             <span>+ Kas Masuk</span>
           </button>
 
           <button 
             type="button" 
             data-action="tambah-keluar"
-            class="glass-rose glass-btn glass-sheen relative overflow-hidden h-14 rounded-xl text-primary font-label-md text-sm font-bold flex items-center justify-center gap-2 active:scale-[0.98]"
+            class="glass-rose glass-btn glass-sheen relative overflow-hidden h-11 rounded-lg text-primary font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-[0.98]"
           >
-            <span class="material-symbols-outlined text-[20px]">remove_circle</span>
+            <span class="material-symbols-outlined text-[18px]">remove_circle</span>
             <span>- Kas Keluar</span>
           </button>
 
           <button 
             type="button" 
             data-action="tambah-pasok"
-            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-12 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-10 rounded-lg text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-[0.98]"
           >
-            <span class="material-symbols-outlined text-[18px] text-primary">inventory_2</span>
+            <span class="material-symbols-outlined text-[16px] text-primary">inventory_2</span>
             <span>+ Belanja Stock Sepatu</span>
           </button>
 
           <button 
             type="button" 
             data-action="lihat-pengiriman"
-            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-12 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-center gap-1.5 active:scale-[0.98]"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden h-10 rounded-lg text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-center gap-1 active:scale-[0.98]"
           >
-            <span class="material-symbols-outlined text-[18px] text-primary">local_shipping</span>
+            <span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
             <span>Kelola Pengiriman</span>
           </button>
 
           <button 
             type="button" 
             data-action="lihat-laporan-stock"
-            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-between px-3.5 active:scale-[0.98]"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-9 rounded-lg text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-between px-3 active:scale-[0.98]"
           >
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[19px] text-cyan-400">inventory_2</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-cyan-400">inventory_2</span>
               <span>Laporan Sisa Stock (Real Time)</span>
             </div>
-            <div class="flex items-center gap-1.5 text-[11px] text-cyan-300">
-              <span data-stock-badge class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-2 py-0.5 rounded-full text-[10px] font-bold font-tabular">${stockReport.summary.totalSisaPasang} Pasang Sisa</span>
-              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+            <div class="flex items-center gap-1 text-[10px] text-cyan-300">
+              <span data-stock-badge class="bg-cyan-500/20 text-cyan-300 border border-cyan-500/30 px-1.5 py-0.5 rounded-full text-[9px] font-bold font-tabular">${stockReport.summary.totalSisaPasang} Pasang Sisa</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             </div>
           </button>
 
           <button 
             type="button" 
             data-action="lihat-opname"
-            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-on-surface font-label-md text-xs font-semibold flex items-center justify-between px-3.5 active:scale-[0.98]"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-9 rounded-lg text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-between px-3 active:scale-[0.98]"
           >
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[19px] text-emerald-400">fact_check</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-emerald-400">fact_check</span>
               <span>Stock Opname (Cek Fisik Sepatu)</span>
             </div>
-            <div class="flex items-center gap-1 text-[11px] text-emerald-400 font-bold">
+            <div class="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
               <span>Buka</span>
-              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
+              <span class="material-symbols-outlined text-[14px]">chevron_right</span>
             </div>
           </button>
 
           <button 
             type="button" 
             data-action="lihat-investor"
-            class="glass-amber glass-btn glass-sheen relative overflow-hidden col-span-2 h-11 rounded-xl text-amber-950 font-label-md text-xs font-bold flex items-center justify-between px-3.5 active:scale-[0.98]"
+            class="glass-amber glass-btn glass-sheen relative overflow-hidden col-span-2 h-9 rounded-lg text-amber-950 font-label-md text-[11px] font-bold flex items-center justify-between px-3 active:scale-[0.98]"
           >
-            <div class="flex items-center gap-2">
-              <span class="material-symbols-outlined text-[19px] text-amber-700">account_balance_wallet</span>
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-amber-700">account_balance_wallet</span>
               <span>Kelola Investor & Modal Usaha</span>
             </div>
-            <div class="flex items-center gap-1 text-[11px] text-amber-800">
+            <div class="flex items-center gap-1 text-[10px] text-amber-800">
               <span class="bg-white/50 text-amber-900 border border-white/60 px-2 py-0.5 rounded-full text-[10px] font-bold">${invSummary.countAktif || 0} Aktif</span>
               <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </div>
@@ -205,17 +205,17 @@ export function renderDashboardPage(store) {
         </section>
 
         <!-- Google Sheets Quick Sync Bar -->
-        <section class="glass-card glass-sheen relative overflow-hidden rounded-xl p-2.5 px-3 flex items-center justify-between">
-          <div class="flex items-center gap-2 min-w-0">
-            <div class="w-7 h-7 rounded-lg bg-emerald-100/70 border border-white/60 text-emerald-800 flex items-center justify-center shrink-0">
-              <span class="material-symbols-outlined text-[17px]">table_chart</span>
+        <section class="glass-card glass-sheen relative overflow-hidden rounded-lg p-2 px-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-1.5 min-w-0">
+            <div class="w-6 h-6 rounded-md bg-emerald-100/70 border border-white/60 text-emerald-800 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[14px]">table_chart</span>
             </div>
             <div class="flex flex-col min-w-0">
-              <div class="flex items-center gap-1.5">
-                <span class="text-xs font-bold text-on-surface truncate">Google Spreadsheet</span>
+              <div class="flex items-center gap-1">
+                <span class="text-[11px] font-bold text-on-surface truncate">Google Spreadsheet</span>
                 ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? '<span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span>' : ''}
               </div>
-              <span class="text-[10px] text-on-surface-variant truncate" id="dash-sheets-sync-status">
+              <span class="text-[9px] text-on-surface-variant truncate" id="dash-sheets-sync-status">
                 ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().lastSync) ? `Sinkron: ${store.getGoogleSheetsConfig().lastSync}` : ((store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? 'Siap disinkronkan' : 'Belum dihubungkan')}
               </span>
             </div>
@@ -223,24 +223,24 @@ export function renderDashboardPage(store) {
           <button 
             type="button" 
             id="dash-btn-quick-sync"
-            class="px-2.5 py-1.5 rounded-lg ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300' : 'bg-surface-container text-on-surface-variant hover:text-on-surface border border-surface-container-high'} text-xs font-bold flex items-center gap-1 active:scale-95 transition-all shrink-0"
+            class="px-2 py-1 rounded-md ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? 'bg-emerald-50 text-emerald-800 hover:bg-emerald-100 border border-emerald-300' : 'bg-surface-container text-on-surface-variant hover:text-on-surface border border-surface-container-high'} text-[11px] font-bold flex items-center gap-1 active:scale-95 transition-all shrink-0"
           >
-            <span class="material-symbols-outlined text-[14px]" id="dash-quick-sync-icon">sync</span>
+            <span class="material-symbols-outlined text-[12px]" id="dash-quick-sync-icon">sync</span>
             <span id="dash-quick-sync-text">${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? 'Sinkron' : 'Hubungkan'}</span>
           </button>
         </section>
 
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
-        <section class="flex flex-col gap-2">
+        <section class="flex flex-col gap-1.5">
           ${lowStockItems.length > 0 ? `
-            <div class="glass-amber glass-sheen relative overflow-hidden rounded-xl p-3 flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-amber-700 text-[20px] shrink-0 mt-0.5">warning</span>
+            <div class="glass-amber glass-sheen relative overflow-hidden rounded-lg p-2.5 flex items-start gap-2">
+              <span class="material-symbols-outlined text-amber-700 text-[18px] shrink-0 mt-0.5">warning</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
-                  <span class="font-label-md text-xs font-bold text-amber-900">Perhatian: Stok Menipis</span>
-                  <span class="font-label-sm text-[10px] bg-white/55 border border-white/60 text-amber-900 px-1.5 py-0.5 rounded font-bold">${lowStockItems.length} Produk</span>
+                  <span class="font-label-md text-[11px] font-bold text-amber-900">Perhatian: Stok Menipis</span>
+                  <span class="font-label-sm text-[9px] bg-white/55 border border-white/60 text-amber-900 px-1 py-0.5 rounded font-bold">${lowStockItems.length} Produk</span>
                 </div>
-                <p class="font-body-sm text-xs text-amber-800 mt-0.5">
+                <p class="font-body-sm text-[11px] text-amber-800 mt-0.5">
                   ${lowStockItems.map((c) => `${c.name} (sisa ${c.stock})`).join(', ')}. Segera agendakan belanja stock!
                 </p>
               </div>
@@ -248,14 +248,14 @@ export function renderDashboardPage(store) {
           ` : ''}
 
           ${(shipSummary.countKemas + shipSummary.countKirim) > 0 ? `
-            <div class="glass-blue glass-sheen relative overflow-hidden rounded-xl p-3 flex items-start gap-2.5">
-              <span class="material-symbols-outlined text-blue-700 text-[20px] shrink-0 mt-0.5">local_shipping</span>
+            <div class="glass-blue glass-sheen relative overflow-hidden rounded-lg p-2.5 flex items-start gap-2">
+              <span class="material-symbols-outlined text-blue-700 text-[18px] shrink-0 mt-0.5">local_shipping</span>
               <div class="flex-1 min-w-0">
                 <div class="flex items-center justify-between">
-                  <span class="font-label-md text-xs font-bold text-blue-900">Paket Dalam Proses</span>
-                  <button type="button" data-nav="pengiriman" class="font-label-sm text-[11px] text-blue-700 font-semibold hover:underline">Kelola</button>
+                  <span class="font-label-md text-[11px] font-bold text-blue-900">Paket Dalam Proses</span>
+                  <button type="button" data-nav="pengiriman" class="font-label-sm text-[10px] text-blue-700 font-semibold hover:underline">Kelola</button>
                 </div>
-                <p class="font-body-sm text-xs text-blue-800 mt-0.5">
+                <p class="font-body-sm text-[11px] text-blue-800 mt-0.5">
                   ${shipSummary.countKemas || 0} paket sedang dikemas, ${shipSummary.countKirim || 0} paket dalam perjalanan.
                 </p>
               </div>
@@ -264,28 +264,28 @@ export function renderDashboardPage(store) {
         </section>
 
         <!-- Riwayat Transaksi Terkini -->
-        <section class="flex flex-col gap-2">
-          <div class="flex items-center justify-between pt-1">
-            <h2 class="font-headline-sm text-base font-bold text-on-surface">Catatan Buku Kas Terkini</h2>
-            <button type="button" data-nav="transaksi" class="font-label-sm text-xs text-on-tertiary-container font-semibold hover:underline">
+        <section class="flex flex-col gap-1.5">
+          <div class="flex items-center justify-between pt-0.5">
+            <h2 class="font-headline-sm text-sm font-bold text-on-surface">Catatan Buku Kas Terkini</h2>
+            <button type="button" data-nav="transaksi" class="font-label-sm text-[11px] text-on-tertiary-container font-semibold hover:underline">
               Lihat Semua
             </button>
           </div>
 
-          <div class="glass-card glass-sheen relative overflow-hidden rounded-2xl divide-y divide-white/50">
+          <div class="glass-card glass-sheen relative overflow-hidden rounded-xl divide-y divide-white/50">
             ${recentTransactions.length === 0 ? `
-              <div class="p-6 text-center text-on-surface-variant text-sm">Belum ada transaksi tercatat.</div>
+              <div class="p-4 text-center text-on-surface-variant text-xs">Belum ada transaksi tercatat.</div>
             ` : recentTransactions.map((trx) => {
               const isMasuk = trx.type === 'masuk';
               return `
-                <div class="glass-row flex items-center justify-between p-3.5 transition-colors">
-                  <div class="flex items-center gap-3 min-w-0">
-                    <div class="w-10 h-10 rounded-xl ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
-                      <span class="material-symbols-outlined text-[20px]">${isMasuk ? 'point_of_sale' : 'shopping_bag'}</span>
+                <div class="glass-row flex items-center justify-between p-2.5 transition-colors">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100/70 text-emerald-800' : 'bg-rose-100/70 text-rose-800'} border border-white/60 flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'point_of_sale' : 'shopping_bag'}</span>
                     </div>
                     <div class="flex flex-col min-w-0">
-                      <span class="font-title-ledger text-sm font-semibold text-on-surface truncate">${trx.title}</span>
-                      <div class="flex items-center gap-1.5 text-on-surface-variant text-[11px] mt-0.5">
+                      <span class="font-title-ledger text-xs font-semibold text-on-surface truncate">${trx.title}</span>
+                      <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
                         <span class="truncate">${trx.category}</span>
                         <span>•</span>
                         <span class="shrink-0">${trx.time}</span>
@@ -294,10 +294,10 @@ export function renderDashboardPage(store) {
                   </div>
 
                   <div class="flex flex-col items-end shrink-0 pl-2">
-                    <span class="font-currency-item text-sm font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
+                    <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
                       ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
                     </span>
-                    <span class="font-label-sm text-[10px] text-on-surface-variant">${trx.paymentMethod || 'Tunai'}</span>
+                    <span class="font-label-sm text-[9px] text-on-surface-variant">${trx.paymentMethod || 'Tunai'}</span>
                   </div>
                 </div>
               `;

@@ -18,52 +18,52 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
         subtitle: 'Daftar Belanja & Stock Sepatu'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3.5">
+      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3">
         <!-- KPI Belanja & Sisa Stock Cards -->
-        <section class="grid grid-cols-2 gap-2.5">
-          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between">
-            <span class="font-label-sm text-xs text-on-surface-variant font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
+        <section class="grid grid-cols-2 gap-2">
+          <div class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col justify-between">
+            <span class="font-label-sm text-[11px] text-on-surface-variant font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px] text-primary">local_shipping</span>
               Total Belanja
             </span>
-            <div class="mt-2">
-              <span id="kpi-total-belanja" class="font-headline-sm text-base font-bold text-primary block font-tabular">
+            <div class="mt-1.5">
+              <span id="kpi-total-belanja" class="font-headline-sm text-sm font-bold text-primary block font-tabular">
                 ${formatRupiah(totalBelanja)}
               </span>
-              <span id="kpi-count-belanja" class="font-body-sm text-[11px] text-on-surface-variant mt-0.5 block">${supplies.length} Transaksi Belanja</span>
+              <span id="kpi-count-belanja" class="font-body-sm text-[10px] text-on-surface-variant mt-0.5 block">${supplies.length} Transaksi Belanja</span>
             </div>
           </div>
 
-          <div class="glass-card glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
-            <span class="font-label-sm text-xs text-emerald-400 font-semibold flex items-center gap-1">
-              <span class="material-symbols-outlined text-[16px] text-emerald-400">inventory_2</span>
+          <div class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col justify-between border-t-2 border-emerald-500">
+            <span class="font-label-sm text-[11px] text-emerald-400 font-semibold flex items-center gap-1">
+              <span class="material-symbols-outlined text-[14px] text-emerald-400">inventory_2</span>
               Sisa Stok Real-Time
             </span>
-            <div class="mt-2">
-              <span id="kpi-total-items" class="font-headline-sm text-base font-bold text-white block font-tabular">
+            <div class="mt-1.5">
+              <span id="kpi-total-items" class="font-headline-sm text-sm font-bold text-white block font-tabular">
                 ${totalSisa} Pasang
               </span>
-              <span class="font-body-sm text-[11px] text-emerald-400/90 mt-0.5 block">Belum Terjual (${totalItems} Masuk)</span>
+              <span class="font-body-sm text-[10px] text-emerald-400/90 mt-0.5 block">Belum Terjual (${totalItems} Masuk)</span>
             </div>
           </div>
         </section>
 
         <!-- Action Buttons: Belanja Baru, Laporan Sisa Stock, Stock Opname -->
-        <div class="grid grid-cols-2 gap-2.5">
+        <div class="grid grid-cols-2 gap-2">
           <button 
             type="button" 
             id="btn-goto-tambah-pasok"
-            class="glass-primary glass-btn glass-sheen h-12 text-primary-btn rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm active:scale-[0.99]"
+            class="glass-primary glass-btn glass-sheen h-10 text-primary-btn rounded-lg flex items-center justify-center gap-1 font-label-md text-[11px] sm:text-xs active:scale-[0.99]"
           >
-            <span class="material-symbols-outlined text-[19px]">add_box</span>
+            <span class="material-symbols-outlined text-[16px]">add_box</span>
             <span class="font-bold">+ Belanja Baru</span>
           </button>
           <button 
             type="button" 
             id="btn-goto-laporan-stock"
-            class="glass-card glass-sheen h-12 border border-emerald-500/50 hover:border-emerald-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs sm:text-sm text-emerald-300 active:scale-[0.99]"
+            class="glass-card glass-sheen h-10 border border-emerald-500/50 hover:border-emerald-500 rounded-lg flex items-center justify-center gap-1 font-label-md text-[11px] sm:text-xs text-emerald-300 active:scale-[0.99]"
           >
-            <span class="material-symbols-outlined text-[19px] text-emerald-400">analytics</span>
+            <span class="material-symbols-outlined text-[16px] text-emerald-400">analytics</span>
             <span class="font-bold">Laporan Sisa Stok</span>
           </button>
         </div>
@@ -71,40 +71,40 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
         <button 
           type="button" 
           id="btn-goto-stock-opname"
-          class="glass-card glass-sheen h-10 border border-neutral-700/60 hover:border-neutral-500 rounded-xl flex items-center justify-center gap-1.5 font-label-md text-xs text-neutral-300 active:scale-[0.99]"
+          class="glass-card glass-sheen h-9 border border-neutral-700/60 hover:border-neutral-500 rounded-lg flex items-center justify-center gap-1 font-label-md text-[11px] text-neutral-300 active:scale-[0.99]"
         >
-          <span class="material-symbols-outlined text-[17px] text-emerald-400">fact_check</span>
+          <span class="material-symbols-outlined text-[14px] text-emerald-400">fact_check</span>
           <span>Stock Opname (Cek Fisik Sepatu)</span>
         </button>
 
         <!-- Search Bar -->
         <div class="relative w-full">
-          <div class="absolute inset-y-0 left-0 pl-3.5 flex items-center pointer-events-none text-on-surface-variant">
-            <span class="material-symbols-outlined text-[20px]">search</span>
+          <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none text-on-surface-variant">
+            <span class="material-symbols-outlined text-[18px]">search</span>
           </div>
           <input 
             type="text" 
             id="pasok-search-input"
             placeholder="Cari barcode, nama sepatu, suplier..." 
-            class="glass-input w-full pl-10 pr-4 py-2.5 text-on-surface font-body-md text-sm rounded-xl focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
+            class="glass-input w-full pl-9 pr-3 py-2 text-on-surface font-body-md text-xs rounded-lg focus:outline-none focus:ring-2 focus:ring-on-tertiary-container transition-all"
           />
         </div>
 
         <!-- Filter Segmented Tabs -->
-        <div class="glass-track p-1 rounded-xl flex items-center gap-1">
-          <button type="button" data-filter="all" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+        <div class="glass-track p-1 rounded-lg flex items-center gap-1">
+          <button type="button" data-filter="all" class="pasok-filter-btn flex-1 py-1 px-1.5 rounded-md ${filterStatus === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-[11px] transition-all text-center">
             Semua
           </button>
-          <button type="button" data-filter="lunas" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'lunas' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+          <button type="button" data-filter="lunas" class="pasok-filter-btn flex-1 py-1 px-1.5 rounded-md ${filterStatus === 'lunas' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-[11px] transition-all text-center">
             Lunas
           </button>
-          <button type="button" data-filter="tempo" class="pasok-filter-btn flex-1 py-1.5 px-2 rounded-lg ${filterStatus === 'tempo' ? 'glass-seg-active text-amber-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center">
+          <button type="button" data-filter="tempo" class="pasok-filter-btn flex-1 py-1 px-1.5 rounded-md ${filterStatus === 'tempo' ? 'glass-seg-active text-amber-800 font-bold' : 'text-on-surface-variant'} font-label-md text-[11px] transition-all text-center">
             Tempo / Bon
           </button>
         </div>
 
         <!-- Invoices/Belanja List Container -->
-        <div id="pasok-list-container" class="flex flex-col gap-3">
+        <div id="pasok-list-container" class="flex flex-col gap-2">
           <!-- Dynamically populated -->
         </div>
       </div>
@@ -207,77 +207,77 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
       const isLunas = supply.status === 'lunas';
       const isOpen = expandedSupplies.has(supply.id);
       return `
-        <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-2.5">
+        <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
           <!-- Top Row: ID Belanja & Status Badge -->
           <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-primary text-[18px]">shopping_bag</span>
-              <span class="font-title-ledger text-sm font-bold text-on-surface">${supply.invoiceNo}</span>
+            <div class="flex items-center gap-1">
+              <span class="material-symbols-outlined text-primary text-[16px]">shopping_bag</span>
+              <span class="font-title-ledger text-xs font-bold text-on-surface">${supply.invoiceNo}</span>
             </div>
-            <span class="font-label-sm text-[10px] px-2 py-0.5 rounded-full font-bold uppercase tracking-wider glass-chip ${isLunas ? 'text-emerald-800' : 'text-amber-800'}">
+            <span class="font-label-sm text-[9px] px-1.5 py-0.5 rounded-full font-bold uppercase tracking-wider glass-chip ${isLunas ? 'text-emerald-800' : 'text-amber-800'}">
               ${isLunas ? 'Lunas' : 'Tempo / Bon'}
             </span>
           </div>
 
           <!-- Supplier & Date -->
-          <div class="flex items-center justify-between text-xs text-on-surface-variant">
-            <span class="font-semibold text-on-surface">${supply.supplierName}</span>
-            <span>${supply.date}</span>
+          <div class="flex items-center justify-between text-[11px] text-on-surface-variant">
+            <span class="font-semibold text-on-surface truncate">${supply.supplierName}</span>
+            <span class="shrink-0 ml-2">${supply.date}</span>
           </div>
 
           <!-- Breakdown Toggle: klik untuk buka/tutup rincian barang nota ini -->
           <button
             type="button"
-            class="pasok-breakdown-btn w-full flex items-center justify-between gap-2 text-xs pt-2 border-t border-white/45 active:scale-[0.99] transition-all"
+            class="pasok-breakdown-btn w-full flex items-center justify-between gap-1.5 text-[10px] pt-1.5 border-t border-white/45 active:scale-[0.99] transition-all"
             data-target="detail-${supply.id}"
             data-supply-id="${supply.id}"
             aria-expanded="${isOpen ? 'true' : 'false'}"
             aria-controls="detail-${supply.id}"
           >
-            <span class="flex items-center gap-1.5 min-w-0">
-              <span class="material-symbols-outlined text-[16px] text-primary">receipt_long</span>
+            <span class="flex items-center gap-1 min-w-0">
+              <span class="material-symbols-outlined text-[14px] text-primary">receipt_long</span>
               <span class="font-bold text-primary">Breakdown</span>
               <span class="text-on-surface-variant truncate">• ${supply.itemsCount || 1} Pasang • ${supply.paymentMethod || 'Tunai'}</span>
             </span>
             <span class="flex items-center gap-1 shrink-0">
               <span class="text-on-surface-variant">Total:</span>
-              <span class="font-currency-item text-base font-bold text-primary font-tabular">${formatRupiah(supply.totalAmount)}</span>
-              <span class="pasok-breakdown-chevron material-symbols-outlined text-[18px] text-on-surface-variant">${isOpen ? 'expand_less' : 'expand_more'}</span>
+              <span class="font-currency-item text-xs font-bold text-primary font-tabular">${formatRupiah(supply.totalAmount)}</span>
+              <span class="pasok-breakdown-chevron material-symbols-outlined text-[14px] text-on-surface-variant">${isOpen ? 'expand_less' : 'expand_more'}</span>
             </span>
           </button>
 
           <!-- Rincian Barang (tersembunyi sampai tombol Breakdown diklik) -->
           ${supply.items && supply.items.length > 0 ? `
-            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2.5 flex flex-col gap-2 text-xs">
+            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} glass-panel rounded-xl p-2 flex flex-col gap-1.5 text-[11px]">
               ${supply.items.map((it) => `
-                <div class="flex items-start gap-2.5">
+                <div class="flex items-start gap-2">
                   ${it.photo ? `
-                    <img src="${it.photo}" alt="Foto Sepatu" class="w-12 h-12 rounded-lg object-cover border border-white/70 shrink-0" />
+                    <img src="${it.photo}" alt="Foto Sepatu" class="w-8 h-8 rounded-md object-cover border border-white/70 shrink-0" />
                   ` : ''}
                   
                   <div class="flex-1 min-w-0">
-                    <div class="flex items-center justify-between">
-                      <span class="font-semibold text-on-surface truncate">${it.qty}x ${it.name}</span>
-                      <span class="font-bold font-tabular text-primary ml-2">${formatRupiah(it.buyPrice * it.qty)}</span>
+                    <div class="flex items-center justify-between gap-2">
+                      <span class="font-semibold text-on-surface truncate text-[11px]">${it.qty}x ${it.name}</span>
+                      <span class="font-bold font-tabular text-primary ml-2 text-[11px] shrink-0">${formatRupiah(it.buyPrice * it.qty)}</span>
                     </div>
 
-                    <div class="flex items-center gap-1.5 mt-1 flex-wrap">
+                    <div class="flex items-center gap-1 mt-0.5 flex-wrap">
                       ${it.barcode ? `
-                        <span class="inline-flex items-center gap-0.5 px-1.5 py-0.2 rounded glass-chip text-on-surface text-[10px] font-mono font-bold">
-                          <span class="material-symbols-outlined text-[12px] text-primary">qr_code</span>
+                        <span class="inline-flex items-center gap-0.5 px-1 py-0.2 rounded glass-chip text-on-surface text-[9px] font-mono font-bold">
+                          <span class="material-symbols-outlined text-[10px] text-primary">qr_code</span>
                           <span>${it.barcode}</span>
                         </span>
                       ` : ''}
 
                       ${it.kondisi ? `
-                        <span class="inline-flex items-center px-1.5 py-0.2 rounded text-[10px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
+                        <span class="inline-flex items-center px-1 py-0.2 rounded text-[9px] font-bold glass-chip ${it.kondisi === 'Minus' ? 'text-amber-900' : 'text-emerald-900'}">
                           ${it.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
                         </span>
                       ` : ''}
                     </div>
 
                     ${it.catatanMinus ? `
-                      <span class="text-[10px] text-amber-800 italic mt-0.5 block truncate">
+                      <span class="text-[9px] text-amber-800 italic mt-0.5 block truncate">
                         Catatan: ${it.catatanMinus}
                       </span>
                     ` : ''}
@@ -286,28 +286,28 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
               `).join('')}
             </div>
           ` : `
-            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} text-xs text-on-surface-variant italic px-1 pt-1">Tidak ada rincian barang pada nota ini.</div>
+            <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} text-[11px] text-on-surface-variant italic px-1 pt-1">Tidak ada rincian barang pada nota ini.</div>
           `}
 
           <!-- Action Buttons: + Tambah Barang, Edit & Hapus -->
-          <div class="flex items-center justify-end gap-2 pt-1 border-t border-white/45 flex-wrap">
+          <div class="flex items-center justify-end gap-1 pt-1 border-t border-white/45 flex-wrap">
               <button 
                 type="button" 
                 data-action="add-item-supply" 
                 data-id="${supply.id}" 
-                class="glass-primary glass-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-primary-btn text-xs font-semibold"
+                class="glass-primary glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary-btn text-[10px] font-semibold"
                 title="Tambah barang belanja ke suplier ini"
               >
-                <span class="material-symbols-outlined text-[15px]">add_circle</span>
+                <span class="material-symbols-outlined text-[12px]">add_circle</span>
                 <span>+ Barang</span>
               </button>
               <button 
                 type="button" 
                 data-action="edit-supply" 
                 data-id="${supply.id}" 
-                class="glass-chip-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-primary text-xs font-semibold"
+                class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
               >
-                <span class="material-symbols-outlined text-[15px]">edit</span>
+                <span class="material-symbols-outlined text-[12px]">edit</span>
                 <span>Edit</span>
               </button>
               <button 
@@ -315,9 +315,9 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 data-action="delete-supply" 
                 data-id="${supply.id}" 
                 data-no="${supply.invoiceNo}" 
-                class="glass-rose glass-btn inline-flex items-center gap-1 px-3 py-1.5 rounded-lg text-rose-800 text-xs font-semibold"
+                class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-800 text-[10px] font-semibold"
               >
-                <span class="material-symbols-outlined text-[15px]">delete</span>
+                <span class="material-symbols-outlined text-[12px]">delete</span>
                 <span>Hapus</span>
               </button>
             </div>
