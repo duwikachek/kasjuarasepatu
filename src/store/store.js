@@ -726,6 +726,11 @@ class Store {
     // Hapus supply
     this.state.supplies = this.state.supplies.filter((s) => s.id !== id);
 
+    // Hapus transaksi yang terkait dengan supply (berdasarkan nota)
+    if (supplyToDelete && supplyToDelete.invoiceNo) {
+      this.state.transactions = (this.state.transactions || []).filter((t) => t.nota !== supplyToDelete.invoiceNo);
+    }
+
     // Hapus produk dari katalog yang tidak lagi direferensikan oleh supply manapun
     if (deletedBarcodes.size > 0) {
       const remainingBarcodes = new Set();
