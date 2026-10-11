@@ -149,6 +149,18 @@ export function renderLaporanPage(store, period = 'bulan') {
   const totalBelanja = supplies.reduce((s, item) => s + (Number(item.totalAmount) || 0), 0);
   const totalItems = supplies.reduce((s, item) => s + (Number(item.itemsCount) || 0), 0);
 
+  // Get unique faktur list from supplies (faktur belanja)
+  const fakturList = supplies
+    .filter(s => s.supplierName && s.supplierName.trim())
+    .map(s => ({
+      faktur: s.invoiceNo || '',
+      supplier: s.supplierName || '',
+      id: s.id
+    }))
+    .filter((v, i, a) => a.findIndex(x => x.faktur === v.faktur) === i)
+    .sort((a, b) => b.faktur.localeCompare(a.faktur));
+  const allFakturOption = { faktur: 'Semua Faktur', supplier: '', id: 'all' };
+
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
       ${renderHeader({
@@ -231,6 +243,14 @@ export function renderLaporanPage(store, period = 'bulan') {
               <span class="material-symbols-outlined text-[14px]">check_circle</span>
               Tampilkan Laporan Bulan Ini
             </button>
+          </div>
+
+          <!-- Faktur Filter Dropdown -->
+          <div class="flex items-center gap-1.5">
+            <select id="select-faktur-filter" class="glass-input flex-1 px-3 py-1.5 rounded-lg text-on-surface font-label-md text-xs focus:outline-none focus:ring-2 focus:ring-primary/30 transition-all">
+              <option value="all">Semua Faktur</option>
+              ${fakturList.map(f => `<option value="${f.faktur}">${f.faktur} - ${f.supplier}</option>`).join('')}
+            </select>
           </div>
         </div>
 
@@ -512,6 +532,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
   let currentPeriod = initialPeriod;
   let selectedExpenseCategory = 'all';
+  let currentFaktur = 'all';
   let isSepatuListExpanded = false;
   let isSisaStockExpanded = false;
   let customDate = new Date().toISOString().split('T')[0];
@@ -595,7 +616,13 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     }
 
     // 2. FITUR 1: Laporan Sepatu Laku
-    const soldShoes = extractSoldShoesList(periodTrxs);
+    let soldShoes = extractSoldShoesList(periodTrxs);
+    
+    // Filter berdasarkan faktur jika dipilih
+    if (currentFaktur !== 'all') {
+      soldShoes = soldShoes.filter(shoe => shoe.nota === currentFaktur);
+    }
+    
     const totalShoesCount = soldShoes.length;
     const totalShoesOmset = soldShoes.reduce((sum, it) => sum + (Number(it.price) || 0), 0);
     const avgShoesPrice = totalShoesCount > 0 ? Math.round(totalShoesOmset / totalShoesCount) : 0;
@@ -659,7 +686,53 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
     // 3. FITUR 2: Laporan Total Sisa Stock Yang Belum Terjual (Real Time)
     const stockReport = store.getRealtimeStockReport();
-    const stockSummary = stockReport.summary;
+    
+    // Filter berdasarkan faktur jika dipilih
+    let filteredUnsoldItems = stockReport.unsoldItems;
+    if (currentFaktur !== 'all') {
+      filteredUnsoldItems = stockReport.unsoldItems.filter(item => item.lastInvoiceNo === currentFaktur);
+    }
+    
+    // Hitung ulang summary berdasarkan filter
+    let filteredTotalSisaPasang = 0;
+    let filteredTotalNilaiModal = 0;
+    let filteredTotalPotensiOmset = 0;
+    let filteredCountKondisiBagus = 0;
+    let filteredCountKondisiMinus = 0;
+    let filteredCountStokMenipis = 0;
+    
+    filteredUnsoldItems.forEach(item => {
+      if (item.sisaStock > 0) {
+        filteredTotalSisaPasang += item.sisaStock;
+        filteredTotalNilaiModal += item.totalNilaiBeli;
+        filteredTotalPotensiOmset += item.totalNilaiJual;
+        
+        if (item.kondisi === 'Minus') {
+          filteredCountKondisiMinus += item.sisaStock;
+        } else {
+          filteredCountKondisiBagus += item.sisaStock;
+        }
+        
+        if (item.sisaStock <= 2) {
+          filteredCountStokMenipis += 1;
+        }
+      }
+    });
+    
+    const filteredPotensiLaba = filteredTotalPotensiOmset - filteredTotalNilaiModal;
+    const filteredMarginPercent = filteredTotalPotensiOmset > 0 ? Math.round((filteredPotensiLaba / filteredTotalPotensiOmset) * 100) : 0;
+    
+    const stockSummary = {
+      totalSisaPasang: filteredTotalSisaPasang,
+      totalVarianSisa: filteredUnsoldItems.length,
+      totalNilaiAsetModal: filteredTotalNilaiModal,
+      totalPotensiOmset: filteredTotalPotensiOmset,
+      totalPotensiLaba: filteredPotensiLaba,
+      avgMarginPercent: filteredMarginPercent,
+      countKondisiBagus: filteredCountKondisiBagus,
+      countKondisiMinus: filteredCountKondisiMinus,
+      countStokMenipis: filteredCountStokMenipis
+    };
 
     const elSisaPasang = g('stat-sisa-total-pasang');
     if (elSisaPasang) elSisaPasang.textContent = stockSummary.totalSisaPasang;
@@ -697,14 +770,14 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
     const containerSisaList = g('container-daftar-sisa-stock');
     if (containerSisaList) {
-      if (stockReport.unsoldItems.length === 0) {
+      if (filteredUnsoldItems.length === 0) {
         containerSisaList.innerHTML = `
           <div class="py-4 text-center text-xs text-on-surface-variant glass-panel rounded-xl">
             Tidak ada sisa stock sepatu (seluruh stok telah terjual).
           </div>
         `;
       } else {
-        containerSisaList.innerHTML = stockReport.unsoldItems
+        containerSisaList.innerHTML = filteredUnsoldItems
           .map(
             (item, idx) => `
           <div class="glass-panel rounded-lg p-2 flex items-center justify-between gap-2">
@@ -792,6 +865,15 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
           selectedExpenseCategory = btn.getAttribute('data-cat');
           updatePage();
         });
+      });
+    }
+
+    // Bind faktur filter select change
+    const selectFaktur = g('select-faktur-filter');
+    if (selectFaktur) {
+      selectFaktur.addEventListener('change', () => {
+        currentFaktur = selectFaktur.value;
+        updatePage();
       });
     }
 
