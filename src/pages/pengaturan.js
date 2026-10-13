@@ -163,13 +163,13 @@ export function renderPengaturanPage(store, isAdmin = true) {
             <h3 class="font-title-ledger text-xs font-bold text-on-surface">Keamanan & Akses Kasir</h3>
           </div>
 
-          <div class="flex flex-col gap-2 divide-y divide-white/45">
+          <div class="flex flex-col gap-2 ${isAdmin ? 'divide-y divide-white/45' : ''}">
+            ${isAdmin ? `
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
                 <span class="font-label-md text-xs font-semibold text-on-surface">PIN Admin (Full Akses)</span>
                 <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pin || '123456'}</strong></span>
               </div>
-              ${isAdmin ? `
               <button 
                 type="button" 
                 id="btn-change-pin"
@@ -177,7 +177,6 @@ export function renderPengaturanPage(store, isAdmin = true) {
               >
                 Ubah PIN Admin
               </button>
-              ` : `<span class="text-[10px] text-neutral-400 font-semibold italic">Hanya Admin</span>`}
             </div>
 
             <div class="flex items-center justify-between py-2">
@@ -185,7 +184,6 @@ export function renderPengaturanPage(store, isAdmin = true) {
                 <span class="font-label-md text-xs font-semibold text-on-surface">PIN Atasan (Lihat Saja / Read-Only)</span>
                 <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pinAtasan || '888888'}</strong></span>
               </div>
-              ${isAdmin ? `
               <button 
                 type="button" 
                 id="btn-change-pin-atasan"
@@ -193,8 +191,8 @@ export function renderPengaturanPage(store, isAdmin = true) {
               >
                 Ubah PIN Atasan
               </button>
-              ` : `<span class="text-[10px] text-neutral-400 font-semibold italic">Hanya Admin</span>`}
             </div>
+            ` : ''}
 
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
