@@ -230,17 +230,17 @@ async function ensureSheetsExist(token, spreadsheetId, requiredSheetNames) {
 }
 
 /**
- * Applies executive dashboard styling, column widths, currency formats,
- * and embeds interactive charts (Donut & Column) on the Dashboard sheet.
+ * Applies executive interactive dashboard styling, column widths, currency formats,
+ * filter dropdowns (Data Validation), and embeds 3 real interactive Google Sheets charts.
  */
-async function applyDashboardDesignAndCharts(token, spreadsheetId) {
+async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
   try {
     const metaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
       headers: { Authorization: `Bearer ${token}` }
     });
     if (!metaRes.ok) return;
-    const meta = await metaRes.json();
-    const dashSheet = meta.sheets?.find((s) => s.properties?.title === 'Dashboard');
+    const sheetData = await metaRes.json();
+    const dashSheet = sheetData.sheets?.find((s) => s.properties?.title === 'Dashboard');
     if (!dashSheet) return;
     const dashSheetId = dashSheet.properties?.sheetId ?? 0;
 
@@ -259,17 +259,17 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
 
     // 2. Set optimal column widths
     const colWidths = [
-      { col: 0, size: 310 }, // Col A (Titles & labels)
-      { col: 1, size: 160 }, // Col B (Values / Rp)
-      { col: 2, size: 170 }, // Col C (Formulas / Percent)
-      { col: 3, size: 280 }, // Col D (Notes / Status)
+      { col: 0, size: 320 }, // Col A (Titles & labels)
+      { col: 1, size: 170 }, // Col B (Values / Rp / Filter)
+      { col: 2, size: 160 }, // Col C (Labels / Psg / Status)
+      { col: 3, size: 280 }, // Col D (Filter / Notes)
       { col: 4, size: 30 },  // Col E (Spacer)
-      { col: 5, size: 80 },  // Col F
-      { col: 6, size: 80 },  // Col G
-      { col: 7, size: 80 },  // Col H
-      { col: 8, size: 80 },  // Col I
-      { col: 9, size: 80 },  // Col J
-      { col: 10, size: 80 }  // Col K
+      { col: 5, size: 90 },  // Col F (Chart area)
+      { col: 6, size: 90 },  // Col G
+      { col: 7, size: 90 },  // Col H
+      { col: 8, size: 90 },  // Col I
+      { col: 9, size: 90 },  // Col J
+      { col: 10, size: 90 }  // Col K
     ];
 
     colWidths.forEach(({ col, size }) => {
@@ -288,9 +288,9 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
         range: { sheetId: dashSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 4 },
         cell: {
           userEnteredFormat: {
-            backgroundColor: { red: 0.0588, green: 0.0902, blue: 0.1647 }, // Deep Dark Navy #0F172A
+            backgroundColor: { red: 0.0588, green: 0.0902, blue: 0.1647 }, // #0F172A
             textFormat: {
-              foregroundColor: { red: 0.2196, green: 0.7412, blue: 0.9725 }, // Bright Sky Blue #38BDF8
+              foregroundColor: { red: 0.2196, green: 0.7412, blue: 0.9725 }, // #38BDF8
               fontSize: 12,
               bold: true
             }
@@ -306,7 +306,7 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
         range: { sheetId: dashSheetId, startRowIndex: 1, endRowIndex: 3, startColumnIndex: 0, endColumnIndex: 4 },
         cell: {
           userEnteredFormat: {
-            backgroundColor: { red: 0.1176, green: 0.1608, blue: 0.2314 }, // Slate #1E293B
+            backgroundColor: { red: 0.1176, green: 0.1608, blue: 0.2314 }, // #1E293B
             textFormat: {
               foregroundColor: { red: 0.8863, green: 0.9176, blue: 0.9529 }, // #E2E8F0
               fontSize: 10,
@@ -318,15 +318,27 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
       }
     });
 
-    // 5. Styling: Section Headers (Rows 5, 12, 16, 23, 28, 33 -> 0-indexed: 4, 11, 15, 22, 27, 32)
-    const sectionRowIndexes = [4, 11, 15, 22, 27, 32];
+    // 5. Section Headers Styling
+    const sectionRowIndexes = [
+      4,  // [1] Filter Interaktif
+      9,  // [2] Keuangan & Arus Kas
+      16, // [3] Sepatu Laku
+      22, // [4] Sisa Stock
+      29, // [5] Rekap Pengadaan
+      35, // [6] Komposisi Stok
+      39  // [7] Pengeluaran per Kategori
+    ];
+    if (meta.supHeaderRowIndex) {
+      sectionRowIndexes.push(meta.supHeaderRowIndex);
+    }
+
     sectionRowIndexes.forEach((rIdx) => {
       requests.push({
         repeatCell: {
           range: { sheetId: dashSheetId, startRowIndex: rIdx, endRowIndex: rIdx + 1, startColumnIndex: 0, endColumnIndex: 4 },
           cell: {
             userEnteredFormat: {
-              backgroundColor: { red: 0.0588, green: 0.2314, blue: 0.3804 }, // Executive Navy #0F3B61
+              backgroundColor: { red: 0.0588, green: 0.2314, blue: 0.3804 }, // #0F3B61
               textFormat: {
                 foregroundColor: { red: 1.0, green: 1.0, blue: 1.0 },
                 fontSize: 10,
@@ -339,15 +351,33 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
       });
     });
 
-    // 6. Styling: Highlight Card Total Saldo Kas (Row 6 -> index 5)
+    // 6. Highlight Filter Control Cells (Row 5 & 6)
     requests.push({
       repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 0, endColumnIndex: 4 },
+        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 7, startColumnIndex: 0, endColumnIndex: 4 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.082, green: 0.133, blue: 0.212 },
+            textFormat: {
+              foregroundColor: { red: 0.85, green: 0.92, blue: 1.0 },
+              fontSize: 10
+            }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+
+    // 7. Highlight Cards:
+    // Saldo Kas Toko (index 13 / Row 14) -> Emerald
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 13, endRowIndex: 14, startColumnIndex: 0, endColumnIndex: 4 },
         cell: {
           userEnteredFormat: {
             backgroundColor: { red: 0.0235, green: 0.3059, blue: 0.2314 }, // Emerald #064E3B
             textFormat: {
-              foregroundColor: { red: 0.6549, green: 0.9529, blue: 0.8157 }, // Mint Glow
+              foregroundColor: { red: 0.6549, green: 0.9529, blue: 0.8157 },
               fontSize: 11,
               bold: true
             }
@@ -357,14 +387,74 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
       }
     });
 
-    // 7. Currency Number Formatting for Column B (Rp #,##0)
+    // Arus Kas Bersih (index 12 / Row 13) -> Dark Teal
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 12, endRowIndex: 13, startColumnIndex: 0, endColumnIndex: 4 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.051, green: 0.22, blue: 0.22 },
+            textFormat: {
+              foregroundColor: { red: 0.404, green: 0.91, blue: 0.976 },
+              fontSize: 10,
+              bold: true
+            }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+
+    // Total Omset Sepatu (index 18 / Row 19) -> Emerald
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 18, endRowIndex: 19, startColumnIndex: 0, endColumnIndex: 4 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.0235, green: 0.3059, blue: 0.2314 },
+            textFormat: {
+              foregroundColor: { red: 0.6549, green: 0.9529, blue: 0.8157 },
+              fontSize: 10,
+              bold: true
+            }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+
+    // Nilai Modal Aset Sisa (index 24 / Row 25) -> Soft Sky
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 24, endRowIndex: 25, startColumnIndex: 0, endColumnIndex: 4 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.047, green: 0.29, blue: 0.43 },
+            textFormat: {
+              foregroundColor: { red: 0.73, green: 0.90, blue: 0.99 },
+              fontSize: 10,
+              bold: true
+            }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+
+    // 8. Currency Number Formatting for Column B (Rp #,##0)
     const currencyRanges = [
-      { start: 5, end: 10 },  // Rows 6-10 (KPI nominals)
-      { start: 12, end: 14 }, // Rows 13-14 (Chart Arus Kas data)
-      { start: 23, end: 26 }, // Rows 24-26 (Laci & Bank)
-      { start: 30, end: 31 }, // Row 31 (Total Biaya Belanja)
-      { start: 33, end: 39 }  // Rows 34-39 (Recent sales amounts)
+      { start: 10, end: 15 }, // Arus kas & modal awal
+      { start: 18, end: 20 }, // Omset & avg harga
+      { start: 24, end: 25 }, // Nilai Modal aset sisa
+      { start: 30, end: 31 }  // Total belanja pengadaan
     ];
+
+    if (meta.catStartRowIndex && meta.catRowCount) {
+      currencyRanges.push({ start: meta.catStartRowIndex, end: meta.catStartRowIndex + meta.catRowCount + 1 });
+    }
+    if (meta.supStartRowIndex && meta.supRowCount) {
+      currencyRanges.push({ start: meta.supStartRowIndex, end: meta.supStartRowIndex + meta.supRowCount + 1 });
+    }
 
     currencyRanges.forEach(({ start, end }) => {
       requests.push({
@@ -383,59 +473,59 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
       });
     });
 
-    // 8. Add Chart 1: Donut Chart for Cash Allocation (Laci vs Bank)
-    requests.push({
-      addChart: {
-        chart: {
-          spec: {
-            title: 'Alokasi Kas Toko (Laci vs Bank)',
-            pieChart: {
-              legendPosition: 'RIGHT_LEGEND',
-              pieHole: 0.45,
-              domain: {
-                sourceRange: {
-                  sources: [
-                    {
-                      sheetId: dashSheetId,
-                      startRowIndex: 23,
-                      endRowIndex: 25,
-                      startColumnIndex: 0,
-                      endColumnIndex: 1
-                    }
-                  ]
-                }
-              },
-              series: {
-                sourceRange: {
-                  sources: [
-                    {
-                      sheetId: dashSheetId,
-                      startRowIndex: 23,
-                      endRowIndex: 25,
-                      startColumnIndex: 1,
-                      endColumnIndex: 2
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          position: {
-            overlayPosition: {
-              anchorCell: {
-                sheetId: dashSheetId,
-                rowIndex: 4,
-                columnIndex: 5
-              },
-              widthPixels: 460,
-              heightPixels: 260
-            }
+    // 9. Data Validation Dropdowns for Interactive Filter Cells
+    if (meta.uniqueDates && meta.uniqueDates.length > 0) {
+      const dateList = ['SEMUA TANGGAL', 'HARI INI', ...meta.uniqueDates.slice(0, 20)];
+      requests.push({
+        setDataValidation: {
+          range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: dateList.map((v) => ({ userEnteredValue: v }))
+            },
+            showCustomUi: true,
+            strict: false
           }
         }
-      }
-    });
+      });
+    }
 
-    // 9. Add Chart 2: Column Chart for Cash In vs Cash Out
+    if (meta.supplierNames && meta.supplierNames.length > 0) {
+      const supList = ['SEMUA SUPLIER', ...meta.supplierNames.slice(0, 25)];
+      requests.push({
+        setDataValidation: {
+          range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 3, endColumnIndex: 4 },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: supList.map((v) => ({ userEnteredValue: v }))
+            },
+            showCustomUi: true,
+            strict: false
+          }
+        }
+      });
+    }
+
+    if (meta.invoiceNos && meta.invoiceNos.length > 0) {
+      const invList = ['SEMUA FAKTUR', ...meta.invoiceNos.slice(0, 25)];
+      requests.push({
+        setDataValidation: {
+          range: { sheetId: dashSheetId, startRowIndex: 6, endRowIndex: 7, startColumnIndex: 1, endColumnIndex: 2 },
+          rule: {
+            condition: {
+              type: 'ONE_OF_LIST',
+              values: invList.map((v) => ({ userEnteredValue: v }))
+            },
+            showCustomUi: true,
+            strict: false
+          }
+        }
+      });
+    }
+
+    // 10. Add Chart 1: Perbandingan Arus Kas (Masuk vs Keluar) - Column Chart
     requests.push({
       addChart: {
         chart: {
@@ -451,8 +541,8 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
                       sources: [
                         {
                           sheetId: dashSheetId,
-                          startRowIndex: 12,
-                          endRowIndex: 14,
+                          startRowIndex: 10,
+                          endRowIndex: 12,
                           startColumnIndex: 0,
                           endColumnIndex: 1
                         }
@@ -468,8 +558,8 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
                       sources: [
                         {
                           sheetId: dashSheetId,
-                          startRowIndex: 12,
-                          endRowIndex: 14,
+                          startRowIndex: 10,
+                          endRowIndex: 12,
                           startColumnIndex: 1,
                           endColumnIndex: 2
                         }
@@ -485,10 +575,10 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
             overlayPosition: {
               anchorCell: {
                 sheetId: dashSheetId,
-                rowIndex: 16,
+                rowIndex: 4,
                 columnIndex: 5
               },
-              widthPixels: 460,
+              widthPixels: 480,
               heightPixels: 260
             }
           }
@@ -496,7 +586,113 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId) {
       }
     });
 
-    // Send batchUpdate for Dashboard design & charts
+    // 11. Add Chart 2: Komposisi Stok Sepatu (Terjual vs Sisa) - Donut Chart
+    requests.push({
+      addChart: {
+        chart: {
+          spec: {
+            title: 'Komposisi Stok Sepatu (Terjual vs Sisa)',
+            pieChart: {
+              legendPosition: 'RIGHT_LEGEND',
+              pieHole: 0.45,
+              domain: {
+                sourceRange: {
+                  sources: [
+                    {
+                      sheetId: dashSheetId,
+                      startRowIndex: 36,
+                      endRowIndex: 38,
+                      startColumnIndex: 0,
+                      endColumnIndex: 1
+                    }
+                  ]
+                }
+              },
+              series: {
+                sourceRange: {
+                  sources: [
+                    {
+                      sheetId: dashSheetId,
+                      startRowIndex: 36,
+                      endRowIndex: 38,
+                      startColumnIndex: 1,
+                      endColumnIndex: 2
+                    }
+                  ]
+                }
+              }
+            }
+          },
+          position: {
+            overlayPosition: {
+              anchorCell: {
+                sheetId: dashSheetId,
+                rowIndex: 17,
+                columnIndex: 5
+              },
+              widthPixels: 480,
+              heightPixels: 260
+            }
+          }
+        }
+      }
+    });
+
+    // 12. Add Chart 3: Proporsi Pengeluaran per Kategori - Donut Chart
+    if (meta.catStartRowIndex && meta.catRowCount > 0) {
+      requests.push({
+        addChart: {
+          chart: {
+            spec: {
+              title: 'Proporsi Pengeluaran Kas per Kategori',
+              pieChart: {
+                legendPosition: 'RIGHT_LEGEND',
+                pieHole: 0.45,
+                domain: {
+                  sourceRange: {
+                    sources: [
+                      {
+                        sheetId: dashSheetId,
+                        startRowIndex: meta.catStartRowIndex,
+                        endRowIndex: meta.catStartRowIndex + meta.catRowCount,
+                        startColumnIndex: 0,
+                        endColumnIndex: 1
+                      }
+                    ]
+                  }
+                },
+                series: {
+                  sourceRange: {
+                    sources: [
+                      {
+                        sheetId: dashSheetId,
+                        startRowIndex: meta.catStartRowIndex,
+                        endRowIndex: meta.catStartRowIndex + meta.catRowCount,
+                        startColumnIndex: 1,
+                        endColumnIndex: 2
+                      }
+                    ]
+                  }
+                }
+              }
+            },
+            position: {
+              overlayPosition: {
+                anchorCell: {
+                  sheetId: dashSheetId,
+                  rowIndex: 30,
+                  columnIndex: 5
+                },
+                widthPixels: 480,
+                heightPixels: 280
+              }
+            }
+          }
+        }
+      });
+    }
+
+    // Send batchUpdate for Dashboard design, data validations & charts
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
       method: 'POST',
       headers: {
@@ -598,67 +794,184 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
     const nowStr = new Date().toLocaleString('id-ID', { dateStyle: 'full', timeStyle: 'medium' });
 
-    // 0. Data Sheet: Dashboard Interaktif Utama (Pure Numeric Data in Column B & Executive Visuals)
-    const recentSales = trxMasukList.slice(-5).reverse();
+    // 0. Data Sheet: Dashboard Interaktif Utama (Real-Time KPI, Filter Controls, & Charts)
+    const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: {} };
+    const stockSummary = stockReport.summary || {};
+
+    // Hitung Sepatu Laku & Omset Aktual
+    let totalPasangLaku = 0;
+    let totalOmsetSepatu = 0;
+    let countTrxSepatu = 0;
+
+    trxMasukList.forEach((t) => {
+      const isInvestor = t.category === 'Dana Investor' || t.category === 'Investasi Modal';
+      if (isInvestor) return;
+
+      const amt = Number(t.amount) || 0;
+      totalOmsetSepatu += amt;
+      countTrxSepatu += 1;
+
+      if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+        totalPasangLaku += t.items.length;
+      } else {
+        totalPasangLaku += Number(t.itemCount) || 1;
+      }
+    });
+
+    const avgHargaJual = totalPasangLaku > 0 ? Math.round(totalOmsetSepatu / totalPasangLaku) : 0;
+
+    // Hitung Pengadaan dari Suplier
     const totalBelanjaBiaya = supplies.reduce((sum, s) => sum + (Number(s.totalAmount) || 0), 0);
-    const totalPasangMasuk = supplies.reduce((sum, s) => sum + (Number(s.itemsCount) || 1), 0);
-    const pctLaci = currentBalance > 0 ? `${Math.round((currentLaci / currentBalance) * 100)}%` : '0%';
-    const pctBank = currentBalance > 0 ? `${Math.round((currentBank / currentBalance) * 100)}%` : '0%';
+    const totalPasangMasuk = supplies.reduce((sum, s) => {
+      if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+        return sum + s.items.reduce((sub, it) => sub + (Number(it.qty) || 1), 0);
+      }
+      return sum + (Number(s.itemsCount) || 1);
+    }, 0);
+
+    // Hitung Stok Real-Time (Aktual - tanpa asumsi)
+    const totalTerjualAktual = Number(stockSummary.totalTerjualSemua) || Number(totalPasangLaku) || 0;
+    const totalSisaAktual = Number(stockSummary.totalSisaPasang) || 0;
+    const totalMasukSemua = Number(stockSummary.totalMasukSemua) || (totalTerjualAktual + totalSisaAktual) || 1;
+    const pctTerjual = `${Math.min(100, Math.round((totalTerjualAktual / totalMasukSemua) * 100))}%`;
+    const pctSisa = `${Math.min(100, Math.round((totalSisaAktual / totalMasukSemua) * 100))}%`;
+
+    // Pengeluaran Kas per Kategori
+    const categoryMap = {};
+    trxKeluarList.forEach((t) => {
+      const cat = (t.category || 'Biaya Operasional').trim();
+      const amt = Number(t.amount) || 0;
+      if (!categoryMap[cat]) {
+        categoryMap[cat] = { total: 0, count: 0 };
+      }
+      categoryMap[cat].total += amt;
+      categoryMap[cat].count += 1;
+    });
+
+    let sortedCategories = Object.keys(categoryMap).map((cat) => ({
+      name: cat,
+      total: categoryMap[cat].total,
+      count: categoryMap[cat].count,
+      pct: totalKeluar > 0 ? `${((categoryMap[cat].total / totalKeluar) * 100).toFixed(1)}%` : '0%'
+    })).sort((a, b) => b.total - a.total);
+
+    if (sortedCategories.length === 0) {
+      sortedCategories = [{ name: 'Biaya Operasional', total: 0, count: 0, pct: '0%' }];
+    }
+
+    // Rekap per Suplier
+    const supplierMap = {};
+    supplies.forEach((s) => {
+      const sup = (s.supplierName || 'Suplier Umum').trim();
+      const amt = Number(s.totalAmount) || 0;
+      let count = 0;
+      if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+        count = s.items.reduce((sub, it) => sub + (Number(it.qty) || 1), 0);
+      } else {
+        count = Number(s.itemsCount) || 1;
+      }
+
+      if (!supplierMap[sup]) {
+        supplierMap[sup] = { totalBiaya: 0, totalPasang: 0, fakturCount: 0 };
+      }
+      supplierMap[sup].totalBiaya += amt;
+      supplierMap[sup].totalPasang += count;
+      supplierMap[sup].fakturCount += 1;
+    });
+
+    let sortedSuppliers = Object.keys(supplierMap).map((sup) => ({
+      name: sup,
+      totalBiaya: supplierMap[sup].totalBiaya,
+      totalPasang: supplierMap[sup].totalPasang,
+      fakturCount: supplierMap[sup].fakturCount
+    })).sort((a, b) => b.totalBiaya - a.totalBiaya);
+
+    if (sortedSuppliers.length === 0) {
+      sortedSuppliers = [{ name: 'Suplier Umum', totalBiaya: 0, totalPasang: 0, fakturCount: 0 }];
+    }
+
+    // Unique dates & invoices for interactive filter dropdowns
+    const dateSet = new Set();
+    transactions.forEach((t) => { if (t.date) dateSet.add(t.date); });
+    supplies.forEach((s) => { if (s.date) dateSet.add(s.date); });
+    const uniqueDates = [...dateSet].sort().reverse();
+    const invoiceNos = supplies.map((s) => s.invoiceNo || s.id).filter(Boolean);
 
     const dashboardRows = [
-      ['KAS JUARA SEPATU — EXECUTIVE MANAGEMENT DASHBOARD', '', '', ''],
+      ['KAS JUARA SEPATU — DASHBOARD INTERAKTIF & REKAP BISNIS', '', '', ''],
       ['Nama Toko:', shop.name || 'Kas Juara Sepatu', 'Status Sistem:', 'ONLINE & REAL-TIME'],
       ['Pemilik:', shop.owner || 'Pak Hendra', 'Sinkron Terakhir:', nowStr],
       ['', '', '', ''],
 
-      ['[1] KARTU INDIKATOR KEUANGAN UTAMA (EXECUTIVE KPI)', 'NOMINAL (RP)', 'STATUS ARUS KAS', 'KETERANGAN'],
-      ['TOTAL SALDO KAS TOKO SAAT INI', Number(currentBalance) || 0, currentBalance >= 0 ? '🟢 Kas Toko Sehat' : '🔴 Defisit Kas', 'Saldo Kas Real-Time (Awal + Masuk - Keluar)'],
-      ['Modal Kas Awal Toko', Number(totalModalAwal) || 0, 'Modal Awal Toko', 'Modal kas saat pembukuan pertama dimulai'],
-      ['Total Pemasukan Kas (Penjualan)', Number(totalMasuk) || 0, `${trxMasukList.length} Transaksi Penjualan`, 'Akumulasi seluruh kas masuk penjualan'],
-      ['Total Pengeluaran Kas (Belanja & Biaya)', Number(totalKeluar) || 0, `${trxKeluarList.length} Transaksi Biaya`, 'Akumulasi belanja stok dan biaya operasional'],
-      ['Arus Kas Bersih (Net Cash Flow)', Number(totalMasuk - totalKeluar) || 0, totalMasuk >= totalKeluar ? '🟢 SURPLUS' : '🔴 DEFISIT', 'Pemasukan dikurangi Pengeluaran'],
+      ['[1] FILTER INTERAKTIF DASHBOARD (PILIH UNTUK MENYARING DATA)', '', '', ''],
+      ['Filter Hari / Periode:', 'SEMUA TANGGAL', 'Filter Suplier:', 'SEMUA SUPLIER'],
+      ['Filter Faktur:', 'SEMUA FAKTUR', 'Status Filter:', 'AKTIF (REAL-TIME)'],
+      ['*Gunakan dropdown di atas untuk memfilter data pada spreadsheet', '', '', ''],
       ['', '', '', ''],
 
-      ['[2] DATA SUMBER GRAFIK ARUS KAS TOKO', 'NOMINAL (RP)', 'KETERANGAN', ''],
-      ['Kas Masuk (Penjualan)', Number(totalMasuk) || 0, 'Total penerimaan uang penjualan', ''],
-      ['Kas Keluar (Belanja & Biaya)', Number(totalKeluar) || 0, 'Total pengeluaran biaya & operasional', ''],
+      ['[2] KEUANGAN & ARUS KAS (CASH FLOW TOKO)', 'NOMINAL (RP)', 'STATUS', 'KETERANGAN'],
+      ['Total Pemasukan Kas (Penjualan)', Number(totalMasuk) || 0, `${trxMasukList.length} Transaksi`, 'Penerimaan uang kas penjualan toko'],
+      ['Total Pengeluaran Kas (Biaya & Belanja)', Number(totalKeluar) || 0, `${trxKeluarList.length} Transaksi`, 'Pengeluaran biaya & operasional toko'],
+      ['Arus Kas Bersih (Net Cash Flow)', Number(totalMasuk - totalKeluar) || 0, totalMasuk >= totalKeluar ? '🟢 SURPLUS' : '🔴 DEFISIT', 'Selisih uang masuk dikurangi uang keluar'],
+      ['Total Saldo Kas Toko Saat Ini', Number(currentBalance) || 0, currentBalance >= 0 ? '🟢 Kas Sehat' : '🔴 Defisit Kas', 'Modal Kas Awal + Total Masuk - Total Keluar'],
+      ['Modal Kas Awal Toko', Number(totalModalAwal) || 0, 'Tampungan & Bank', `Laci: Rp ${initialLaci.toLocaleString('id-ID')}, Bank: Rp ${initialBank.toLocaleString('id-ID')}`],
       ['', '', '', ''],
 
-      ['[3] DATA KONTROL STATUS PENGIRIMAN SEPATU', 'JUMLAH ORDER', 'STATUS SISTEM', 'AKSI OPERASIONAL'],
-      ['Perlu Dikemas', Number(shipSummary.countKemas) || 0, 'Siap Dipacking', 'Segera siapkan sepatu & kardus'],
-      ['Sedang Dikirim', Number(shipSummary.countKirim) || 0, 'Dalam Perjalanan', 'Pantau resi & nomor ekspedisi'],
-      ['Ditahan (Hold)', Number(shipSummary.countHold) || 0, 'Tertunda Sementara', 'Konfirmasi ke pelanggan'],
-      ['Selesai Diterima', Number(shipSummary.countSelesai) || 0, 'Tuntas Diterima', 'Pesanan sukses diterima'],
-      ['Total Seluruh Order Pengiriman', Number(shipments.length) || 0, 'Semua Transaksi', 'Total rekap pesanan penjualan'],
+      ['[3] LAPORAN PENJUALAN SEPATU LAKU (REALISASI AKTUAL)', 'JUMLAH / NOMINAL', 'SATUAN', 'KETERANGAN'],
+      ['Total Pasang Sepatu Laku (Terjual)', Number(totalPasangLaku) || 0, 'Pasang', 'Total pasang fisik sepatu yang telah terjual'],
+      ['Total Omset Penjualan Sepatu', Number(totalOmsetSepatu) || 0, 'Rupiah', 'Total penerimaan dari penjualan sepatu di kasir'],
+      ['Rata-rata Harga Jual Sepatu', Number(avgHargaJual) || 0, 'Rp / Pasang', 'Harga jual rata-rata per pasang sepatu'],
+      ['Total Transaksi Penjualan', Number(countTrxSepatu) || 0, 'Nota Penjualan', 'Jumlah nota transaksi kasir tercatat'],
       ['', '', '', ''],
 
-      ['[4] POSISI PENYIMPANAN UANG KAS FISIK', 'NOMINAL (RP)', 'PERSENTASE', 'KETERANGAN'],
-      ['Kas di Rek Tampungan / Laci Toko', Number(currentLaci) || 0, pctLaci, 'Uang kas fisik siap pakai di toko'],
-      ['Kas di Rekening Bank Toko', Number(currentBank) || 0, pctBank, 'Uang di rekening bank operasional toko'],
-      ['Total Kedua Tempat Kas', Number(currentLaci + currentBank) || 0, '100%', 'Total akumulasi uang laci dan rekening bank'],
+      ['[4] LAPORAN SISA STOCK (DATA AKTUAL - TANPA ASUMSI)', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
+      ['Total Sisa Sepatu Belum Terjual', Number(stockSummary.totalSisaPasang) || 0, 'Pasang', 'Kuantitas fisik stok sisa sepatu di toko'],
+      ['Nilai Modal Aset Sisa Stok (HPP)', Number(stockSummary.totalNilaiAsetModal) || 0, 'Rupiah', 'Modal uang riil yang masih tertahan di sisa stok'],
+      ['Total Varian / Model Sepatu Aktif', Number(stockSummary.totalVarianSisa) || 0, 'Model', 'Jumlah varian sepatu yang masih tersedia'],
+      ['Kondisi Sisa Stok: Bagus', Number(stockSummary.countKondisiBagus) || 0, 'Pasang', 'Sepatu kondisi normal prima'],
+      ['Kondisi Sisa Stok: Minus', Number(stockSummary.countKondisiMinus) || 0, 'Pasang', 'Sepatu dengan catatan cacat ringan/minus'],
       ['', '', '', ''],
 
-      ['[5] KONTROL PENGADAAN & STOK SEPATU', 'JUMLAH', 'KETERANGAN', ''],
-      ['Total Faktur Belanja Barang', Number(supplies.length) || 0, 'Faktur belanja stok sepatu dari supplier', ''],
-      ['Total Pasang Sepatu Masuk', Number(totalPasangMasuk) || 0, 'Jumlah pasang stok sepatu masuk', ''],
-      ['Total Biaya Belanja Stok (Rp)', Number(totalBelanjaBiaya) || 0, 'Total modal belanja pengadaan sepatu', ''],
+      ['[5] REKAP PENGADAAN BARANG (KULAKAN SUPLIER)', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
+      ['Total Modal Belanja Pengadaan', Number(totalBelanjaBiaya) || 0, 'Rupiah', 'Akumulasi seluruh modal belanja kulakan'],
+      ['Total Pasang Sepatu Masuk', Number(totalPasangMasuk) || 0, 'Pasang', 'Akumulasi seluruh pasang sepatu yang masuk'],
+      ['Total Faktur Belanja Masuk', Number(supplies.length) || 0, 'Faktur', 'Jumlah faktur belanja tercatat di sistem'],
+      ['Jumlah Mitra Suplier Rekanan', Number(sortedSuppliers.length) || 0, 'Suplier', 'Total suplier yang menyuplai barang'],
       ['', '', '', ''],
 
-      ['[6] REKAP TRANSAKSI PENJUALAN TERAKHIR', 'NOMINAL (RP)', 'METODE BAYAR', 'WAKTU TRANSAKSI']
+      ['[6] DATA KOMPOSISI STOK (SUMBER GRAFIK STOK)', 'JUMLAH (PSG)', 'PERSENTASE', 'KETERANGAN'],
+      ['Sepatu Terjual (Laku)', Number(totalTerjualAktual) || 0, pctTerjual, 'Realisasi pasang terjual'],
+      ['Sisa Belum Terjual', Number(totalSisaAktual) || 0, pctSisa, 'Stok fisik tersisa saat ini'],
+      ['', '', '', ''],
+
+      ['[7] LAPORAN PENGELUARAN KAS PER KATEGORI', 'TOTAL BIAYA (RP)', 'TRANSAKSI', 'PERSENTASE']
     ];
 
-    if (recentSales.length > 0) {
-      recentSales.forEach((t) => {
-        dashboardRows.push([
-          t.title || t.keterangan || 'Penjualan Sepatu',
-          Number(t.amount) || 0,
-          t.paymentMethod || 'Tunai',
-          `${t.date || '-'} ${t.time || ''}`
-        ]);
-      });
-    } else {
-      dashboardRows.push(['Belum ada transaksi penjualan', 0, '-', '-']);
-    }
+    const catStartRowIndex = dashboardRows.length; // 40
+    sortedCategories.forEach((c) => {
+      dashboardRows.push([c.name, Number(c.total) || 0, `${c.count} Trx`, c.pct]);
+    });
+    dashboardRows.push(['TOTAL PENGELUARAN', Number(totalKeluar) || 0, `${trxKeluarList.length} Trx`, '100%']);
+    dashboardRows.push(['', '', '', '']);
+
+    const supHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['[8] REKAP PENGADAAN PER SUPLIER REKANAN', 'TOTAL BELANJA (RP)', 'TOTAL PASANG', 'JUMLAH FAKTUR']);
+    const supStartRowIndex = dashboardRows.length;
+    sortedSuppliers.forEach((s) => {
+      dashboardRows.push([s.name, Number(s.totalBiaya) || 0, `${s.totalPasang} Psg`, `${s.fakturCount} Faktur`]);
+    });
+    dashboardRows.push(['TOTAL PENGADAAN', Number(totalBelanjaBiaya) || 0, `${totalPasangMasuk} Psg`, `${supplies.length} Faktur`]);
+
+    const dashboardMeta = {
+      uniqueDates,
+      supplierNames: sortedSuppliers.map((s) => s.name),
+      invoiceNos,
+      catStartRowIndex,
+      catRowCount: sortedCategories.length,
+      supHeaderRowIndex,
+      supStartRowIndex,
+      supRowCount: sortedSuppliers.length
+    };
 
     // 1. Data Sheet: Ringkasan Usaha
     const summaryRows = [
@@ -1074,7 +1387,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       },
       body: JSON.stringify({
         ranges: [
-          "'Dashboard'!A1:Z100",
+          "'Dashboard'!A1:Z300",
           "'Ringkasan Usaha'!A1:Z100",
           "'Kas Masuk'!A1:Z2000",
           "'Kas Keluar'!A1:Z2000",
@@ -1136,8 +1449,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       throw new Error(err.error?.message || `Gagal menulis data ke Google Sheets (${batchUpdateRes.status})`);
     }
 
-    // Step 3: Apply Executive Dashboard Theme & Embed Real Google Sheets Charts
-    await applyDashboardDesignAndCharts(token, spreadsheetId);
+    // Step 3: Apply Executive Dashboard Theme, Data Validation & Embed Real Google Sheets Charts
+    await applyDashboardDesignAndCharts(token, spreadsheetId, dashboardMeta);
 
     // Update status sinkronisasi di store
     if (store.setGoogleSheetsLastSync) {
