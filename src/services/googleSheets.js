@@ -230,8 +230,8 @@ async function ensureSheetsExist(token, spreadsheetId, requiredSheetNames) {
 }
 
 /**
- * Applies executive dark modern card dashboard styling, column widths, currency formats,
- * filter dropdowns (Data Validation), and embeds 4 real interactive Google Sheets charts.
+ * Applies premium Dark Modern Card dashboard styling with merged KPI cards,
+ * proper row heights, full dark background, and embeds 4 Google Sheets charts.
  */
 async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
   try {
@@ -246,36 +246,24 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
 
     const requests = [];
 
-    // 1. Delete existing charts on Dashboard to prevent accumulation
+    // 1. Delete existing charts to prevent accumulation
     if (dashSheet.charts && dashSheet.charts.length > 0) {
       dashSheet.charts.forEach((c) => {
         if (c.chartId !== undefined) {
-          requests.push({
-            deleteEmbeddedObject: { objectId: c.chartId }
-          });
+          requests.push({ deleteEmbeddedObject: { objectId: c.chartId } });
         }
       });
     }
 
-    // 2. Set optimal column widths for Dark Modern Dashboard
+    // 2. Column widths for Dark Modern Card layout
     const colWidths = [
-      { col: 0, size: 240 }, // Col A (Titles & labels)
-      { col: 1, size: 160 }, // Col B (Values / Rp / Filter)
-      { col: 2, size: 180 }, // Col C (Labels / Psg / Status)
-      { col: 3, size: 160 }, // Col D (Filter / Notes)
-      { col: 4, size: 30 },  // Col E (Spacer)
-      { col: 5, size: 88 },  // Col F (Chart 1 & 3 Left area)
-      { col: 6, size: 88 },  // Col G
-      { col: 7, size: 88 },  // Col H
-      { col: 8, size: 88 },  // Col I
-      { col: 9, size: 88 },  // Col J
-      { col: 10, size: 25 }, // Col K (Spacer between chart 1 & 2)
-      { col: 11, size: 95 }, // Col L (Chart 2 & 4 Right area)
-      { col: 12, size: 95 }, // Col M
-      { col: 13, size: 95 }, // Col N
-      { col: 14, size: 95 }  // Col O
+      { col: 0, size: 220 }, { col: 1, size: 155 }, { col: 2, size: 170 },
+      { col: 3, size: 155 }, { col: 4, size: 20 },  { col: 5, size: 85 },
+      { col: 6, size: 85 },  { col: 7, size: 85 },  { col: 8, size: 85 },
+      { col: 9, size: 85 },  { col: 10, size: 18 }, { col: 11, size: 85 },
+      { col: 12, size: 85 }, { col: 13, size: 85 }, { col: 14, size: 85 },
+      { col: 15, size: 85 }
     ];
-
     colWidths.forEach(({ col, size }) => {
       requests.push({
         updateDimensionProperties: {
@@ -286,229 +274,59 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // 3. Base Dark Theme for Table Data Area (Rows 0-120, Cols A-D)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 0, endRowIndex: 120, startColumnIndex: 0, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0588, green: 0.0902, blue: 0.1647 }, // #0F172A
-            textFormat: {
-              foregroundColor: { red: 0.8863, green: 0.9176, blue: 0.9529 }, // #E2E8F0
-              fontSize: 10
-            }
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
-    });
-
-    // 4. Top Executive Banner (Row 1 / Index 0)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 8 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0353, green: 0.051, blue: 0.0863 }, // #090D16 Dark
-            textFormat: {
-              foregroundColor: { red: 0.2196, green: 0.7412, blue: 0.9725 }, // #38BDF8 Cyan
-              fontSize: 11,
-              bold: true
-            }
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
-    });
-
-    // 5. 4 TOP KPI CARDS (Row 3: Title, Row 4: Values - Sesuai Gambar)
-    // Card 1: TOTAL OMSET (Hijau Zamrud #10B981 & #059669)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 2, endRowIndex: 3, startColumnIndex: 0, endColumnIndex: 2 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0627, green: 0.7255, blue: 0.5059 }, // #10B981 Emerald
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 10, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 3, endRowIndex: 4, startColumnIndex: 0, endColumnIndex: 2 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0196, green: 0.5882, blue: 0.4118 }, // #059669 Emerald Dark
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 13, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-
-    // Card 2: SALDO KAS TOKO (Royal Blue #2563EB & #1D4ED8)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 2, endRowIndex: 3, startColumnIndex: 2, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.1451, green: 0.3882, blue: 0.9216 }, // #2563EB Royal Blue
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 10, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 3, endRowIndex: 4, startColumnIndex: 2, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.1137, green: 0.3059, blue: 0.8471 }, // #1D4ED8
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 13, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-
-    // Card 3: PENGELUARAN KAS (Crimson Pink / Red #E11D48 & #BE123C)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 2, endRowIndex: 3, startColumnIndex: 4, endColumnIndex: 6 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.8824, green: 0.1137, blue: 0.2824 }, // #E11D48 Crimson
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 10, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 3, endRowIndex: 4, startColumnIndex: 4, endColumnIndex: 6 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.7451, green: 0.0706, blue: 0.2353 }, // #BE123C
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 13, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-
-    // Card 4: SISA STOK (NILAI MODAL) (Amber Yellow #F59E0B & #D97706)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 2, endRowIndex: 3, startColumnIndex: 6, endColumnIndex: 8 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.9608, green: 0.6196, blue: 0.0431 }, // #F59E0B Amber
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 10, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 3, endRowIndex: 4, startColumnIndex: 6, endColumnIndex: 8 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.851, green: 0.4667, blue: 0.0235 }, // #D97706
-            textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, fontSize: 13, bold: true },
-            horizontalAlignment: 'CENTER'
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
-      }
-    });
-
-    // 6. Filter Controls Card (Rows 6 & 7 / Indexes 5 & 6)
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 7, startColumnIndex: 0, endColumnIndex: 8 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.1176, green: 0.1608, blue: 0.2314 }, // #1E293B Dark Slate Card
-            textFormat: {
-              foregroundColor: { red: 0.56, green: 0.82, blue: 1.0 }, // Soft Cyan
-              fontSize: 10
-            }
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
-    });
-
-    // Highlight dropdown input cells in filter card (B6, D6, F6)
-    [1, 3, 5].forEach((colIdx) => {
-      requests.push({
-        repeatCell: {
-          range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: colIdx, endColumnIndex: colIdx + 1 },
-          cell: {
-            userEnteredFormat: {
-              backgroundColor: { red: 0.0588, green: 0.0902, blue: 0.1647 }, // #0F172A
-              textFormat: { foregroundColor: { red: 1.0, green: 1.0, blue: 1.0 }, bold: true }
-            }
-          },
-          fields: 'userEnteredFormat(backgroundColor,textFormat)'
-        }
-      });
-    });
-
-    // 7. Section Headers Styling
-    const sectionRowIndexes = [
-      8,  // [1] Keuangan & Arus Kas
-      15, // [2] Sepatu Laku
-      21, // [3] Sisa Stock
-      28, // [4] Rekap Pengadaan
-      34, // [5] Komposisi Stok
-      38  // [6] Pengeluaran per Kategori
+    // 3. Row heights for modern spacing
+    const rowHeights = [
+      { start: 0, end: 1, size: 36 },
+      { start: 1, end: 2, size: 6 },
+      { start: 2, end: 3, size: 28 },
+      { start: 3, end: 4, size: 48 },
+      { start: 4, end: 5, size: 22 },
+      { start: 5, end: 6, size: 28 },
+      { start: 6, end: 7, size: 6 },
+      { start: 7, end: 8, size: 6 }
     ];
-    if (meta.supHeaderRowIndex) {
-      sectionRowIndexes.push(meta.supHeaderRowIndex);
-    }
-
-    sectionRowIndexes.forEach((rIdx) => {
+    [8, 15, 21, 28, 34, 38].forEach((r) => {
+      rowHeights.push({ start: r, end: r + 1, size: 28 });
+    });
+    [14, 20, 27, 33, 37].forEach((r) => {
+      rowHeights.push({ start: r, end: r + 1, size: 6 });
+    });
+    rowHeights.forEach(({ start, end, size }) => {
       requests.push({
-        repeatCell: {
-          range: { sheetId: dashSheetId, startRowIndex: rIdx, endRowIndex: rIdx + 1, startColumnIndex: 0, endColumnIndex: 4 },
-          cell: {
-            userEnteredFormat: {
-              backgroundColor: { red: 0.0588, green: 0.1843, blue: 0.2902 }, // #0F2F4A Executive Navy
-              textFormat: {
-                foregroundColor: { red: 1.0, green: 1.0, blue: 1.0 },
-                fontSize: 10,
-                bold: true
-              }
-            }
-          },
-          fields: 'userEnteredFormat(backgroundColor,textFormat)'
+        updateDimensionProperties: {
+          range: { sheetId: dashSheetId, dimension: 'ROWS', startIndex: start, endIndex: end },
+          properties: { pixelSize: size },
+          fields: 'pixelSize'
         }
       });
     });
 
-    // 8. Highlight Special Metric Rows:
-    // Saldo Kas Toko (index 12 / Row 13) -> Emerald Glow
+    // 4. FULL DARK BACKGROUND (A1:P100)
     requests.push({
       repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 12, endRowIndex: 13, startColumnIndex: 0, endColumnIndex: 4 },
+        range: { sheetId: dashSheetId, startRowIndex: 0, endRowIndex: 100, startColumnIndex: 0, endColumnIndex: 16 },
         cell: {
           userEnteredFormat: {
-            backgroundColor: { red: 0.0235, green: 0.3059, blue: 0.2314 }, // Emerald #064E3B
+            backgroundColor: { red: 0.067, green: 0.094, blue: 0.153 },
             textFormat: {
-              foregroundColor: { red: 0.6549, green: 0.9529, blue: 0.8157 },
+              foregroundColor: { red: 0.847, green: 0.878, blue: 0.918 },
+              fontSize: 10
+            }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+
+    // 5. Banner row (idx 0)
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 10 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.031, green: 0.043, blue: 0.071 },
+            textFormat: {
+              foregroundColor: { red: 0.22, green: 0.74, blue: 0.97 },
               fontSize: 11,
               bold: true
             }
@@ -518,62 +336,72 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       }
     });
 
-    // Arus Kas Bersih (index 11 / Row 12) -> Dark Teal Glow
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 11, endRowIndex: 12, startColumnIndex: 0, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.051, green: 0.24, blue: 0.26 },
-            textFormat: {
-              foregroundColor: { red: 0.404, green: 0.91, blue: 0.976 },
-              fontSize: 10,
-              bold: true
-            }
+    // 6. MERGE CELLS for 4 KPI Cards (2 cols wide x 3 rows tall each)
+    const kpiCardCols = [
+      { start: 0, end: 2 }, { start: 2, end: 4 },
+      { start: 4, end: 6 }, { start: 6, end: 8 }
+    ];
+    kpiCardCols.forEach(({ start, end }) => {
+      [2, 3, 4].forEach((row) => {
+        requests.push({
+          mergeCells: {
+            range: { sheetId: dashSheetId, startRowIndex: row, endRowIndex: row + 1, startColumnIndex: start, endColumnIndex: end },
+            mergeType: 'MERGE_ALL'
           }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
+        });
+      });
     });
 
-    // Total Omset Sepatu (index 17 / Row 18) -> Emerald Glow
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 17, endRowIndex: 18, startColumnIndex: 0, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0235, green: 0.3059, blue: 0.2314 },
-            textFormat: {
-              foregroundColor: { red: 0.6549, green: 0.9529, blue: 0.8157 },
-              fontSize: 10,
-              bold: true
-            }
+    // 7. KPI Card Colors (3 gradient rows per card)
+    const cardConfigs = [
+      { cols: kpiCardCols[0], colors: [
+        { red: 0.063, green: 0.725, blue: 0.506 },
+        { red: 0.02, green: 0.588, blue: 0.412 },
+        { red: 0.016, green: 0.471, blue: 0.341 }
+      ]},
+      { cols: kpiCardCols[1], colors: [
+        { red: 0.231, green: 0.51, blue: 0.965 },
+        { red: 0.145, green: 0.388, blue: 0.922 },
+        { red: 0.114, green: 0.306, blue: 0.847 }
+      ]},
+      { cols: kpiCardCols[2], colors: [
+        { red: 0.957, green: 0.247, blue: 0.369 },
+        { red: 0.882, green: 0.114, blue: 0.282 },
+        { red: 0.745, green: 0.071, blue: 0.235 }
+      ]},
+      { cols: kpiCardCols[3], colors: [
+        { red: 0.961, green: 0.62, blue: 0.043 },
+        { red: 0.851, green: 0.467, blue: 0.024 },
+        { red: 0.706, green: 0.325, blue: 0.035 }
+      ]}
+    ];
+    cardConfigs.forEach(({ cols, colors }) => {
+      colors.forEach((bg, idx) => {
+        const row = 2 + idx;
+        const isValue = idx === 1;
+        const isSubtext = idx === 2;
+        requests.push({
+          repeatCell: {
+            range: { sheetId: dashSheetId, startRowIndex: row, endRowIndex: row + 1, startColumnIndex: cols.start, endColumnIndex: cols.end },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: bg,
+                textFormat: {
+                  foregroundColor: { red: 1, green: 1, blue: 1 },
+                  fontSize: isValue ? 16 : (isSubtext ? 9 : 10),
+                  bold: !isSubtext
+                },
+                horizontalAlignment: 'CENTER',
+                verticalAlignment: 'MIDDLE'
+              }
+            },
+            fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment,verticalAlignment)'
           }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
+        });
+      });
     });
 
-    // Nilai Modal Aset Sisa (index 23 / Row 24) -> Soft Sky Glow
-    requests.push({
-      repeatCell: {
-        range: { sheetId: dashSheetId, startRowIndex: 23, endRowIndex: 24, startColumnIndex: 0, endColumnIndex: 4 },
-        cell: {
-          userEnteredFormat: {
-            backgroundColor: { red: 0.0549, green: 0.2275, blue: 0.3216 },
-            textFormat: {
-              foregroundColor: { red: 0.73, green: 0.90, blue: 0.99 },
-              fontSize: 10,
-              bold: true
-            }
-          }
-        },
-        fields: 'userEnteredFormat(backgroundColor,textFormat)'
-      }
-    });
-
-    // 9. Currency Number Formatting (Rp #,##0)
-    // KPI Cards value row (Row index 3)
+    // 8. Currency format for KPI value cells (row 3)
     [0, 2, 4, 6].forEach((cIdx) => {
       requests.push({
         repeatCell: {
@@ -588,337 +416,197 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // Column B (Currency ranges in data tables)
-    const currencyRanges = [
-      { start: 9, end: 14 },  // Arus kas & modal awal
-      { start: 17, end: 19 }, // Omset & avg harga
-      { start: 23, end: 24 }, // Nilai Modal aset sisa
-      { start: 29, end: 30 }  // Total belanja pengadaan
-    ];
+    // 9. Filter Row (idx 5)
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 0, endColumnIndex: 8 },
+        cell: {
+          userEnteredFormat: {
+            backgroundColor: { red: 0.118, green: 0.161, blue: 0.231 },
+            textFormat: { foregroundColor: { red: 0.56, green: 0.82, blue: 1.0 }, fontSize: 10 }
+          }
+        },
+        fields: 'userEnteredFormat(backgroundColor,textFormat)'
+      }
+    });
+    [1, 3, 5].forEach((colIdx) => {
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: colIdx, endColumnIndex: colIdx + 1 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.059, green: 0.090, blue: 0.165 },
+              textFormat: { foregroundColor: { red: 1.0, green: 1.0, blue: 1.0 }, fontSize: 10, bold: true },
+              borders: { bottom: { style: 'SOLID', width: 2, color: { red: 0.22, green: 0.74, blue: 0.97 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+    });
 
+    // 10. Section Headers with left accent border
+    const sectionRowIndexes = [8, 15, 21, 28, 34, 38];
+    if (meta.supHeaderRowIndex) sectionRowIndexes.push(meta.supHeaderRowIndex);
+    sectionRowIndexes.forEach((rIdx) => {
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: rIdx, endRowIndex: rIdx + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.082, green: 0.133, blue: 0.212 },
+              textFormat: { foregroundColor: { red: 0.56, green: 0.82, blue: 1.0 }, fontSize: 10, bold: true },
+              borders: { left: { style: 'SOLID', width: 3, color: { red: 0.22, green: 0.74, blue: 0.97 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+    });
+
+    // 11. Highlight key metric rows
+    const highlights = [
+      { row: 11, bg: { red: 0.051, green: 0.173, blue: 0.196 }, fg: { red: 0.404, green: 0.91, blue: 0.976 }, sz: 10 },
+      { row: 12, bg: { red: 0.024, green: 0.224, blue: 0.173 }, fg: { red: 0.655, green: 0.953, blue: 0.816 }, sz: 11 },
+      { row: 17, bg: { red: 0.024, green: 0.224, blue: 0.173 }, fg: { red: 0.655, green: 0.953, blue: 0.816 }, sz: 10 },
+      { row: 23, bg: { red: 0.055, green: 0.173, blue: 0.259 }, fg: { red: 0.502, green: 0.827, blue: 0.976 }, sz: 10 }
+    ];
+    highlights.forEach(({ row, bg, fg, sz }) => {
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: row, endRowIndex: row + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: bg,
+              textFormat: { foregroundColor: fg, fontSize: sz, bold: true }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat)'
+        }
+      });
+    });
+
+    // 12. Currency formatting for data Column B
+    const currencyRanges = [
+      { start: 9, end: 14 }, { start: 17, end: 19 },
+      { start: 23, end: 24 }, { start: 29, end: 30 }
+    ];
     if (meta.catStartRowIndex && meta.catRowCount) {
       currencyRanges.push({ start: meta.catStartRowIndex, end: meta.catStartRowIndex + meta.catRowCount + 1 });
     }
     if (meta.supStartRowIndex && meta.supRowCount) {
       currencyRanges.push({ start: meta.supStartRowIndex, end: meta.supStartRowIndex + meta.supRowCount + 1 });
     }
-
     currencyRanges.forEach(({ start, end }) => {
       requests.push({
         repeatCell: {
           range: { sheetId: dashSheetId, startRowIndex: start, endRowIndex: end, startColumnIndex: 1, endColumnIndex: 2 },
-          cell: {
-            userEnteredFormat: {
-              numberFormat: {
-                type: 'CURRENCY',
-                pattern: '"Rp "#,##0'
-              }
-            }
-          },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' } } },
           fields: 'userEnteredFormat.numberFormat'
         }
       });
     });
 
-    // 10. Data Validation Dropdowns for Interactive Filter Cells
+    // 13. Data Validation Dropdowns
     if (meta.uniqueDates && meta.uniqueDates.length > 0) {
-      const dateList = ['SEMUA TANGGAL', 'HARI INI', ...meta.uniqueDates.slice(0, 20)];
       requests.push({
         setDataValidation: {
           range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 },
           rule: {
-            condition: {
-              type: 'ONE_OF_LIST',
-              values: dateList.map((v) => ({ userEnteredValue: v }))
-            },
-            showCustomUi: true,
-            strict: false
+            condition: { type: 'ONE_OF_LIST', values: ['SEMUA TANGGAL', 'HARI INI', ...meta.uniqueDates.slice(0, 20)].map((v) => ({ userEnteredValue: v })) },
+            showCustomUi: true, strict: false
           }
         }
       });
     }
-
     if (meta.supplierNames && meta.supplierNames.length > 0) {
-      const supList = ['SEMUA SUPLIER', ...meta.supplierNames.slice(0, 25)];
       requests.push({
         setDataValidation: {
           range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 3, endColumnIndex: 4 },
           rule: {
-            condition: {
-              type: 'ONE_OF_LIST',
-              values: supList.map((v) => ({ userEnteredValue: v }))
-            },
-            showCustomUi: true,
-            strict: false
+            condition: { type: 'ONE_OF_LIST', values: ['SEMUA SUPLIER', ...meta.supplierNames.slice(0, 25)].map((v) => ({ userEnteredValue: v })) },
+            showCustomUi: true, strict: false
           }
         }
       });
     }
-
     if (meta.invoiceNos && meta.invoiceNos.length > 0) {
-      const invList = ['SEMUA FAKTUR', ...meta.invoiceNos.slice(0, 25)];
       requests.push({
         setDataValidation: {
           range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 5, endColumnIndex: 6 },
           rule: {
-            condition: {
-              type: 'ONE_OF_LIST',
-              values: invList.map((v) => ({ userEnteredValue: v }))
-            },
-            showCustomUi: true,
-            strict: false
+            condition: { type: 'ONE_OF_LIST', values: ['SEMUA FAKTUR', ...meta.invoiceNos.slice(0, 25)].map((v) => ({ userEnteredValue: v })) },
+            showCustomUi: true, strict: false
           }
         }
       });
     }
 
-    // 11. Add Chart 1: Perbandingan Arus Kas (Column Chart - Top Left Widget)
+    // 14. Chart 1: Arus Kas (Column - Top Left)
     requests.push({
-      addChart: {
-        chart: {
-          spec: {
-            title: 'Perbandingan Arus Kas (Masuk vs Keluar)',
-            basicChart: {
-              chartType: 'COLUMN',
-              legendPosition: 'NO_LEGEND',
-              domains: [
-                {
-                  domain: {
-                    sourceRange: {
-                      sources: [
-                        {
-                          sheetId: dashSheetId,
-                          startRowIndex: 9,
-                          endRowIndex: 11,
-                          startColumnIndex: 0,
-                          endColumnIndex: 1
-                        }
-                      ]
-                    }
-                  }
-                }
-              ],
-              series: [
-                {
-                  series: {
-                    sourceRange: {
-                      sources: [
-                        {
-                          sheetId: dashSheetId,
-                          startRowIndex: 9,
-                          endRowIndex: 11,
-                          startColumnIndex: 1,
-                          endColumnIndex: 2
-                        }
-                      ]
-                    }
-                  },
-                  targetAxis: 'LEFT_AXIS'
-                }
-              ]
-            }
-          },
-          position: {
-            overlayPosition: {
-              anchorCell: {
-                sheetId: dashSheetId,
-                rowIndex: 8,
-                columnIndex: 5
-              },
-              widthPixels: 430,
-              heightPixels: 260
-            }
-          }
-        }
-      }
+      addChart: { chart: {
+        spec: { title: 'Perbandingan Arus Kas', basicChart: {
+          chartType: 'COLUMN', legendPosition: 'NO_LEGEND',
+          domains: [{ domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 9, endRowIndex: 11, startColumnIndex: 0, endColumnIndex: 1 }] } } }],
+          series: [{ series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 9, endRowIndex: 11, startColumnIndex: 1, endColumnIndex: 2 }] } }, targetAxis: 'LEFT_AXIS' }]
+        }},
+        position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 6, columnIndex: 5 }, widthPixels: 420, heightPixels: 250 } }
+      }}
     });
 
-    // 12. Add Chart 2: Komposisi Stok Sepatu (Donut Chart - Top Right Widget)
+    // 15. Chart 2: Komposisi Stok (Donut - Top Right)
     requests.push({
-      addChart: {
-        chart: {
-          spec: {
-            title: 'Komposisi Stok Sepatu (Terjual vs Sisa)',
-            pieChart: {
-              legendPosition: 'RIGHT_LEGEND',
-              pieHole: 0.5,
-              domain: {
-                sourceRange: {
-                  sources: [
-                    {
-                      sheetId: dashSheetId,
-                      startRowIndex: 35,
-                      endRowIndex: 37,
-                      startColumnIndex: 0,
-                      endColumnIndex: 1
-                    }
-                  ]
-                }
-              },
-              series: {
-                sourceRange: {
-                  sources: [
-                    {
-                      sheetId: dashSheetId,
-                      startRowIndex: 35,
-                      endRowIndex: 37,
-                      startColumnIndex: 1,
-                      endColumnIndex: 2
-                    }
-                  ]
-                }
-              }
-            }
-          },
-          position: {
-            overlayPosition: {
-              anchorCell: {
-                sheetId: dashSheetId,
-                rowIndex: 8,
-                columnIndex: 11
-              },
-              widthPixels: 380,
-              heightPixels: 260
-            }
-          }
-        }
-      }
+      addChart: { chart: {
+        spec: { title: 'Komposisi Stok Sepatu', pieChart: {
+          legendPosition: 'RIGHT_LEGEND', pieHole: 0.5,
+          domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 35, endRowIndex: 37, startColumnIndex: 0, endColumnIndex: 1 }] } },
+          series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 35, endRowIndex: 37, startColumnIndex: 1, endColumnIndex: 2 }] } }
+        }},
+        position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 6, columnIndex: 11 }, widthPixels: 380, heightPixels: 250 } }
+      }}
     });
 
-    // 13. Add Chart 3: Proporsi Pengeluaran per Kategori (Donut Chart - Bottom Left Widget)
+    // 16. Chart 3: Pengeluaran per Kategori (Donut - Bottom Left)
     if (meta.catStartRowIndex && meta.catRowCount > 0) {
       requests.push({
-        addChart: {
-          chart: {
-            spec: {
-              title: 'Proporsi Pengeluaran Kas per Kategori',
-              pieChart: {
-                legendPosition: 'RIGHT_LEGEND',
-                pieHole: 0.5,
-                domain: {
-                  sourceRange: {
-                    sources: [
-                      {
-                        sheetId: dashSheetId,
-                        startRowIndex: meta.catStartRowIndex,
-                        endRowIndex: meta.catStartRowIndex + meta.catRowCount,
-                        startColumnIndex: 0,
-                        endColumnIndex: 1
-                      }
-                    ]
-                  }
-                },
-                series: {
-                  sourceRange: {
-                    sources: [
-                      {
-                        sheetId: dashSheetId,
-                        startRowIndex: meta.catStartRowIndex,
-                        endRowIndex: meta.catStartRowIndex + meta.catRowCount,
-                        startColumnIndex: 1,
-                        endColumnIndex: 2
-                      }
-                    ]
-                  }
-                }
-              }
-            },
-            position: {
-              overlayPosition: {
-                anchorCell: {
-                  sheetId: dashSheetId,
-                  rowIndex: 21,
-                  columnIndex: 5
-                },
-                widthPixels: 430,
-                heightPixels: 270
-              }
-            }
-          }
-        }
+        addChart: { chart: {
+          spec: { title: 'Pengeluaran Kas per Kategori', pieChart: {
+            legendPosition: 'RIGHT_LEGEND', pieHole: 0.5,
+            domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.catStartRowIndex, endRowIndex: meta.catStartRowIndex + meta.catRowCount, startColumnIndex: 0, endColumnIndex: 1 }] } },
+            series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.catStartRowIndex, endRowIndex: meta.catStartRowIndex + meta.catRowCount, startColumnIndex: 1, endColumnIndex: 2 }] } }
+          }},
+          position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 20, columnIndex: 5 }, widthPixels: 420, heightPixels: 260 } }
+        }}
       });
     }
 
-    // 14. Add Chart 4: Top Belanja per Suplier (Column Chart - Bottom Right Widget)
+    // 17. Chart 4: Top Suplier (Column - Bottom Right)
     if (meta.supStartRowIndex && meta.supRowCount > 0) {
-      const topSupCount = Math.min(meta.supRowCount, 5);
+      const topSup = Math.min(meta.supRowCount, 5);
       requests.push({
-        addChart: {
-          chart: {
-            spec: {
-              title: 'Top Belanja Pengadaan per Suplier',
-              basicChart: {
-                chartType: 'COLUMN',
-                legendPosition: 'NO_LEGEND',
-                domains: [
-                  {
-                    domain: {
-                      sourceRange: {
-                        sources: [
-                          {
-                            sheetId: dashSheetId,
-                            startRowIndex: meta.supStartRowIndex,
-                            endRowIndex: meta.supStartRowIndex + topSupCount,
-                            startColumnIndex: 0,
-                            endColumnIndex: 1
-                          }
-                        ]
-                      }
-                    }
-                  }
-                ],
-                series: [
-                  {
-                    series: {
-                      sourceRange: {
-                        sources: [
-                          {
-                            sheetId: dashSheetId,
-                            startRowIndex: meta.supStartRowIndex,
-                            endRowIndex: meta.supStartRowIndex + topSupCount,
-                            startColumnIndex: 1,
-                            endColumnIndex: 2
-                          }
-                        ]
-                      }
-                    },
-                    targetAxis: 'LEFT_AXIS'
-                  }
-                ]
-              }
-            },
-            position: {
-              overlayPosition: {
-                anchorCell: {
-                  sheetId: dashSheetId,
-                  rowIndex: 21,
-                  columnIndex: 11
-                },
-                widthPixels: 380,
-                heightPixels: 270
-              }
-            }
-          }
-        }
+        addChart: { chart: {
+          spec: { title: 'Top Belanja per Suplier', basicChart: {
+            chartType: 'COLUMN', legendPosition: 'NO_LEGEND',
+            domains: [{ domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.supStartRowIndex, endRowIndex: meta.supStartRowIndex + topSup, startColumnIndex: 0, endColumnIndex: 1 }] } } }],
+            series: [{ series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.supStartRowIndex, endRowIndex: meta.supStartRowIndex + topSup, startColumnIndex: 1, endColumnIndex: 2 }] } }, targetAxis: 'LEFT_AXIS' }]
+          }},
+          position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 20, columnIndex: 11 }, widthPixels: 380, heightPixels: 260 } }
+        }}
       });
     }
 
-    // Send batchUpdate for Dashboard design, data validations & 4 charts
+    // Send batchUpdate
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
       method: 'POST',
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json'
-      },
+      headers: { Authorization: `Bearer ${token}`, 'Content-Type': 'application/json' },
       body: JSON.stringify({ requests })
     });
-
     if (!formatRes.ok) {
       const err = await formatRes.json().catch(() => ({}));
-      console.warn('[GoogleSheets] Dashboard chart/formatting notice:', err.error?.message || formatRes.status);
+      console.warn('[GoogleSheets] Dashboard styling notice:', err.error?.message || formatRes.status);
     }
   } catch (err) {
-    console.warn('[GoogleSheets] Non-fatal error during dashboard styling/charts:', err);
+    console.warn('[GoogleSheets] Non-fatal dashboard styling error:', err);
   }
 }
 
@@ -1116,15 +804,24 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['TOTAL OMSET PENJUALAN', '', 'SALDO KAS TOKO AKTUAL', '', 'TOTAL PENGELUARAN KAS', '', 'SISA STOK (NILAI MODAL HPP)', ''],
       [
         Number(totalOmsetSepatu) || 0,
-        `${countTrxSepatu} Trx`,
+        '',
         Number(currentBalance) || 0,
-        currentBalance >= 0 ? '🟢 Kas Sehat' : '🔴 Defisit',
+        '',
         Number(totalKeluar) || 0,
-        `${trxKeluarList.length} Trx`,
+        '',
         Number(stockSummary.totalNilaiAsetModal) || 0,
-        `${totalSisaAktual} Psg`
+        ''
       ],
-      ['', '', '', '', '', '', '', ''],
+      [
+        `Penjualan: ${countTrxSepatu} Trx (${totalPasangLaku} Psg)`,
+        '',
+        currentBalance >= 0 ? '🟢 Kas Sehat (Surplus Toko)' : '🔴 Defisit Kas Toko',
+        '',
+        `Biaya & Kulakan: ${trxKeluarList.length} Transaksi`,
+        '',
+        `Tersedia: ${totalSisaAktual} Pasang Sepatu`,
+        ''
+      ],
 
       // KARTU FILTER INTERAKTIF (DROPDOWN CONTROLS)
       ['🎛️ FILTER HARI / PERIODE:', 'SEMUA TANGGAL', '🏢 FILTER SUPLIER:', 'SEMUA SUPLIER', '📄 FILTER FAKTUR:', 'SEMUA FAKTUR', '⚡ STATUS FILTER:', 'AKTIF (REAL-TIME)'],
