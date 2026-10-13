@@ -924,7 +924,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         '',
         f('=IF(B12>=0, "🟢 Kas Sehat / Surplus", "🔴 Defisit Kas")'),
         '',
-        f('="Biaya & Kulakan: " & C11'),
+        f('="Biaya & Belanja: " & C11'),
         '',
         f(`=IF(OR(D6<>"SEMUA SUPLIER", F6<>"SEMUA FAKTUR"), "Masuk: " & B31 & " Psg (" & B32 & " Item)", "Tersedia: ${totalSisaAktual} Pasang Sepatu")`),
         ''
