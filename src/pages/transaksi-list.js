@@ -418,7 +418,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
             </div>
             <div class="flex flex-col min-w-0">
               <span class="font-title-ledger text-xs font-bold text-on-surface">${nota}</span>
-              <span class="text-[10px] text-on-surface-variant font-medium">${transactions.length} transaksi dalam folder ini</span>
+              <span class="text-[10px] text-on-surface-variant font-medium">${transactions.length} transaksi • ${transactions[0].date || ''} • ${transactions[0].time || ''}</span>
             </div>
           </div>
 
