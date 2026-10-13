@@ -693,56 +693,98 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['Total Pengiriman Sepatu', shipments.length, `Kemas: ${shipSummary.countKemas || 0}, Kirim: ${shipSummary.countKirim || 0}, Selesai: ${shipSummary.countSelesai || 0}`]
     ];
 
-    // 2. Data Sheet: KAS MASUK (Saldo Modal Awal masuk di baris pertama)
+    // 2. Data Sheet: KAS MASUK - Laporan Per-Baris Setiap Sepatu / Barang
     const masukHeader = [
       'No',
-      'ID Transaksi',
+      'No. Nota / ID',
       'Tanggal',
       'Jam',
-      'Kategori',
-      'Keterangan / Produk',
+      'Nama Pelanggan',
+      'Barcode',
+      'Nama Sepatu / Barang',
+      'Kondisi',
+      'Jumlah (Psg)',
+      'Harga / Jumlah Masuk (Rp)',
       'Metode Pembayaran',
-      'Jumlah Masuk (Rp)',
-      'No. Nota / Ref',
-      'Detail Sepatu'
+      'Kategori',
+      'Keterangan / Catatan'
     ];
 
     const kasMasukRows = [masukHeader];
+    let kasMasukRowIndex = 1;
+    let grandTotalPasangJual = 0;
 
     // Baris Pertama: Modal Kas Awal Toko
     kasMasukRows.push([
-      1,
-      'MODAL-AWAL',
+      kasMasukRowIndex++,
+      '#SALDO-AWAL',
       '-',
+      '-',
+      'Toko (Kas Awal)',
       '-',
       'Modal Kas Awal Toko',
-      `Modal Kas Awal Toko (Tampungan: Rp ${initialLaci.toLocaleString('id-ID')}, Bank: Rp ${initialBank.toLocaleString('id-ID')})`,
-      'Tampungan & Bank',
+      '-',
+      '-',
       totalModalAwal,
-      '#SALDO-AWAL',
-      '-'
+      'Tampungan & Bank',
+      'Modal Kas Awal',
+      `Modal Kas Awal Toko (Tampungan: Rp ${initialLaci.toLocaleString('id-ID')}, Bank: Rp ${initialBank.toLocaleString('id-ID')})`
     ]);
 
     // Transaksi Kas Masuk diurutkan terlama ke terbaru
     const sortedMasuk = [...trxMasukList].reverse();
-    sortedMasuk.forEach((t, i) => {
-      const amt = Number(t.amount) || 0;
-      let detailItems = '';
-      if (t.items && Array.isArray(t.items)) {
-        detailItems = t.items.map((it) => `${it.name || 'Sepatu'} (Rp ${it.price || 0})`).join(', ');
+    sortedMasuk.forEach((t) => {
+      const nota = t.nota || t.id || '-';
+      const tgl = t.date || '-';
+      const jam = t.time || '-';
+      const buyer = t.buyer || 'Pelanggan Toko';
+      const payMethod = t.paymentMethod || 'Tunai';
+      const cat = t.category || 'Penjualan Sepatu';
+      const note = t.note || t.keterangan || '-';
+
+      if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+        t.items.forEach((it) => {
+          const qty = 1; // 1 pasang per baris sepatu
+          const price = Number(it.price) || 0;
+          grandTotalPasangJual += qty;
+
+          kasMasukRows.push([
+            kasMasukRowIndex++,
+            nota,
+            tgl,
+            jam,
+            buyer,
+            it.barcode || t.barcode || '-',
+            it.name || t.productName || 'Sepatu',
+            it.kondisi || t.kondisi || 'Bagus',
+            qty,
+            price,
+            payMethod,
+            cat,
+            note
+          ]);
+        });
+      } else {
+        const qty = Number(t.itemCount) || 1;
+        const amt = Number(t.amount) || 0;
+        grandTotalPasangJual += qty;
+
+        kasMasukRows.push([
+          kasMasukRowIndex++,
+          nota,
+          tgl,
+          jam,
+          buyer,
+          t.barcode || '-',
+          t.title || t.productName || 'Penjualan Sepatu',
+          t.kondisi || 'Bagus',
+          qty,
+          amt,
+          payMethod,
+          cat,
+          note
+        ]);
       }
-      kasMasukRows.push([
-        i + 2,
-        t.id || '-',
-        t.date || '-',
-        t.time || '-',
-        t.category || 'Penjualan',
-        t.title || t.keterangan || '-',
-        t.paymentMethod || 'Tunai',
-        amt,
-        t.nota || '-',
-        detailItems
-      ]);
     });
 
     // Baris Total di Kas Masuk
@@ -752,9 +794,12 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       '',
       '',
       '',
+      '',
       'TOTAL KAS MASUK (+ MODAL AWAL)',
       '',
+      grandTotalPasangJual,
       totalModalAwal + totalMasuk,
+      '',
       '',
       ''
     ]);

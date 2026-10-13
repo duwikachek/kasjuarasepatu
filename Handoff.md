@@ -179,6 +179,10 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Format sinkronisasi pada sheet `Barang Masuk (Belanja)` di Google Sheets kini dibuat per-baris untuk setiap barang/sepatu yang masuk (misal jika Suplier A membeli 3 sepatu, akan tercatat 3 baris terpisah).
    - Kolom tabel: No, No. Faktur / ID, Tanggal, Supplier / Sumber, Barcode, Nama Sepatu / Barang, Kondisi, Jumlah (Psg), Harga Modal (Rp), Total Modal (Rp), Status Pembayaran, Metode Bayar, Keterangan / Catatan, dan baris TOTAL di bawahnya.
 
+8. **Laporan Google Sheets - Sheet Kas Masuk Per-Baris Setiap Sepatu (13 Okt 2026):**
+   - Format sinkronisasi pada sheet `Kas Masuk` kini juga dibuat per-baris untuk setiap sepatu yang terjual (jika 1 nota penjualan berisi beberapa pasang sepatu, masing-masing dicatat dalam baris terpisah).
+   - Kolom tabel: No, No. Nota / ID, Tanggal, Jam, Nama Pelanggan, Barcode, Nama Sepatu / Barang, Kondisi, Jumlah (Psg), Harga / Jumlah Masuk (Rp), Metode Pembayaran, Kategori, Keterangan / Catatan, dan baris TOTAL (+ Modal Awal) di bawahnya.
+
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.
