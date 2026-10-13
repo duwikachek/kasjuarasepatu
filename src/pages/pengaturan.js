@@ -213,7 +213,8 @@ export function renderPengaturanPage(store, isAdmin = true) {
           </div>
         </section>
 
-        <!-- Integrasi Google Spreadsheet Card -->
+        ${isAdmin ? `
+        <!-- Integrasi Google Spreadsheet Card (Mode Admin: Akses Penuh Konfigurasi) -->
         <section class="glass-emerald glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5" id="section-google-sheets">
           <div class="flex items-center justify-between">
             <div class="flex items-center gap-1.5">
@@ -349,7 +350,7 @@ export function renderPengaturanPage(store, isAdmin = true) {
             </label>
           </div>
 
-          <!-- Status Sinkronisasi -->
+          <!-- Status Sinkronisasi & Tombol Buka Sheet -->
           <div class="flex items-center justify-between text-xs py-0.5 px-1" id="sheets-sync-status-box">
             <div class="flex items-center gap-1 text-[10px] text-on-surface-variant">
               <span class="material-symbols-outlined text-[13px] text-emerald-700">sync</span>
@@ -389,6 +390,46 @@ export function renderPengaturanPage(store, isAdmin = true) {
             </button>
           </div>
         </section>
+        ` : `
+        <!-- Google Spreadsheet Card (Mode Atasan: Hanya Akses Buka Sheet & Status) -->
+        <section class="glass-emerald glass-sheen rounded-xl p-3 flex flex-col gap-2.5" id="section-google-sheets">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg glass-emerald text-emerald-900 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[18px]">table_chart</span>
+              </div>
+              <div>
+                <h3 class="font-title-ledger text-xs font-bold text-on-surface">Google Spreadsheet Toko</h3>
+                <p class="text-[10px] text-on-surface-variant">
+                  Terakhir sinkron: ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().lastSync) || 'Belum pernah'}
+                </p>
+              </div>
+            </div>
+            ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? `
+              <span class="font-label-sm text-[9px] px-2 py-0.5 rounded-full bg-emerald-500/20 text-emerald-800 font-bold">
+                Terkoneksi
+              </span>
+            ` : ''}
+          </div>
+
+          ${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? `
+            <a 
+              id="link-open-spreadsheet" 
+              href="https://docs.google.com/spreadsheets/d/${extractSpreadsheetId(store.getGoogleSheetsConfig().spreadsheetId)}/edit" 
+              target="_blank" 
+              rel="noopener noreferrer"
+              class="w-full py-2.5 px-3 rounded-lg glass-emerald text-emerald-950 font-label-md text-xs font-bold flex items-center justify-center gap-1.5 active:scale-95 shadow-sm"
+            >
+              <span class="material-symbols-outlined text-[16px]">open_in_new</span>
+              <span>Buka Google Spreadsheet</span>
+            </a>
+          ` : `
+            <div class="text-[11px] text-on-surface-variant italic py-1 text-center">
+              Google Spreadsheet belum dihubungkan oleh Admin.
+            </div>
+          `}
+        </section>
+        `}
 
         <!-- Backup & Restore Data -->
         <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
