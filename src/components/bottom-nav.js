@@ -1,6 +1,6 @@
 // Bottom Navigation Component
 
-export function renderBottomNav(activeRoute = 'dashboard') {
+export function renderBottomNav(activeRoute = 'dashboard', isAdmin = true) {
   const tabs = [
     { route: 'dashboard', icon: 'storefront', label: 'Dashboard' },
     { route: 'pasok', icon: 'inventory_2', label: 'Stock' },
@@ -9,8 +9,18 @@ export function renderBottomNav(activeRoute = 'dashboard') {
     { route: 'laporan', icon: 'analytics', label: 'Laporan' },
   ];
 
+  // Badge role — ditampilkan di pojok kanan atas nav
+  const roleBadge = isAdmin
+    ? `<span class="absolute top-1 right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-emerald-900/80 text-emerald-300 border border-emerald-700/60 tracking-wide">
+        <span class="material-symbols-outlined text-[9px]">manage_accounts</span>ADMIN
+       </span>`
+    : `<span class="absolute top-1 right-2 inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-full text-[8px] font-bold bg-blue-900/80 text-blue-300 border border-blue-700/60 tracking-wide">
+        <span class="material-symbols-outlined text-[9px]">visibility</span>ATASAN
+       </span>`;
+
   return `
-    <nav class="w-full bg-black shadow-[0_-4px_25px_rgba(0,0,0,0.6)] border-t border-neutral-800 select-none pb-1 sm:pb-2 pt-1" style="background-color: #000000 !important;">
+    <nav class="w-full bg-black shadow-[0_-4px_25px_rgba(0,0,0,0.6)] border-t border-neutral-800 select-none pb-1 sm:pb-2 pt-1 relative" style="background-color: #000000 !important;">
+      ${roleBadge}
       <div class="flex justify-around items-center h-16 sm:h-[68px] px-2 max-w-[430px] mx-auto bg-black" style="background-color: #000000 !important;">
         ${tabs.map((tab) => {
           const isActive = activeRoute === tab.route;

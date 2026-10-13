@@ -31,7 +31,7 @@ function daysUntilDue(dueDate) {
   return Math.round((due - now) / (1000 * 60 * 60 * 24));
 }
 
-export function renderInvestorPage(store) {
+export function renderInvestorPage(store, isAdmin = true) {
   const summary = store.getInvestorSummary ? store.getInvestorSummary() : {};
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
@@ -70,11 +70,18 @@ export function renderInvestorPage(store) {
         </div>
 
         <!-- Action Button -->
+        ${isAdmin ? `
         <button type="button" id="btn-tambah-investor"
           class="glass-primary glass-btn glass-sheen w-full h-12 py-3 text-primary-btn rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]">
           <span class="material-symbols-outlined text-[20px]">add_circle</span>
           <span>+ Tambah Investor Baru</span>
         </button>
+        ` : `
+        <div class="h-10 rounded-xl glass-panel flex items-center justify-center gap-2 text-xs font-semibold text-on-surface-variant">
+          <span class="material-symbols-outlined text-[16px]">visibility</span>
+          <span>Mode Atasan: Pantau Data & Kewajiban Investor</span>
+        </div>
+        `}
 
         <!-- View Controls & Header -->
         <div class="flex items-center justify-between pt-1">
@@ -236,7 +243,7 @@ export function renderInvestorPage(store) {
   `;
 }
 
-export function initInvestorPage(router, store) {
+export function initInvestorPage(router, store, isAdmin = true) {
   bindHeaderEvents(router);
   let deletingId = null;
   let isEditMode = false;
@@ -289,7 +296,7 @@ export function initInvestorPage(router, store) {
                   <th class="py-3 px-3 min-w-[100px]">Jatuh Tempo</th>
                   <th class="py-3 px-2 min-w-[65px] text-center">Tenor</th>
                   <th class="py-3 px-3 min-w-[100px] text-right">Cicilan</th>
-                  <th class="py-3 px-3 min-w-[90px] text-center">Aksi</th>
+                  ${isAdmin ? '<th class="py-3 px-3 min-w-[90px] text-center">Aksi</th>' : ''}
                 </tr>
               </thead>
               <tbody class="divide-y divide-surface-container-high/60">
@@ -327,6 +334,7 @@ export function initInvestorPage(router, store) {
                       <td class="py-3 px-3 text-right font-bold text-rose-700 font-tabular whitespace-nowrap">
                         ${formatRupiah(cicilan, '')}
                       </td>
+                      ${isAdmin ? `
                       <td class="py-3 px-3 text-center whitespace-nowrap">
                         <div class="inline-flex items-center gap-1">
                           <button type="button" data-edit-investor="${inv.id}" title="Edit"
@@ -345,6 +353,7 @@ export function initInvestorPage(router, store) {
                           </button>
                         </div>
                       </td>
+                      ` : ''}
                     </tr>
                   `;
                 }).join('')}
@@ -419,6 +428,7 @@ export function initInvestorPage(router, store) {
             ` : ''}
 
             <!-- Action Bar -->
+            ${isAdmin ? `
             <div class="border-t border-white/45 px-3 py-2 flex items-center gap-2">
               <button type="button" data-edit-investor="${inv.id}"
                 class="flex-1 py-1.5 rounded-xl glass-chip-btn text-on-surface text-xs font-bold flex items-center justify-center gap-1">
@@ -437,6 +447,7 @@ export function initInvestorPage(router, store) {
                 <span class="material-symbols-outlined text-[15px]">delete_outline</span>
               </button>
             </div>
+            ` : ''}
           </div>
         `;
       }).join('');

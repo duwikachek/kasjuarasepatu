@@ -15,7 +15,16 @@ export function renderPinLoginPage() {
       <div class="w-full max-w-[320px] mx-auto my-4">
         <div class="flex flex-col items-center mb-6">
           <span class="font-label-md text-sm font-semibold uppercase tracking-wider" style="color:#ffffff;">Buka Buku Kas</span>
-          <p class="font-body-sm text-xs mt-0.5" style="color:rgba(255,255,255,0.6);">Masukkan 6 Digit PIN Kasir / Pemilik</p>
+          <p class="font-body-sm text-xs mt-0.5 text-center" style="color:rgba(255,255,255,0.6);">Masukkan 6 Digit PIN Admin atau Atasan</p>
+          
+          <div class="mt-3 flex items-center justify-center gap-2">
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-emerald-950/80 border border-emerald-700/60 text-emerald-300 text-[10px] font-bold">
+              <span class="material-symbols-outlined text-[12px]">manage_accounts</span>Admin: 123456
+            </span>
+            <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full bg-blue-950/80 border border-blue-700/60 text-blue-300 text-[10px] font-bold">
+              <span class="material-symbols-outlined text-[12px]">visibility</span>Atasan: 888888
+            </span>
+          </div>
           
           <!-- PIN Indicator Dots -->
           <div id="pin-indicator-group" class="flex items-center gap-3.5 mt-5">
@@ -77,7 +86,9 @@ export function renderPinLoginPage() {
 
 export function initPinLoginPage(router, store) {
   let pin = '';
-  const expectedPin = store.getShop().pin || '123456';
+  const shop = store.getShop();
+  const adminPin = shop.pin || '123456';
+  const atasanPin = shop.pinAtasan || '888888'; // default pin atasan jika belum diset
   const dots = document.querySelectorAll('#pin-indicator-group > div');
   const errorMsg = document.getElementById('pin-error-msg');
 
@@ -96,9 +107,21 @@ export function initPinLoginPage(router, store) {
   }
 
   function verifyPin() {
-    if (pin === expectedPin) {
+    let detectedRole = null;
+
+    if (pin === adminPin) {
+      detectedRole = 'admin';
+    } else if (atasanPin && pin === atasanPin) {
+      detectedRole = 'atasan';
+    }
+
+    if (detectedRole) {
+      // Simpan role ke session
+      store.setRole(detectedRole);
+
       if (errorMsg) errorMsg.textContent = '';
-      showToast('Autentikasi Berhasil. Selamat Datang!', 'success');
+      const greeting = detectedRole === 'admin' ? 'Selamat Datang, Admin!' : 'Selamat Datang, Atasan!';
+      showToast(greeting, 'success');
       setTimeout(() => {
         // Paksa navigate ke dashboard — gunakan router global sbg fallback
         const activeRouter = window.__APP_ROUTER__ || router;

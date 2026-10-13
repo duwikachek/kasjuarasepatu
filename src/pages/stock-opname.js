@@ -65,7 +65,7 @@ function renderOpnameCard(record) {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderStockOpnamePage(store) {
+export function renderStockOpnamePage(store, isAdmin = true) {
   const records = store.getOpnameRecords();
   const available = store.getAvailableProducts();
   const stockSystem = available.length;
@@ -113,6 +113,7 @@ export function renderStockOpnamePage(store) {
         </section>
 
         <!-- CTA -->
+        ${isAdmin ? `
         <button
           type="button"
           id="btn-mulai-opname"
@@ -121,6 +122,12 @@ export function renderStockOpnamePage(store) {
           <span class="material-symbols-outlined text-[16px]">add_task</span>
           <span class="font-bold">+ Mulai Opname Baru</span>
         </button>
+        ` : `
+        <div class="h-9 rounded-lg glass-panel flex items-center justify-center gap-1.5 font-label-md text-[11px] text-on-surface-variant">
+          <span class="material-symbols-outlined text-[14px]">visibility</span>
+          <span>Mode Atasan: Pantau Riwayat & Hasil Opname</span>
+        </div>
+        `}
 
         <!-- Riwayat -->
         <div class="flex items-center justify-between">
@@ -146,7 +153,7 @@ export function renderStockOpnamePage(store) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
-export function initStockOpnamePage(router, store) {
+export function initStockOpnamePage(router, store, isAdmin = true) {
   bindHeaderEvents(router);
 
   // Tombol mulai opname baru

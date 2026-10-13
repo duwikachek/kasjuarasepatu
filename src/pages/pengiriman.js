@@ -22,7 +22,7 @@ function statusPillHtml(st) {
   return `<button type="button" data-status-pill="${st}" class="shipment-status-pill flex flex-col items-center justify-center gap-0.5 p-1.5 rounded-lg border-2 border-transparent text-[9px] font-bold ${cfg.bg} ${cfg.color} active:scale-95 transition-all"><span class="material-symbols-outlined text-[16px]">${cfg.icon}</span><span>${cfg.label}</span></button>`;
 }
 
-export function renderPengirimanPage(store, activeTab) {
+export function renderPengirimanPage(store, activeTab, isAdmin = true) {
   activeTab = activeTab || 'kemas';
   const summary = store.getShipmentSummary ? store.getShipmentSummary() : {};
   const tabs = ['kemas', 'kirim', 'hold', 'selesai'];
@@ -57,7 +57,7 @@ export function renderPengirimanPage(store, activeTab) {
   `;
 }
 
-export function initPengirimanPage(router, store, activeTab) {
+export function initPengirimanPage(router, store, activeTab, isAdmin = true) {
   activeTab = activeTab || 'kemas';
   bindHeaderEvents(router);
   let currentTab = activeTab;
@@ -102,12 +102,17 @@ export function initPengirimanPage(router, store, activeTab) {
             <p class="text-[10px] text-on-surface-variant truncate">${itemPreview}</p>
             ${trx.shippingResi ? `<p class="text-[10px] text-primary font-mono mt-0.5">${trx.shippingResi}</p>` : ''}
             ${trx.shippingNote ? `<p class="text-[9px] text-on-surface-variant italic mt-0.5">${trx.shippingNote}</p>` : ''}
-          </div>
+          ${isAdmin ? `
           <div class="border-t border-white/45 px-2.5 py-1.5 flex items-center gap-1.5">
             <button type="button" data-edit-shipment="${trx.id}" class="glass-chip-btn flex-1 py-1.5 rounded-lg text-on-secondary-container text-[10px] font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">edit_note</span><span>Update</span></button>
             ${nextCfg ? `<button type="button" data-quick-next="${trx.id}" data-next-status="${cfg.nextStatus}" class="glass-primary glass-btn flex-1 py-1.5 rounded-lg text-primary-btn text-[10px] font-bold flex items-center justify-center gap-1"><span class="material-symbols-outlined text-[13px]">${nextCfg.icon}</span><span>${cfg.nextLabel}</span></button>` : ''}
             ${currentTab !== 'hold' ? `<button type="button" data-hold-shipment="${trx.id}" class="glass-rose glass-btn px-2 py-1.5 rounded-lg text-rose-700 text-[10px] font-bold flex items-center justify-center"><span class="material-symbols-outlined text-[13px]">pause_circle</span></button>` : ''}
           </div>
+          ` : `
+          <div class="border-t border-white/45 px-2.5 py-1 text-center text-[10px] text-on-surface-variant font-medium">
+            Mode Pantau Pengiriman
+          </div>
+          `}
         </div>
       `;
     }).join('');

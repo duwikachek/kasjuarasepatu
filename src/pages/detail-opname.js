@@ -51,7 +51,7 @@ function renderExtraItem(item) {
 
 // ─── Render ───────────────────────────────────────────────────────────────────
 
-export function renderDetailOpnamePage(store, params = {}) {
+export function renderDetailOpnamePage(store, params = {}, isAdmin = true) {
   const records = store.getOpnameRecords();
   const record = records.find((r) => r.id === params.id) || records[0] || null;
 
@@ -129,15 +129,17 @@ export function renderDetailOpnamePage(store, params = {}) {
           </div>
         </div>
 
-        <!-- Hapus Opname ini -->
+        <!-- Hapus / Salin Opname ini -->
         <div class="flex gap-2">
+          ${isAdmin ? `
           <button type="button" id="btn-delete-opname"
             class="flex-1 h-10 rounded-xl bg-rose-500/10 border border-rose-500/30 text-rose-400 text-xs font-bold flex items-center justify-center gap-1 active:scale-[0.98] transition-all">
             <span class="material-symbols-outlined text-[16px]">delete</span>
             Hapus Riwayat
           </button>
+          ` : ''}
           <button type="button" id="btn-share-opname"
-            class="flex-1 h-10 rounded-xl bg-neutral-800 border border-neutral-700 text-neutral-300 text-xs font-bold flex items-center justify-center gap-1 active:scale-[0.98] transition-all">
+            class="${isAdmin ? 'flex-1' : 'w-full'} h-10 rounded-xl bg-neutral-800 border border-neutral-700 text-neutral-300 text-xs font-bold flex items-center justify-center gap-1 active:scale-[0.98] transition-all">
             <span class="material-symbols-outlined text-[16px]">share</span>
             Salin Laporan
           </button>
@@ -192,7 +194,7 @@ export function renderDetailOpnamePage(store, params = {}) {
 
 // ─── Init ─────────────────────────────────────────────────────────────────────
 
-export function initDetailOpnamePage(router, store, params = {}) {
+export function initDetailOpnamePage(router, store, params = {}, isAdmin = true) {
   bindHeaderEvents(router);
 
   // Toggle daftar cocok

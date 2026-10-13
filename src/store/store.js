@@ -524,6 +524,49 @@ class Store {
     this.notify();
   }
 
+  // ── Role Management (Admin vs Atasan) ─────────────────────────────────────
+  /**
+   * Dapatkan role yang sedang aktif dari sessionStorage.
+   * @returns {'admin'|'atasan'|null}
+   */
+  getRole() {
+    try {
+      return sessionStorage.getItem('kas_juara_role') || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  /**
+   * Set role setelah login berhasil.
+   * @param {'admin'|'atasan'} role
+   */
+  setRole(role) {
+    try {
+      sessionStorage.setItem('kas_juara_role', role);
+    } catch (e) {
+      console.warn('[Role] Gagal menyimpan role:', e.message);
+    }
+  }
+
+  /**
+   * Cek apakah user yang login adalah Admin.
+   * @returns {boolean}
+   */
+  isAdmin() {
+    return this.getRole() === 'admin';
+  }
+
+  /**
+   * Logout: hapus role dari session dan redirect ke login.
+   */
+  logout() {
+    try {
+      sessionStorage.removeItem('kas_juara_role');
+    } catch (e) { /* ignore */ }
+  }
+  // ──────────────────────────────────────────────────────────────────────────
+
   // Transactions
   getTransactions() {
     return this.state.transactions || [];

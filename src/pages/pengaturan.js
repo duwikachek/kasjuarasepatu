@@ -3,7 +3,7 @@ import { showToast } from '../components/toast.js';
 import { formatRupiah, parseRupiah } from '../store/store.js';
 import { testSpreadsheetConnection, syncAllToGoogleSheets, extractSpreadsheetId, getCredentials } from '../services/googleSheets.js';
 
-export function renderPengaturanPage(store) {
+export function renderPengaturanPage(store, isAdmin = true) {
   const shop = store.getShop();
   const initialLaci = Number(shop.initialBalanceLaci ?? 8450000);
   const initialBank = Number(shop.initialBalanceBank ?? 6400000);
@@ -20,6 +20,16 @@ export function renderPengaturanPage(store) {
       })}
 
       <div class="flex flex-col w-full px-4 pt-2.5 pb-20 gap-2.5">
+        ${!isAdmin ? `
+        <div class="glass-panel border border-blue-500/40 rounded-xl p-3 flex items-center gap-2.5 text-blue-300">
+          <span class="material-symbols-outlined text-2xl text-blue-400 shrink-0">visibility</span>
+          <div class="flex flex-col text-xs">
+            <strong class="font-bold text-blue-200">Mode Atasan (Hanya Lihat)</strong>
+            <span class="text-neutral-300">Anda dapat meninjau data pengaturan toko, namun tidak dapat mengubah profil, saldo awal, atau PIN.</span>
+          </div>
+        </div>
+        ` : ''}
+
         <!-- Modal / Saldo Kas Awal Toko Card -->
         <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5">
           <div class="flex items-center justify-between">
@@ -156,27 +166,49 @@ export function renderPengaturanPage(store) {
           <div class="flex flex-col gap-2 divide-y divide-white/45">
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
-                <span class="font-label-md text-xs font-semibold text-on-surface">PIN Masuk Toko</span>
+                <span class="font-label-md text-xs font-semibold text-on-surface">PIN Admin (Full Akses)</span>
                 <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pin || '123456'}</strong></span>
               </div>
+              ${isAdmin ? `
               <button 
                 type="button" 
                 id="btn-change-pin"
                 class="px-3 py-1.5 rounded-lg glass-chip-btn text-primary font-label-md text-xs font-semibold"
               >
-                Ubah PIN
+                Ubah PIN Admin
               </button>
+              ` : `<span class="text-[10px] text-neutral-400 font-semibold italic">Hanya Admin</span>`}
             </div>
 
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
-                <span class="font-label-md text-xs font-semibold text-on-surface">Kunci Aplikasi Sekarang</span>
+                <span class="font-label-md text-xs font-semibold text-on-surface">PIN Atasan (Lihat Saja / Read-Only)</span>
+                <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pinAtasan || '888888'}</strong></span>
+              </div>
+              ${isAdmin ? `
+              <button 
+                type="button" 
+                id="btn-change-pin-atasan"
+                class="px-3 py-1.5 rounded-lg glass-chip-btn text-primary font-label-md text-xs font-semibold"
+              >
+                Ubah PIN Atasan
+              </button>
+              ` : `<span class="text-[10px] text-neutral-400 font-semibold italic">Hanya Admin</span>`}
+            </div>
+
+            <div class="flex items-center justify-between py-2">
+              <div class="flex flex-col">
+                <span class="font-label-md text-xs font-semibold text-on-surface">Kunci / Keluar Aplikasi</span>
                 <span class="text-[11px] text-on-surface-variant">Keluar ke layar PIN login</span>
               </div>
               <button 
                 type="button" 
                 id="btn-lock-app"
-                class="px-3 py-1.5 rounded-lg glass-rose text-rose-800 font-label-md text-xs font-semibold flex items-center gap-1"
+                class="px-3 py-1.5 rounded-lg glass-rose text-rose-800 font-label-md text-xs font-semibold flex items-center gap-1 active:scale-95"
+              >
+                <span class="material-symbols-outlined text-[14px]">lock</span>
+                <span>Kunci</span>
+              </button>
             </div>
           </div>
         </section>
@@ -506,7 +538,7 @@ export function renderPengaturanPage(store) {
   `;
 }
 
-export function initPengaturanPage(router, store) {
+export function initPengaturanPage(router, store, isAdmin = true) {
   bindHeaderEvents(router);
 
   // Saldo Kas Awal Handlers
@@ -576,15 +608,31 @@ export function initPengaturanPage(router, store) {
     });
   }
 
-  // Change PIN
+  // Change PIN Admin
   const btnPin = document.getElementById('btn-change-pin');
-  if (btnPin) {
+  if (btnPin && isAdmin) {
     btnPin.addEventListener('click', () => {
       const currentPin = store.getShop().pin || '123456';
-      const newPin = prompt(`Masukkan 6 digit PIN baru (saat ini: ${currentPin}):`, currentPin);
+      const newPin = prompt(`Masukkan 6 digit PIN Admin baru (saat ini: ${currentPin}):`, currentPin);
       if (newPin && newPin.trim().length === 6 && /^\d+$/.test(newPin.trim())) {
         store.updateShop({ pin: newPin.trim() });
-        showToast('PIN berhasil diubah!', 'success');
+        showToast('PIN Admin berhasil diubah!', 'success');
+        router.navigate('pengaturan');
+      } else if (newPin !== null) {
+        showToast('PIN harus berupa 6 angka.', 'error');
+      }
+    });
+  }
+
+  // Change PIN Atasan
+  const btnPinAtasan = document.getElementById('btn-change-pin-atasan');
+  if (btnPinAtasan && isAdmin) {
+    btnPinAtasan.addEventListener('click', () => {
+      const currentPinAtasan = store.getShop().pinAtasan || '888888';
+      const newPin = prompt(`Masukkan 6 digit PIN Atasan baru (saat ini: ${currentPinAtasan}):`, currentPinAtasan);
+      if (newPin && newPin.trim().length === 6 && /^\d+$/.test(newPin.trim())) {
+        store.updateShop({ pinAtasan: newPin.trim() });
+        showToast('PIN Atasan berhasil diubah!', 'success');
         router.navigate('pengaturan');
       } else if (newPin !== null) {
         showToast('PIN harus berupa 6 angka.', 'error');
@@ -596,6 +644,7 @@ export function initPengaturanPage(router, store) {
   const btnLock = document.getElementById('btn-lock-app');
   if (btnLock) {
     btnLock.addEventListener('click', () => {
+      store.logout();
       showToast('Aplikasi terkunci.', 'info');
       router.navigate('login');
     });

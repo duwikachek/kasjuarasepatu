@@ -13,6 +13,8 @@ import { renderStockOpnamePage, initStockOpnamePage } from './pages/stock-opname
 import { renderTambahOpnamePage, initTambahOpnamePage } from './pages/tambah-opname.js';
 import { renderDetailOpnamePage, initDetailOpnamePage } from './pages/detail-opname.js';
 import { renderBottomNav, bindBottomNavEvents } from './components/bottom-nav.js';
+import { showToast } from './components/toast.js';
+
 
 export class Router {
   constructor(store, appContainerId = 'app') {
@@ -43,6 +45,12 @@ export class Router {
       for (const [k, v] of searchParams.entries()) {
         params[k] = v;
       }
+    }
+
+    // Guard: jika belum login (tidak ada role di session) paksa ke login
+    if (path !== 'login' && !this.store.getRole()) {
+      window.location.hash = '#/login';
+      return;
     }
 
     this.navigate(path, params, false);
@@ -93,7 +101,7 @@ export class Router {
     const targetRoute = navRoutes[this.currentRoute];
     if (targetRoute) {
       navContainer.style.display = 'block';
-      navContainer.innerHTML = renderBottomNav(targetRoute);
+      navContainer.innerHTML = renderBottomNav(targetRoute, this.store.isAdmin());
       bindBottomNavEvents(this);
     } else {
       navContainer.style.display = 'none';
@@ -113,6 +121,8 @@ export class Router {
     // Update global frozen bottom navigation
     this.updateBottomNav();
 
+    const isAdmin = this.store.isAdmin();
+
     switch (this.currentRoute) {
       case 'login':
         this.container.innerHTML = renderPinLoginPage();
@@ -120,16 +130,22 @@ export class Router {
         break;
 
       case 'dashboard':
-        this.container.innerHTML = renderDashboardPage(this.store);
-        initDashboardPage(this, this.store);
+        this.container.innerHTML = renderDashboardPage(this.store, isAdmin);
+        initDashboardPage(this, this.store, isAdmin);
         break;
 
       case 'transaksi':
-        this.container.innerHTML = renderTransaksiListPage(this.store, this.params.filter || 'all');
-        initTransaksiListPage(this, this.store, this.params.filter || 'all');
+        this.container.innerHTML = renderTransaksiListPage(this.store, this.params.filter || 'all', isAdmin);
+        initTransaksiListPage(this, this.store, this.params.filter || 'all', isAdmin);
         break;
 
       case 'tambah-transaksi':
+        // Atasan tidak bisa input transaksi baru
+        if (!isAdmin) {
+          showToast('Akses Terbatas: Hanya Admin yang bisa menambah transaksi.', 'error');
+          this.navigate('transaksi');
+          return;
+        }
         this.container.innerHTML = renderTambahTransaksiPage(this.store, this.params);
         initTambahTransaksiPage(this, this.store, this.params);
         break;
@@ -137,60 +153,71 @@ export class Router {
       case 'pasok':
       case 'stock':
       case 'barang-masuk':
-        this.container.innerHTML = renderBarangMasukListPage(this.store, this.params.filter || 'all');
-        initBarangMasukListPage(this, this.store, this.params.filter || 'all');
+        this.container.innerHTML = renderBarangMasukListPage(this.store, this.params.filter || 'all', isAdmin);
+        initBarangMasukListPage(this, this.store, this.params.filter || 'all', isAdmin);
         break;
 
       case 'tambah-pasok':
       case 'tambah-stock':
       case 'tambah-barang-masuk':
+        // Atasan tidak bisa menambah barang masuk
+        if (!isAdmin) {
+          showToast('Akses Terbatas: Hanya Admin yang bisa menambah barang.', 'error');
+          this.navigate('pasok');
+          return;
+        }
         this.container.innerHTML = renderTambahBarangMasukPage(this.store, this.params);
         initTambahBarangMasukPage(this, this.store, this.params);
         break;
 
       case 'pengiriman':
-        this.container.innerHTML = renderPengirimanPage(this.store, this.params.tab || 'kemas');
-        initPengirimanPage(this, this.store, this.params.tab || 'kemas');
+        this.container.innerHTML = renderPengirimanPage(this.store, this.params.tab || 'kemas', isAdmin);
+        initPengirimanPage(this, this.store, this.params.tab || 'kemas', isAdmin);
         break;
 
       case 'investor':
-        this.container.innerHTML = renderInvestorPage(this.store);
-        initInvestorPage(this, this.store);
+        this.container.innerHTML = renderInvestorPage(this.store, isAdmin);
+        initInvestorPage(this, this.store, isAdmin);
         break;
 
       case 'laporan':
-        this.container.innerHTML = renderLaporanPage(this.store, this.params.period || 'bulan');
-        initLaporanPage(this, this.store, this.params.period || 'bulan');
+        this.container.innerHTML = renderLaporanPage(this.store, this.params.period || 'bulan', isAdmin);
+        initLaporanPage(this, this.store, this.params.period || 'bulan', isAdmin);
         break;
 
       case 'laporan-stock':
-        this.container.innerHTML = renderLaporanStockPage(this.store);
-        initLaporanStockPage(this, this.store);
+        this.container.innerHTML = renderLaporanStockPage(this.store, isAdmin);
+        initLaporanStockPage(this, this.store, isAdmin);
         break;
 
       case 'pengaturan':
-        this.container.innerHTML = renderPengaturanPage(this.store);
-        initPengaturanPage(this, this.store);
+        this.container.innerHTML = renderPengaturanPage(this.store, isAdmin);
+        initPengaturanPage(this, this.store, isAdmin);
         break;
 
       case 'stock-opname':
-        this.container.innerHTML = renderStockOpnamePage(this.store);
-        initStockOpnamePage(this, this.store);
+        this.container.innerHTML = renderStockOpnamePage(this.store, isAdmin);
+        initStockOpnamePage(this, this.store, isAdmin);
         break;
 
       case 'tambah-opname':
+        if (!isAdmin) {
+          showToast('Akses Terbatas: Hanya Admin yang bisa melakukan Stock Opname.', 'error');
+          this.navigate('stock-opname');
+          return;
+        }
         this.container.innerHTML = renderTambahOpnamePage(this.store);
         initTambahOpnamePage(this, this.store);
         break;
 
       case 'detail-opname':
-        this.container.innerHTML = renderDetailOpnamePage(this.store, this.params);
-        initDetailOpnamePage(this, this.store, this.params);
+        this.container.innerHTML = renderDetailOpnamePage(this.store, this.params, isAdmin);
+        initDetailOpnamePage(this, this.store, this.params, isAdmin);
         break;
 
       default:
-        this.container.innerHTML = renderDashboardPage(this.store);
-        initDashboardPage(this, this.store);
+        this.container.innerHTML = renderDashboardPage(this.store, isAdmin);
+        initDashboardPage(this, this.store, isAdmin);
         break;
     }
 

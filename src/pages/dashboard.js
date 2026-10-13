@@ -3,7 +3,7 @@ import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import logoJuara from '../assets/logo-juara.png';
 
-export function renderDashboardPage(store) {
+export function renderDashboardPage(store, isAdmin = true) {
   const shop = store.getShop();
   const summary = store.getBalanceSummary();
   const transactions = store.getTransactions();
@@ -60,10 +60,10 @@ export function renderDashboardPage(store) {
               <span class="font-label-sm text-[10px] uppercase tracking-wide">${todayStr}</span>
             </div>
             <h1 class="font-headline-md text-lg font-bold text-on-surface truncate">
-              Halo, ${shop.owner || 'Pak Hendra'}
+              Halo, ${!isAdmin ? 'Atasan' : (shop.owner || 'Pak Hendra')}
             </h1>
             <span class="font-body-sm text-[11px] text-on-surface-variant flex items-center gap-1">
-              Pemilik • ${shop.name}
+              ${!isAdmin ? 'Mode Pantau (Hanya Lihat)' : 'Pemilik'} • ${shop.name}
             </span>
           </div>
 
@@ -143,6 +143,7 @@ export function renderDashboardPage(store) {
 
         <!-- Quick Action Buttons -->
         <section class="grid grid-cols-2 gap-2">
+          ${isAdmin ? `
           <button 
             type="button" 
             data-action="tambah-masuk"
@@ -178,6 +179,27 @@ export function renderDashboardPage(store) {
             <span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
             <span>Kelola Pengiriman</span>
           </button>
+          ` : `
+          <div class="col-span-2 glass-panel p-2.5 rounded-lg flex items-center justify-between">
+            <div class="flex items-center gap-2 text-blue-400 font-semibold text-xs">
+              <span class="material-symbols-outlined text-[18px]">visibility</span>
+              <span>Mode Pantau Atasan (Lihat Saja)</span>
+            </div>
+            <span class="text-[10px] text-on-surface-variant font-medium">Input kas & stok hanya untuk Admin</span>
+          </div>
+
+          <button 
+            type="button" 
+            data-action="lihat-pengiriman"
+            class="glass-neutral glass-btn glass-sheen relative overflow-hidden col-span-2 h-10 rounded-lg text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-between px-3 active:scale-[0.98]"
+          >
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-[16px] text-primary">local_shipping</span>
+              <span>Pantau Status Pengiriman Sepatu</span>
+            </div>
+            <span class="material-symbols-outlined text-[14px] text-on-surface-variant">chevron_right</span>
+          </button>
+          `}
 
           <button 
             type="button" 
@@ -376,7 +398,7 @@ export function renderDashboardPage(store) {
   `;
 }
 
-export function initDashboardPage(router, store) {
+export function initDashboardPage(router, store, isAdmin = true) {
   bindHeaderEvents(router);
 
   // Hitung laporan stok di background (idle callback) agar render awal tidak tertunda

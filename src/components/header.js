@@ -64,6 +64,15 @@ export function renderHeader({
             </button>
             <button 
               type="button" 
+              id="header-lock-btn" 
+              class="w-8 h-8 rounded-full bg-neutral-900 hover:bg-neutral-800 text-neutral-400 hover:text-white flex items-center justify-center shadow-sm border border-neutral-800 active:scale-90 transition-all"
+              aria-label="Kunci / Keluar"
+              title="Kunci / Ganti Akun"
+            >
+              <span class="material-symbols-outlined text-[16px]">lock</span>
+            </button>
+            <button 
+              type="button" 
               data-nav="pengaturan" 
               class="w-8 h-8 rounded-full bg-neutral-800 hover:bg-neutral-700 text-neutral-200 hover:text-white flex items-center justify-center ml-0.5 shadow-sm border border-neutral-700 active:scale-90 transition-all"
               aria-label="Pengaturan Toko"
@@ -85,6 +94,25 @@ export function bindHeaderEvents(router) {
       router.navigate(target || 'dashboard');
     });
   });
+
+  document.querySelectorAll('header [data-nav]').forEach((btn) => {
+    btn.addEventListener('click', (e) => {
+      e.preventDefault();
+      const target = btn.getAttribute('data-nav');
+      if (target) router.navigate(target);
+    });
+  });
+
+  const lockBtn = document.getElementById('header-lock-btn');
+  if (lockBtn) {
+    lockBtn.addEventListener('click', () => {
+      if (router.store && router.store.logout) {
+        router.store.logout();
+      }
+      showToast('Aplikasi terkunci.', 'info');
+      router.navigate('login');
+    });
+  }
 
   const notifBtn = document.getElementById('header-notif-btn');
   if (notifBtn) {

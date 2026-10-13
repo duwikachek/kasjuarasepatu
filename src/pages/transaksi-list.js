@@ -2,7 +2,7 @@ import { formatRupiah, parseRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
-export function renderTransaksiListPage(store, filterType = 'all') {
+export function renderTransaksiListPage(store, filterType = 'all', isAdmin = true) {
   const summary = store.getBalanceSummary();
   const transactions = store.getTransactions();
 
@@ -48,15 +48,18 @@ export function renderTransaksiListPage(store, filterType = 'all') {
           </div>
         </section>
 
-        <!-- Button Catat Transaksi Baru -->
-        <button 
+        <!-- Button Catat Transaksi Baru (Admin only) -->
+        ${isAdmin ? `<button 
           type="button" 
           id="btn-goto-tambah-trx"
           class="glass-primary glass-btn glass-sheen w-full h-12 text-primary-btn rounded-xl flex items-center justify-center gap-2 font-label-md text-sm active:scale-[0.99]"
         >
           <span class="material-symbols-outlined text-[20px]">add_circle</span>
           <span class="font-bold">+ Catat Transaksi Baru</span>
-        </button>
+        </button>` : `<div class="w-full h-9 rounded-xl glass-panel flex items-center justify-center gap-1.5 text-on-surface-variant font-label-md text-xs">
+          <span class="material-symbols-outlined text-[15px]">visibility</span>
+          <span>Mode Lihat Saja — Atasan tidak bisa menambah transaksi</span>
+        </div>`}
 
         <!-- Search Bar -->
         <div class="relative w-full">
@@ -110,7 +113,7 @@ export function renderTransaksiListPage(store, filterType = 'all') {
 
 
 
-export function initTransaksiListPage(router, store, initialFilter = 'all') {
+export function initTransaksiListPage(router, store, initialFilter = 'all', isAdmin = true) {
   bindHeaderEvents(router);
 
   // Add-Item bottom sheet state
@@ -445,7 +448,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                 </span>
               </div>
               <div class="flex items-center gap-1 mt-1">
-                <button 
+                ${isAdmin ? `<button 
                   type="button" 
                   data-edit-trx="${trx.id}"
                   data-type="${trx.type}"
@@ -461,7 +464,10 @@ export function initTransaksiListPage(router, store, initialFilter = 'all') {
                 >
                   <span class="material-symbols-outlined text-[11px]">delete</span>
                   <span>Hapus</span>
-                </button>
+                </button>` : `<span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded text-on-surface-variant text-[9px]">
+                  <span class="material-symbols-outlined text-[10px]">lock</span>
+                  <span>Read-only</span>
+                </span>`}
               </div>
             </div>
           `).join('')}

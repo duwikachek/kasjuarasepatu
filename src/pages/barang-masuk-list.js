@@ -2,7 +2,7 @@ import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
-export function renderBarangMasukListPage(store, filterStatus = 'all') {
+export function renderBarangMasukListPage(store, filterStatus = 'all', isAdmin = true) {
   const supplies = store.getSupplies();
   
   const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { summary: { totalSisaPasang: 0 } };
@@ -50,14 +50,17 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
 
         <!-- Action Buttons: Belanja Baru, Laporan Sisa Stock, Stock Opname -->
         <div class="grid grid-cols-2 gap-2">
-          <button 
+          ${isAdmin ? `<button 
             type="button" 
             id="btn-goto-tambah-pasok"
             class="glass-primary glass-btn glass-sheen h-10 text-primary-btn rounded-lg flex items-center justify-center gap-1 font-label-md text-[11px] sm:text-xs active:scale-[0.99]"
           >
             <span class="material-symbols-outlined text-[16px]">add_box</span>
             <span class="font-bold">+ Belanja Baru</span>
-          </button>
+          </button>` : `<div class="h-10 rounded-lg glass-panel flex items-center justify-center gap-1 font-label-md text-[10px] text-on-surface-variant">
+            <span class="material-symbols-outlined text-[13px]">visibility</span>
+            <span>Mode Lihat Saja</span>
+          </div>`}
           <button 
             type="button" 
             id="btn-goto-laporan-stock"
@@ -68,14 +71,14 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
           </button>
         </div>
 
-        <button 
+        ${isAdmin ? `<button 
           type="button" 
           id="btn-goto-stock-opname"
           class="glass-card glass-sheen h-9 border border-neutral-700/60 hover:border-neutral-500 rounded-lg flex items-center justify-center gap-1 font-label-md text-[11px] text-neutral-300 active:scale-[0.99]"
         >
           <span class="material-symbols-outlined text-[14px] text-emerald-400">fact_check</span>
           <span>Stock Opname (Cek Fisik Sepatu)</span>
-        </button>
+        </button>` : ''}
 
         <!-- Search Bar -->
         <div class="relative w-full">
@@ -112,7 +115,7 @@ export function renderBarangMasukListPage(store, filterStatus = 'all') {
   `;
 }
 
-export function initBarangMasukListPage(router, store, initialFilter = 'all') {
+export function initBarangMasukListPage(router, store, initialFilter = 'all', isAdmin = true) {
   bindHeaderEvents(router);
 
   let currentFilter = initialFilter;
@@ -289,7 +292,8 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
             <div id="detail-${supply.id}" class="pasok-detail ${isOpen ? '' : 'hidden'} text-[11px] text-on-surface-variant italic px-1 pt-1">Tidak ada rincian barang pada nota ini.</div>
           `}
 
-          <!-- Action Buttons: + Tambah Barang, Edit & Hapus -->
+          <!-- Action Buttons: + Tambah Barang, Edit & Hapus (Admin Only) -->
+          ${isAdmin ? `
           <div class="flex items-center justify-end gap-1 pt-1 border-t border-white/45 flex-wrap">
               <button 
                 type="button" 
@@ -321,6 +325,7 @@ export function initBarangMasukListPage(router, store, initialFilter = 'all') {
                 <span>Hapus</span>
               </button>
             </div>
+          ` : ''}
         </div>
       `;
     }).join('');
