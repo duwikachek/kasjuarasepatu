@@ -533,35 +533,35 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
       return;
     }
 
-    // Group transactions by nota (faktur)
+    // Group transactions by nota (faktur) — inklusif: semua nota di-group,
+    // termasuk nota dari belanja barang masuk (contoh: BALL01-788).
     const groupedByNota = new Map();
-    const ungrouped = [];
-    
+
     list.forEach((trx) => {
-      if (trx.nota && (trx.nota.startsWith('#FAK-') || trx.nota.startsWith('#BLJ-'))) {
+      if (trx.nota) {
         if (!groupedByNota.has(trx.nota)) {
           groupedByNota.set(trx.nota, []);
         }
         groupedByNota.get(trx.nota).push(trx);
       } else {
-        ungrouped.push(trx);
+        // Transaksi tanpa nota — buat key unik agar tetap ditampilkan
+        const key = '__solo__' + trx.id;
+        groupedByNota.set(key, [trx]);
       }
     });
 
-    // Render grouped transactions first, then ungrouped
+    // Render semua grup: jika hanya 1 transaksi tampilkan biasa, jika >1 tampilkan dropdown
     const groupedHTML = Array.from(groupedByNota.entries()).map(([nota, transactions]) => {
       if (transactions.length === 1) {
         // Single transaction - render normally
         return renderSingleTransaction(transactions[0]);
       } else {
-        // Multiple transactions with same nota - render as group
+        // Multiple transactions with same nota - render as collapsible group
         return renderGroupedTransactions(nota, transactions);
       }
     }).join('');
 
-    const ungroupedHTML = ungrouped.map((trx) => renderSingleTransaction(trx)).join('');
-
-    container.innerHTML = groupedHTML + ungroupedHTML;
+    container.innerHTML = groupedHTML;
 
     // Bind Toggle Group buttons (for grouped transactions by nota)
     container.querySelectorAll('.btn-toggle-group').forEach((btn) => {
