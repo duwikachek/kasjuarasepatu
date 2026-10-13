@@ -15,7 +15,7 @@ export function renderPinLoginPage() {
       <div class="w-full max-w-[320px] mx-auto my-4">
         <div class="flex flex-col items-center mb-6">
           <span class="font-label-md text-sm font-semibold uppercase tracking-wider" style="color:#ffffff;">Buka Buku Kas</span>
-          <p class="font-body-sm text-xs mt-0.5 text-center" style="color:rgba(255,255,255,0.6);">Masukkan 6 Digit PIN Admin atau Atasan</p>
+          <p class="font-body-sm text-xs mt-0.5 text-center" style="color:rgba(255,255,255,0.6);">Masukkan 6 Digit PIN</p>
           
           <!-- PIN Indicator Dots -->
           <div id="pin-indicator-group" class="flex items-center gap-3.5 mt-5">
