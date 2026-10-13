@@ -640,7 +640,7 @@ class Store {
   addSupply(supply) {
     const newSupply = {
       id: `PASOK-${Date.now()}`,
-      invoiceNo: supply.invoiceNo || `#BLJ-${Math.floor(100 + Math.random() * 900)}`,
+      invoiceNo: supply.invoiceNo || `${((supply.supplierName || 'BALL').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_-]/g, '')) || 'BALL'}-${Math.floor(100 + Math.random() * 900)}`,
       date: supply.date || new Date().toISOString().split('T')[0],
       status: supply.status || 'lunas',
       ...supply

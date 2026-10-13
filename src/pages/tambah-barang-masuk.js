@@ -238,6 +238,9 @@ export function renderTambahBarangMasukPage(store, params = {}) {
   const defaultDate = targetSupply ? targetSupply.date : new Date().toISOString().split('T')[0];
   const defaultStatus = targetSupply ? targetSupply.status : 'lunas';
 
+  const cleanPrefix = (defaultSupplier || '').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_-]/g, '') || 'BALL';
+  const initialInvoicePreview = targetSupply ? targetSupply.invoiceNo : `${cleanPrefix}-${Math.floor(100 + Math.random() * 900)}`;
+
   let initialItems = [];
   if (isEdit && targetSupply && targetSupply.items && targetSupply.items.length > 0) {
     initialItems = targetSupply.items.map((it) => createNewItem(it));
@@ -322,19 +325,27 @@ export function renderTambahBarangMasukPage(store, params = {}) {
         ` : `
           <!-- Data Barang Masuk & Tanggal (Untuk Belanja Baru atau Edit) -->
           <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-primary text-[18px]">inventory_2</span>
-              <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Data Barang Masuk</span>
+            <div class="flex items-center justify-between">
+              <div class="flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-primary text-[18px]">inventory_2</span>
+                <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Data Barang Masuk</span>
+              </div>
+              <span id="preview-invoice-no-badge" class="font-mono text-[10px] bg-primary/15 text-primary border border-primary/30 px-2 py-0.5 rounded-full font-bold">
+                ${initialInvoicePreview}
+              </span>
             </div>
             
             <div class="flex flex-col gap-1">
-              <label class="font-label-sm text-xs text-on-surface-variant font-semibold">Ball</label>
+              <div class="flex items-center justify-between">
+                <label class="font-label-sm text-xs text-on-surface-variant font-semibold">Ball</label>
+                <span class="text-[10px] text-on-surface-variant font-mono">Faktur: <strong class="text-primary font-bold" id="text-faktur-preview">${initialInvoicePreview}</strong></span>
+              </div>
               <input 
                 type="text" 
                 id="input-suplier-name" 
                 placeholder="No Ball" 
                 value="${defaultSupplier}"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container font-semibold"
                 required
               />
             </div>
@@ -552,6 +563,46 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   const btnAddMore = document.getElementById('btn-add-more-item');
   const totalDisplay = document.getElementById('total-belanja-display');
   const totalBadge = document.getElementById('label-total-pasang-badge');
+
+  // Generator & state nomor faktur otomatis berdasarkan No Ball + 3 digit unik
+  function cleanBallToPrefix(raw) {
+    const clean = (raw || '').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_-]/g, '');
+    return clean || 'BALL';
+  }
+
+  const existingSupplies = store.getSupplies ? store.getSupplies() : [];
+  const existingInvSet = new Set(existingSupplies.map((s) => (s.invoiceNo || '').toUpperCase()));
+
+  function generateUnique3Digits(prefix) {
+    for (let i = 0; i < 100; i++) {
+      const candidateDigits = Math.floor(100 + Math.random() * 900);
+      const testNo = `${prefix}-${candidateDigits}`;
+      if (!existingInvSet.has(testNo.toUpperCase())) {
+        return candidateDigits;
+      }
+    }
+    return Math.floor(100 + Math.random() * 900);
+  }
+
+  let randomSuffix3Digits = generateUnique3Digits(cleanBallToPrefix(targetSupply ? targetSupply.supplierName : 'BALL'));
+
+  const inputSuplier = document.getElementById('input-suplier-name');
+  const previewFakturBadge = document.getElementById('preview-invoice-no-badge');
+  const previewFakturText = document.getElementById('text-faktur-preview');
+
+  function updateFakturPreview() {
+    if (isEdit || isAppend) return;
+    const val = inputSuplier ? inputSuplier.value : '';
+    const prefix = cleanBallToPrefix(val);
+    const faktur = `${prefix}-${randomSuffix3Digits}`;
+    if (previewFakturBadge) previewFakturBadge.textContent = faktur;
+    if (previewFakturText) previewFakturText.textContent = faktur;
+    return faktur;
+  }
+
+  if (inputSuplier && !isEdit && !isAppend) {
+    inputSuplier.addEventListener('input', updateFakturPreview);
+  }
 
   // Scanner modal states
   let activeScanItemId = null;
@@ -1288,7 +1339,16 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     }
 
     // KASUS 3: BUAT NOTA BELANJA BARU (Bisa Multi-Item)
-    const belanjaNota = `#BLJ-${Math.floor(100 + Math.random() * 900)}`;
+    const prefix = cleanBallToPrefix(suplier);
+    let belanjaNota = `${prefix}-${randomSuffix3Digits}`;
+
+    // Pastikan benar-benar unik di sistem
+    let attempts = 0;
+    while (existingInvSet.has(belanjaNota.toUpperCase()) && attempts < 100) {
+      randomSuffix3Digits = Math.floor(100 + Math.random() * 900);
+      belanjaNota = `${prefix}-${randomSuffix3Digits}`;
+      attempts++;
+    }
 
     store.addSupply({
       invoiceNo: belanjaNota,
