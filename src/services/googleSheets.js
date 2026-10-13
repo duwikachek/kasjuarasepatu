@@ -571,8 +571,8 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // Integer number formatting for non-currency metrics (Row 17: Pasang, Row 20: Transaksi)
-    [16, 19, 22, 30].forEach((rIdx) => {
+    // Integer number formatting for non-currency metrics (Row 17: Pasang, Row 20: Transaksi, Row 23: Sisa Stok, Row 31: Pasang Masuk, Row 32: Item Belanja)
+    [16, 19, 22, 30, 31].forEach((rIdx) => {
       requests.push({
         repeatCell: {
           range: { sheetId: dashSheetId, startRowIndex: rIdx, endRowIndex: rIdx + 1, startColumnIndex: 1, endColumnIndex: 2 },
@@ -1018,19 +1018,19 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[4] REKAP PENGADAAN BARANG (KULAKAN SUPLIER)', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
       [
         'Total Modal Belanja Pengadaan',
-        f('=SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
+        f('=SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
         'Rupiah',
         'Akumulasi seluruh modal belanja kulakan sesuai filter'
       ],
       [
         'Total Pasang Sepatu Masuk',
-        f('=SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
+        f('=SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
         'Pasang',
         'Akumulasi seluruh pasang sepatu masuk sesuai filter'
       ],
       [
         'Total Faktur / Item Belanja Masuk',
-        f('=COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
+        f('=COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
         'Item / Baris',
         'Jumlah item pengadaan tercatat di sistem sesuai filter'
       ],
@@ -1056,8 +1056,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       const safeCat = c.name.replace(/"/g, '""');
       dashboardRows.push([
         c.name,
-        f(`=SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)))`),
-        f(`=COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6))) & " Trx"`),
+        f(`=SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)))`),
+        f(`=COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6))) & " Trx"`),
         f(`=IF($B$11>0, TEXT(B${rNum}/$B$11, "0.0%"), "0%")`)
       ]);
     });
@@ -1071,9 +1071,9 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       const safeSup = s.name.replace(/"/g, '""');
       dashboardRows.push([
         s.name,
-        f(`=SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))`),
-        f(`=SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Psg"`),
-        f(`=COUNTIFS('Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Faktur"`)
+        f(`=SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))`),
+        f(`=SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Psg"`),
+        f(`=COUNTIFS('Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Faktur"`)
       ]);
     });
     dashboardRows.push(['TOTAL PENGADAAN', f('=B30'), f('=B31 & " Psg"'), f('=B32 & " Faktur"')]);
