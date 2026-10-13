@@ -320,21 +320,21 @@ export function renderTambahBarangMasukPage(store, params = {}) {
             ` : ''}
           </div>
         ` : `
-          <!-- Data Suplier & Tanggal (Untuk Belanja Baru atau Edit) -->
- <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
+          <!-- Data Barang Masuk & Tanggal (Untuk Belanja Baru atau Edit) -->
+          <div class="glass-card glass-sheen rounded-2xl p-4 flex flex-col gap-3">
             <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-primary text-[18px]">storefront</span>
-              <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Data Suplier & Tanggal</span>
+              <span class="material-symbols-outlined text-primary text-[18px]">inventory_2</span>
+              <span class="font-label-md text-xs text-primary font-bold uppercase tracking-wider">Data Barang Masuk</span>
             </div>
             
             <div class="flex flex-col gap-1">
-              <label class="font-label-sm text-xs text-on-surface-variant font-semibold">Nama Suplier / Pabrik</label>
+              <label class="font-label-sm text-xs text-on-surface-variant font-semibold">Ball</label>
               <input 
                 type="text" 
                 id="input-suplier-name" 
-                placeholder="Isi nama suplier" 
+                placeholder="No Ball" 
                 value="${defaultSupplier}"
- class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-on-surface font-body-md text-sm focus:outline-none focus:ring-2 focus:ring-on-tertiary-container"
                 required
               />
             </div>
