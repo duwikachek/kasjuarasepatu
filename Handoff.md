@@ -187,28 +187,23 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Format sinkronisasi pada sheet `Pengiriman` diseragamkan menjadi per-baris untuk setiap pasang sepatu yang dikirim.
    - Kolom tabel: No, No. Nota / ID, Tanggal, Jam, Nama Pelanggan, Barcode, Nama Sepatu / Barang, Kondisi, Jumlah (Psg), Harga (Rp), Status Pengiriman, Kurir / Ekspedisi, Nomor Resi, Catatan Pengiriman, serta baris TOTAL di bagian bawah.
 
-10. **Laporan Google Sheets - Sheet Dashboard Interaktif & Grafik Otomatis (13 Okt 2026):**
-    - Merombak total sheet `Dashboard` di Google Sheets menjadi dashboard analitik eksekutif yang dinamis dan interaktif.
-    - **Filter Interaktif (Native Data Validation Dropdown):**
-      - Filter Hari / Periode (Semua Waktu, Hari Ini, 7 Hari Terakhir, 30 Hari Terakhir, Bulan Ini).
-      - Filter Suplier (Semua Suplier + daftar mitra dinamis).
-      - Filter Faktur (Semua Faktur + daftar no faktur pasok aktif).
-    - **KPI Finansial & Arus Kas:**
-      - Total Kas Masuk, Total Kas Keluar, Arus Kas Bersih (Surplus / Defisit), Total Saldo Kas Toko Aktual, Modal Awal Toko.
-    - **Laporan Penjualan Sepatu Laku (Realisasi Aktual):**
-      - Total Pasang Sepatu Laku, Total Omset Penjualan Sepatu, Rata-rata Harga Jual Sepatu, Jumlah Transaksi Penjualan.
-    - **Laporan Sisa Stock (Aktual - Tanpa Asumsi Keuntungan):**
-      - Total Sisa Pasang Sepatu, Nilai Modal Aset Sisa Stok (HPP), Total Model Aktif, Kondisi Bagus, Kondisi Minus.
-    - **Rekap Pengadaan Barang (Kulakan Suplier):**
-      - Total Modal Belanja Pengadaan, Total Pasang Masuk, Total Faktur Belanja, Jumlah Mitra Suplier Aktif.
-      - Tabel rincian pengadaan per-suplier (Suplier, Total Belanja Rp, Total Pasang, Jumlah Faktur).
-    - **Laporan Pengeluaran Kas per Kategori:**
-      - Tabel ringkasan pengeluaran per kategori (Kategori, Total Pengeluaran Rp, Jumlah Transaksi, Proporsi %).
-    - **Integrasi Grafik & Chart Resmi Google Sheets API:**
-      - **Chart 1 (Column):** Perbandingan Arus Kas (Total Masuk vs Total Keluar).
-      - **Chart 2 (Donut/Pie):** Komposisi Stok Sepatu (Terjual vs Sisa Belum Terjual).
-      - **Chart 3 (Donut/Pie):** Proporsi Pengeluaran Kas per Kategori.
-    - **Formatting & Visual:** Tema Executive Navy (`#0F172A` & `#0F3B61`), styling card KPI, format mata uang rupiah `Rp #,##0`, auto clearing `A1:Z300` agar fresh dan rapi setiap kali disinkronkan.
+10. **Laporan Google Sheets - Sheet Dashboard Dark Modern & 4 Grafik Sejajar (13 Okt 2026):**
+    - Merombak visual sheet `Dashboard` di Google Sheets menyerupai desain **Dark Modern Card Dashboard**:
+    - **4 Kartu KPI Atas Berwarna Solid (Highlight Menonjol):**
+      - **Card 1 (Emerald Green):** Total Omset Penjualan Sepatu (Nominal Rp + Jumlah Transaksi).
+      - **Card 2 (Royal Blue):** Total Saldo Kas Toko Aktual (Nominal Rp + Status Kas Sehat/Defisit).
+      - **Card 3 (Crimson Pink):** Total Pengeluaran Kas (Nominal Rp + Frekuensi Biaya).
+      - **Card 4 (Amber Gold):** Sisa Stok Aktual & Nilai Modal HPP (Pasang + Nilai Modal Aset).
+    - **Panel Filter Interaktif (Dark Slate Card):**
+      - Filter Hari/Periode (`B6`), Filter Suplier (`D6`), Filter Faktur (`F6`) via native data validation dropdown Google Sheets.
+    - **Struktur Fungsi & Data Tetap Utuh:**
+      - Panel Data Lengkap: Keuangan & Arus Kas, Penjualan Sepatu Laku Aktual, Sisa Stok Aktual (tanpa asumsi keuntungan), Rekap Pengadaan Barang, Komposisi Stok, Laporan Pengeluaran per Kategori, dan Rekap Pengadaan per Suplier.
+    - **Integrasi 4 Grafik Google Sheets (Grid 2x2 Sejajar):**
+      - **Chart 1 (Top Left / Col F):** Perbandingan Arus Kas (Column Chart).
+      - **Chart 2 (Top Right / Col L):** Komposisi Stok Sepatu (Donut Chart Terjual vs Sisa).
+      - **Chart 3 (Bottom Left / Col F):** Proporsi Pengeluaran Kas per Kategori (Donut Chart).
+      - **Chart 4 (Bottom Right / Col L):** Top Belanja Pengadaan per Suplier (Column Chart).
+    - **Formatting Dark Theme:** Latar gelap `#0F172A` / `#090D16`, teks kontras tinggi `#FFFFFF` & `#E2E8F0`, format currency rupiah `Rp #,##0`.
 
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
