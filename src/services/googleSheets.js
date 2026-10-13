@@ -957,16 +957,18 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ''
     ]);
 
-    // 5. Data Sheet: Pengiriman (Sepatu Terjual)
+    // 5. Data Sheet: Pengiriman (Sepatu Terjual) - Laporan Per-Baris Setiap Sepatu
     const shipmentHeader = [
       'No',
-      'ID Transaksi',
+      'No. Nota / ID',
       'Tanggal',
       'Jam',
       'Nama Pelanggan',
-      'No. Nota',
-      'Detail Sepatu',
-      'Total Pembayaran (Rp)',
+      'Barcode',
+      'Nama Sepatu / Barang',
+      'Kondisi',
+      'Jumlah (Psg)',
+      'Harga (Rp)',
       'Status Pengiriman',
       'Kurir / Ekspedisi',
       'Nomor Resi',
@@ -981,32 +983,87 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     };
 
     const shipmentRows = [shipmentHeader];
-    shipments.forEach((s, i) => {
-      let detailItems = '';
-      if (s.items && Array.isArray(s.items)) {
-        detailItems = s.items.map((it) => `${it.name || 'Sepatu'} (Rp ${it.price || 0})`).join(', ');
-      } else {
-        detailItems = s.productName || s.title || '-';
-      }
+    let shipmentRowIndex = 1;
+    let grandTotalPasangShipment = 0;
+    let grandTotalNilaiShipment = 0;
 
+    shipments.forEach((s) => {
+      const nota = s.nota || s.id || '-';
+      const tgl = s.date || '-';
+      const jam = s.time || '-';
+      const buyer = s.buyer || 'Pelanggan Toko';
       const stKey = s.shippingStatus || 'kemas';
       const stLabel = STATUS_LABEL_MAP[stKey] || stKey;
+      const courier = s.shippingCourier || '-';
+      const resi = s.shippingResi || '-';
+      const note = s.shippingNote || s.note || '-';
 
-      shipmentRows.push([
-        i + 1,
-        s.id || '-',
-        s.date || '-',
-        s.time || '-',
-        s.buyer || 'Pelanggan Toko',
-        s.nota || '-',
-        detailItems,
-        Number(s.amount) || 0,
-        stLabel,
-        s.shippingCourier || '-',
-        s.shippingResi || '-',
-        s.shippingNote || '-'
-      ]);
+      if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+        s.items.forEach((it) => {
+          const qty = 1; // 1 pasang per baris sepatu
+          const price = Number(it.price) || 0;
+          grandTotalPasangShipment += qty;
+          grandTotalNilaiShipment += price;
+
+          shipmentRows.push([
+            shipmentRowIndex++,
+            nota,
+            tgl,
+            jam,
+            buyer,
+            it.barcode || s.barcode || '-',
+            it.name || s.productName || 'Sepatu',
+            it.kondisi || s.kondisi || 'Bagus',
+            qty,
+            price,
+            stLabel,
+            courier,
+            resi,
+            note
+          ]);
+        });
+      } else {
+        const qty = Number(s.itemCount) || 1;
+        const price = Number(s.amount) || 0;
+        grandTotalPasangShipment += qty;
+        grandTotalNilaiShipment += price;
+
+        shipmentRows.push([
+          shipmentRowIndex++,
+          nota,
+          tgl,
+          jam,
+          buyer,
+          s.barcode || '-',
+          s.productName || s.title || 'Sepatu',
+          s.kondisi || 'Bagus',
+          qty,
+          price,
+          stLabel,
+          courier,
+          resi,
+          note
+        ]);
+      }
     });
+
+    // Baris Total di Sheet Pengiriman
+    shipmentRows.push([
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      '',
+      'TOTAL PENGIRIMAN SEPATU',
+      '',
+      grandTotalPasangShipment,
+      grandTotalNilaiShipment,
+      '',
+      '',
+      '',
+      ''
+    ]);
 
     // Step 1: Clear old ranges cleanly in ONE atomic call
     await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchClear`, {
