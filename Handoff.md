@@ -175,6 +175,10 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Opsi sort "Potensi Untung Tertinggi" diganti menjadi "Terjual Terbanyak (Aktual)".
    - Ekspor CSV disesuaikan hanya menyertakan data stok dan realisasi aktual (menghilangkan kolom Potensi Omset dan Potensi Laba).
 
+7. **Laporan Google Sheets - Sheet Barang Masuk Per-Baris Setiap Barang (13 Okt 2026):**
+   - Format sinkronisasi pada sheet `Barang Masuk (Belanja)` di Google Sheets kini dibuat per-baris untuk setiap barang/sepatu yang masuk (misal jika Suplier A membeli 3 sepatu, akan tercatat 3 baris terpisah).
+   - Kolom tabel: No, No. Faktur / ID, Tanggal, Supplier / Sumber, Barcode, Nama Sepatu / Barang, Kondisi, Jumlah (Psg), Harga Modal (Rp), Total Modal (Rp), Status Pembayaran, Metode Bayar, Keterangan / Catatan, dan baris TOTAL di bawahnya.
+
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.

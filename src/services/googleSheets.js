@@ -809,39 +809,108 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ''
     ]);
 
-    // 4. Data Sheet: Barang Masuk (Belanja)
+    // 4. Data Sheet: Barang Masuk (Belanja) - Laporan Per-Baris Setiap Barang/Sepatu
     const supplyHeader = [
       'No',
-      'ID Faktur',
+      'No. Faktur / ID',
       'Tanggal',
       'Supplier / Sumber',
+      'Barcode',
+      'Nama Sepatu / Barang',
+      'Kondisi',
+      'Jumlah (Psg)',
+      'Harga Modal (Rp)',
+      'Total Modal (Rp)',
       'Status Pembayaran',
       'Metode Bayar',
-      'Total Biaya (Rp)',
-      'Jumlah Pasang',
-      'Rincian Barang',
       'Keterangan / Catatan'
     ];
 
     const supplyRows = [supplyHeader];
-    supplies.forEach((s, i) => {
-      let rincian = '';
-      if (s.items && Array.isArray(s.items)) {
-        rincian = s.items.map((it) => `${it.name} (${it.qty || 1} psg @ Rp ${it.buyPrice || 0})`).join('; ');
+    let supplyRowIndex = 1;
+    let grandTotalPasang = 0;
+    let grandTotalBiaya = 0;
+
+    supplies.forEach((s) => {
+      const inv = s.invoiceNo || s.id || '-';
+      const tgl = s.date || '-';
+      const sup = s.supplierName || '-';
+      const statusLabel = s.status === 'lunas' ? 'Lunas' : 'Belum Lunas';
+      const payMethod = s.paymentMethod || 'Tunai (Laci)';
+      const notes = s.notes || '-';
+
+      if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+        s.items.forEach((it) => {
+          const qty = Number(it.qty) || 1;
+          const buyPrice = Number(it.buyPrice) || 0;
+          const totalModal = qty * buyPrice;
+
+          grandTotalPasang += qty;
+          grandTotalBiaya += totalModal;
+
+          let kondisiStr = it.kondisi || 'Bagus';
+          if (it.kondisi === 'Minus' && it.catatanMinus) {
+            kondisiStr = `Minus (${it.catatanMinus})`;
+          }
+
+          supplyRows.push([
+            supplyRowIndex++,
+            inv,
+            tgl,
+            sup,
+            it.barcode || '-',
+            it.name || 'Sepatu',
+            kondisiStr,
+            qty,
+            buyPrice,
+            totalModal,
+            statusLabel,
+            payMethod,
+            notes
+          ]);
+        });
+      } else {
+        const qty = Number(s.itemsCount) || 1;
+        const totalModal = Number(s.totalAmount) || 0;
+        const buyPrice = qty > 0 ? Math.round(totalModal / qty) : totalModal;
+
+        grandTotalPasang += qty;
+        grandTotalBiaya += totalModal;
+
+        supplyRows.push([
+          supplyRowIndex++,
+          inv,
+          tgl,
+          sup,
+          '-',
+          s.notes || 'Pengadaan Sepatu',
+          'Bagus',
+          qty,
+          buyPrice,
+          totalModal,
+          statusLabel,
+          payMethod,
+          notes
+        ]);
       }
-      supplyRows.push([
-        i + 1,
-        s.id || '-',
-        s.date || '-',
-        s.supplierName || '-',
-        s.status === 'lunas' ? 'Lunas' : 'Belum Lunas',
-        s.paymentMethod || 'Tunai (Laci)',
-        Number(s.totalAmount) || 0,
-        Number(s.itemsCount) || 1,
-        rincian,
-        s.notes || '-'
-      ]);
     });
+
+    // Baris Total Pengadaan di Sheet Barang Masuk
+    supplyRows.push([
+      'TOTAL',
+      '',
+      '',
+      '',
+      '',
+      'TOTAL PENGADAAN BARANG',
+      '',
+      grandTotalPasang,
+      '',
+      grandTotalBiaya,
+      '',
+      '',
+      ''
+    ]);
 
     // 5. Data Sheet: Pengiriman (Sepatu Terjual)
     const shipmentHeader = [
