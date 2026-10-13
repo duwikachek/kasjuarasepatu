@@ -951,13 +951,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       [
         'Total Pemasukan Kas (Penjualan)',
         f('=IF(B6="SEMUA TANGGAL", SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"))'),
-        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!A:A, "<>No", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") & " Transaksi", COUNTIFS(\'Kas Masuk\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!A:A, "<>No", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") & " Transaksi")'),
+        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Masuk\'!A:A, ">1") & " Transaksi", COUNTIFS(\'Kas Masuk\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Masuk\'!A:A, ">1") & " Transaksi")'),
         'Penerimaan uang kas penjualan toko'
       ],
       [
         'Total Pengeluaran Kas (Biaya & Belanja)',
         f('=IF(B6="SEMUA TANGGAL", SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"))'),
-        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") & " Transaksi", COUNTIFS(\'Kas Keluar\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") & " Transaksi")'),
+        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Keluar\'!A:A, ">0") & " Transaksi", COUNTIFS(\'Kas Keluar\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Keluar\'!A:A, ">0") & " Transaksi")'),
         'Pengeluaran biaya & operasional toko'
       ],
       [
@@ -1001,7 +1001,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Transaksi Penjualan',
-        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!A:A, "<>No", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!A:A, "<>No", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(B6="SEMUA TANGGAL", COUNTIFS(\'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Nota Penjualan',
         'Jumlah nota transaksi kasir tercatat'
       ],
@@ -1030,7 +1030,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Faktur / Item Belanja Masuk',
-        f('=COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
+        f('=COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
         'Item / Baris',
         'Jumlah item pengadaan tercatat di sistem sesuai filter'
       ],
@@ -1057,7 +1057,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       dashboardRows.push([
         c.name,
         f(`=SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)))`),
-        f(`=COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6))) & " Trx"`),
+        f(`=COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0", 'Kas Keluar'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6))) & " Trx"`),
         f(`=IF($B$11>0, TEXT(B${rNum}/$B$11, "0.0%"), "0%")`)
       ]);
     });
@@ -1073,7 +1073,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         s.name,
         f(`=SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))`),
         f(`=SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Psg"`),
-        f(`=COUNTIFS('Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Faktur"`)
+        f(`=COUNTIFS('Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", "*", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Faktur"`)
       ]);
     });
     dashboardRows.push(['TOTAL PENGADAAN', f('=B30'), f('=B31 & " Psg"'), f('=B32 & " Faktur"')]);
