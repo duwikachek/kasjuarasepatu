@@ -205,6 +205,16 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
       - **Chart 4 (Bottom Right / Col L):** Top Belanja Pengadaan per Suplier (Column Chart).
     - **Formatting Dark Theme:** Latar gelap `#0F172A` / `#090D16`, teks kontras tinggi `#FFFFFF` & `#E2E8F0`, format currency rupiah `Rp #,##0`.
 
+11. **Perbaikan Filter Interaktif Google Sheets Dashboard (13 Okt 2026):**
+    - Mengubah seluruh metrik dashboard, kartu KPI, tabel keuangan, dan pengadaan dari nilai statis menjadi **rumus formula dinamis Google Sheets** yang terhubung langsung ke sel dropdown filter:
+      - **Filter Hari / Periode (`B6`):** Mendukung `'SEMUA TANGGAL'`, `'HARI INI'`, dan tanggal spesifik (`YYYY-MM-DD`). Secara real-time menyaring Kas Masuk, Kas Keluar, Pengadaan, Pengeluaran per Kategori, dan Grafik Arus Kas.
+      - **Filter Suplier (`D6`):** Mendukung `'SEMUA SUPLIER'` dan pilihan nama suplier. Menyaring total pengadaan kulakan, jumlah pasang masuk, faktur, rekap suplier rekanan, dan tabel rincian belanja.
+      - **Filter Faktur (`F6`):** Mendukung `'SEMUA FAKTUR'` dan nomor faktur spesifik.
+      - **Status Filter Dinamis (`H6`):** Menampilkan badge status real-time (`🟢 SEMUA DATA` vs `🔍 AKTIF: [tanggal] [suplier] [faktur]`).
+      - **4 KPI Top Cards Dinamis:** Otomatis menyesuaikan nilai omset, saldo/arus kas periode, pengeluaran, serta modal pengadaan saat filter dipilih.
+      - **Tabel Rincian Hasil Filter ([8]):** Menampilkan spill-table real-time via formula `=IFERROR(FILTER(...))` untuk daftar barang belanja sesuai filter yang aktif.
+      - **Data Validation Dropdown:** Selalu dipastikan aktif pada sel B6, D6, F6 dengan fallback lengkap hingga 30 entri unik.
+
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.
