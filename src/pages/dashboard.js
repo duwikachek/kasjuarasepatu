@@ -30,7 +30,6 @@ export function renderDashboardPage(store, isAdmin = true) {
 
   // Data ringan — tidak memerlukan kalkulasi berat
   const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
-  const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
   // Gunakan cache stock report bila ada, hindari kalkulasi berat di main thread saat render
   const cachedReport = store._stockReportCache;
   const stockReport = cachedReport || { summary: { totalSisaPasang: '...' } };
@@ -228,21 +227,6 @@ export function renderDashboardPage(store, isAdmin = true) {
             <div class="flex items-center gap-1 text-[10px] text-emerald-400 font-bold">
               <span>Buka</span>
               <span class="material-symbols-outlined text-[14px]">chevron_right</span>
-            </div>
-          </button>
-
-          <button 
-            type="button" 
-            data-action="lihat-investor"
-            class="glass-amber glass-btn glass-sheen relative overflow-hidden col-span-2 h-9 rounded-lg text-amber-950 font-label-md text-[11px] font-bold flex items-center justify-between px-3 active:scale-[0.98]"
-          >
-            <div class="flex items-center gap-1.5">
-              <span class="material-symbols-outlined text-[16px] text-amber-700">account_balance_wallet</span>
-              <span>Kelola Investor & Modal Usaha</span>
-            </div>
-            <div class="flex items-center gap-1 text-[10px] text-amber-800">
-              <span class="bg-white/50 text-amber-900 border border-white/60 px-2 py-0.5 rounded-full text-[10px] font-bold">${invSummary.countAktif || 0} Aktif</span>
-              <span class="material-symbols-outlined text-[16px]">chevron_right</span>
             </div>
           </button>
         </section>
@@ -448,11 +432,6 @@ export function initDashboardPage(router, store, isAdmin = true) {
   const btnOpname = document.querySelector('[data-action="lihat-opname"]');
   if (btnOpname) {
     btnOpname.addEventListener('click', () => router.navigate('stock-opname'));
-  }
-
-  const btnInvestor = document.querySelector('[data-action="lihat-investor"]');
-  if (btnInvestor) {
-    btnInvestor.addEventListener('click', () => router.navigate('investor'));
   }
 
   // Toggle Balance Visibility
