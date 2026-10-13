@@ -8,22 +8,27 @@ export function renderDashboardPage(store, isAdmin = true) {
   const summary = store.getBalanceSummary();
   const transactions = store.getTransactions();
   
-  // Group transactions by nota (same logic as transaksi-list.js)
+  // Group transactions by nota — inklusif: semua transaksi dikelompokkan,
+  // termasuk nota dari belanja barang masuk (contoh: BALL01-788).
   const groupedTransactions = {};
   transactions.forEach(trx => {
-    if (trx.nota && (trx.nota.startsWith('#FAK-') || trx.nota.startsWith('#BLJ-'))) {
-      if (!groupedTransactions[trx.nota]) {
-        groupedTransactions[trx.nota] = [];
-      }
-      groupedTransactions[trx.nota].push(trx);
+    const key = trx.nota || ("__single__" + trx.id);
+    if (!groupedTransactions[key]) {
+      groupedTransactions[key] = [];
     }
+    groupedTransactions[key].push(trx);
   });
-  
-  // Get top 4 groups (or less if less groups exist)
+
+  // Top 5 groups sorted by most recent (by id desc)
   const recentGroups = Object.entries(groupedTransactions)
-    .slice(0, 4)
+    .sort(([, a], [, b]) => {
+      const aId = (a[0] && a[0].id) ? a[0].id : "";
+      const bId = (b[0] && b[0].id) ? b[0].id : "";
+      return bId.localeCompare(aId);
+    })
+    .slice(0, 5)
     .map(([nota, groupTransactions]) => ({
-      nota,
+      nota: nota.startsWith("__single__") ? ((groupTransactions[0] && groupTransactions[0].nota) ? groupTransactions[0].nota : "-") : nota,
       transactions: groupTransactions,
       totalAmount: groupTransactions.reduce((sum, t) => sum + t.amount, 0)
     }));
