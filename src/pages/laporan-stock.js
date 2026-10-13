@@ -1,4 +1,4 @@
-﻿import { formatRupiah } from '../store/store.js';
+import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
@@ -41,7 +41,7 @@ export function renderLaporanStockPage(store) {
           </span>
         </section>
 
-        <!-- KPI 4 Cards: Sisa Pasang, Nilai Modal Aset, Potensi Omset, Potensi Laba -->
+        <!-- KPI 2 Cards: Sisa Belum Terjual & Modal Aset Stok (Aktual) -->
         <section class="grid grid-cols-2 gap-1.5">
           <!-- Card 1: Total Sisa Pasang -->
           <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col justify-between border-t-2 border-emerald-500">
@@ -73,38 +73,6 @@ export function renderLaporanStockPage(store) {
                 ${formatRupiah(summary.totalNilaiAsetModal)}
               </span>
               <span class="text-[10px] text-neutral-400 block mt-0.5">Uang modal tertahan di stok</span>
-            </div>
-          </div>
-
-          <!-- Card 3: Potensi Omset Penjualan -->
-          <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col justify-between border-t-2 border-cyan-500">
-            <div class="flex items-center justify-between text-neutral-400 text-xs">
-              <span class="font-bold text-[11px] uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[16px]">payments</span>
-                Potensi Omset
-              </span>
-            </div>
-            <div class="mt-2 mb-1">
-              <span id="stat-total-potensi-omset" class="text-base font-bold text-cyan-300 font-tabular block truncate">
-                ${formatRupiah(summary.totalPotensiOmset)}
-              </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">Jika seluruh sisa terjual</span>
-            </div>
-          </div>
-
-          <!-- Card 4: Potensi Laba Kotor -->
-          <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col justify-between border-t-2 border-amber-500">
-            <div class="flex items-center justify-between text-neutral-400 text-xs">
-              <span class="font-bold text-[11px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[16px]">trending_up</span>
-                Potensi Laba
-              </span>
-            </div>
-            <div class="mt-2 mb-1">
-              <span id="stat-total-potensi-laba" class="text-base font-bold text-amber-300 font-tabular block truncate">
-                +${formatRupiah(summary.totalPotensiLaba)}
-              </span>
-              <span id="stat-avg-margin" class="text-[10px] text-amber-400/90 block mt-0.5">Rata-rata Margin: ~${summary.avgMarginPercent}%</span>
             </div>
           </div>
         </section>
@@ -195,7 +163,7 @@ export function renderLaporanStockPage(store) {
                 <option value="sisa-desc">Sisa Terbanyak</option>
                 <option value="sisa-asc">Sisa Tersedikit</option>
                 <option value="modal-desc">Modal Tertinggi</option>
-                <option value="laba-desc">Potensi Untung Tertinggi</option>
+                <option value="terjual-desc">Terjual Terbanyak (Aktual)</option>
                 <option value="nama-asc">Nama A-Z</option>
               </select>
             </div>
@@ -261,15 +229,6 @@ export function initLaporanStockPage(router, store) {
 
     const elModal = g('stat-total-nilai-modal');
     if (elModal) elModal.textContent = formatRupiah(summary.totalNilaiAsetModal);
-
-    const elOmset = g('stat-total-potensi-omset');
-    if (elOmset) elOmset.textContent = formatRupiah(summary.totalPotensiOmset);
-
-    const elLaba = g('stat-total-potensi-laba');
-    if (elLaba) elLaba.textContent = `+${formatRupiah(summary.totalPotensiLaba)}`;
-
-    const elMargin = g('stat-avg-margin');
-    if (elMargin) elMargin.textContent = `Rata-rata Margin: ~${summary.avgMarginPercent}%`;
 
     const elBagus = g('stat-count-bagus');
     if (elBagus) elBagus.textContent = `${summary.countKondisiBagus} Pasang`;
@@ -340,8 +299,8 @@ export function initLaporanStockPage(router, store) {
           return a.sisaStock - b.sisaStock;
         case 'modal-desc':
           return (b.sisaStock * b.buyPrice) - (a.sisaStock * a.buyPrice);
-        case 'laba-desc':
-          return b.potensiLaba - a.potensiLaba;
+        case 'terjual-desc':
+          return b.totalTerjual - a.totalTerjual;
         case 'nama-asc':
           return a.name.localeCompare(b.name);
         case 'sisa-desc':
@@ -436,7 +395,7 @@ export function initLaporanStockPage(router, store) {
             </div>
           </div>
 
-          <!-- Bottom Metric Breakdown Strip -->
+          <!-- Bottom Metric Breakdown Strip (Data Aktual) -->
           <div class="grid grid-cols-3 gap-2 pt-2 border-t border-neutral-800/80 bg-neutral-900/40 rounded-lg p-1.5 text-[10px]">
             <div class="flex flex-col">
               <span class="text-[10px] text-neutral-400">Harga Modal</span>
@@ -447,13 +406,13 @@ export function initLaporanStockPage(router, store) {
             <div class="flex flex-col">
               <span class="text-[10px] text-neutral-400">Harga Jual</span>
               <span class="font-bold text-cyan-300 font-tabular">${formatRupiah(item.sellPrice)}</span>
-              <span class="text-[9px] text-neutral-500">Omset: ${formatRupiah(item.totalNilaiJual)}</span>
+              <span class="text-[9px] text-neutral-400">Patokan Toko</span>
             </div>
 
             <div class="flex flex-col">
-              <span class="text-[10px] text-neutral-400">Potensi Untung</span>
-              <span class="font-bold text-amber-300 font-tabular">+${formatRupiah(item.potensiLaba)}</span>
-              <span class="text-[9px] text-emerald-400 font-semibold">Margin ~${item.marginPercent}%</span>
+              <span class="text-[10px] text-neutral-400">Terjual (Aktual)</span>
+              <span class="font-bold text-emerald-400 font-tabular">${item.totalTerjual} Pasang</span>
+              <span class="text-[9px] text-neutral-500">Masuk: ${item.totalMasuk} psg</span>
             </div>
           </div>
 
@@ -554,7 +513,7 @@ export function initLaporanStockPage(router, store) {
     btnExport.addEventListener('click', () => {
       const report = store.getRealtimeStockReport();
       const rows = [
-        ['Barcode', 'Nama Sepatu', 'Kondisi', 'Catatan Minus', 'Total Masuk', 'Terjual', 'Sisa Stok (Psg)', 'Harga Beli (Modal)', 'Total Nilai Aset Modal', 'Harga Jual', 'Total Potensi Omset', 'Potensi Laba', 'Suplier', 'Tanggal Masuk']
+        ['Barcode', 'Nama Sepatu', 'Kondisi', 'Catatan Minus', 'Total Masuk (Psg)', 'Terjual Aktual (Psg)', 'Sisa Stok (Psg)', 'Harga Modal (Rp)', 'Total Aset Modal Sisa (Rp)', 'Harga Jual Toko (Rp)', 'Suplier', 'Tanggal Masuk']
       ];
 
       report.items.forEach((it) => {
@@ -569,8 +528,6 @@ export function initLaporanStockPage(router, store) {
           it.buyPrice,
           it.totalNilaiBeli,
           it.sellPrice,
-          it.totalNilaiJual,
-          it.potensiLaba,
           `"${(it.supplier || '').replace(/"/g, '""')}"`,
           `"${it.lastSupplyDate || ''}"`
         ]);

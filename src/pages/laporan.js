@@ -1,4 +1,4 @@
-﻿import { formatRupiah, store } from '../store/store.js';
+import { formatRupiah, store } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
@@ -342,22 +342,6 @@ export function renderLaporanPage(store, period = 'bulan') {
                 <span id="stat-sisa-nilai-modal" class="text-[11px] font-bold text-primary font-tabular truncate block">Rp 0</span>
               </div>
               <span class="text-[9px] text-neutral-400 mt-0.5">Modal tertahan</span>
-            </div>
-
-            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
-              <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Omset</span>
-              <div class="mt-0.5">
-                <span id="stat-sisa-potensi-omset" class="text-[11px] font-bold text-cyan-300 font-tabular truncate block">Rp 0</span>
-              </div>
-              <span class="text-[9px] text-neutral-400 mt-0.5">Jika laku semua</span>
-            </div>
-
-            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
-              <span class="text-[9px] text-neutral-400 font-bold uppercase tracking-wider">Potensi Laba</span>
-              <div class="mt-0.5">
-                <span id="stat-sisa-potensi-laba" class="text-[11px] font-bold text-amber-300 font-tabular truncate block">+Rp 0</span>
-              </div>
-              <span id="stat-sisa-margin" class="text-[9px] text-amber-400/90 mt-0.5">Margin: ~0%</span>
             </div>
           </div>
 
@@ -741,7 +725,6 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     // Hitung ulang summary berdasarkan filter
     let filteredTotalSisaPasang = 0;
     let filteredTotalNilaiModal = 0;
-    let filteredTotalPotensiOmset = 0;
     let filteredCountKondisiBagus = 0;
     let filteredCountKondisiMinus = 0;
     let filteredCountStokMenipis = 0;
@@ -750,7 +733,6 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
       if (item.sisaStock > 0) {
         filteredTotalSisaPasang += item.sisaStock;
         filteredTotalNilaiModal += item.totalNilaiBeli;
-        filteredTotalPotensiOmset += item.totalNilaiJual;
         
         if (item.kondisi === 'Minus') {
           filteredCountKondisiMinus += item.sisaStock;
@@ -764,16 +746,10 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
       }
     });
     
-    const filteredPotensiLaba = filteredTotalPotensiOmset - filteredTotalNilaiModal;
-    const filteredMarginPercent = filteredTotalPotensiOmset > 0 ? Math.round((filteredPotensiLaba / filteredTotalPotensiOmset) * 100) : 0;
-    
     const stockSummary = {
       totalSisaPasang: filteredTotalSisaPasang,
       totalVarianSisa: filteredUnsoldItems.length,
       totalNilaiAsetModal: filteredTotalNilaiModal,
-      totalPotensiOmset: filteredTotalPotensiOmset,
-      totalPotensiLaba: filteredPotensiLaba,
-      avgMarginPercent: filteredMarginPercent,
       countKondisiBagus: filteredCountKondisiBagus,
       countKondisiMinus: filteredCountKondisiMinus,
       countStokMenipis: filteredCountStokMenipis
@@ -787,15 +763,6 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
     const elSisaModal = g('stat-sisa-nilai-modal');
     if (elSisaModal) elSisaModal.textContent = formatRupiah(stockSummary.totalNilaiAsetModal);
-
-    const elSisaOmset = g('stat-sisa-potensi-omset');
-    if (elSisaOmset) elSisaOmset.textContent = formatRupiah(stockSummary.totalPotensiOmset);
-
-    const elSisaLaba = g('stat-sisa-potensi-laba');
-    if (elSisaLaba) elSisaLaba.textContent = `+${formatRupiah(stockSummary.totalPotensiLaba)}`;
-
-    const elSisaMargin = g('stat-sisa-margin');
-    if (elSisaMargin) elSisaMargin.textContent = `Margin: ~${stockSummary.avgMarginPercent}%`;
 
     const elSisaBagus = g('stat-sisa-bagus');
     if (elSisaBagus) elSisaBagus.textContent = `${stockSummary.countKondisiBagus} Bagus`;
@@ -835,13 +802,13 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
                 <div class="flex items-center gap-1.5 text-[10px] text-on-surface-variant flex-wrap mt-0.5">
                   <span class="font-mono glass-chip px-1 py-0.2 rounded">${item.barcode}</span>
                   <span class="font-bold ${item.sisaStock <= 2 ? 'text-rose-600' : 'text-emerald-700'}">Sisa: ${item.sisaStock} psg</span>
-                  ${item.kondisi === 'Minus' ? `<span class="text-amber-700 font-bold">âš  ${item.catatanMinus || 'Minus'}</span>` : '<span class="text-emerald-700 font-semibold">âœ“ Bagus</span>'}
+                  ${item.kondisi === 'Minus' ? `<span class="text-amber-700 font-bold">&#9888; ${item.catatanMinus || 'Minus'}</span>` : '<span class="text-emerald-700 font-semibold">&#10003; Bagus</span>'}
                 </div>
               </div>
             </div>
             <div class="flex flex-col items-end shrink-0">
               <span class="font-bold text-[11px] text-primary font-tabular">Modal: ${formatRupiah(item.buyPrice, '')}</span>
-              <span class="text-[9px] text-on-surface-variant">Jual: ${formatRupiah(item.sellPrice, '')}</span>
+              <span class="text-[9px] text-on-surface-variant">Aset: ${formatRupiah(item.totalNilaiBeli, '')}</span>
             </div>
           </div>
         `

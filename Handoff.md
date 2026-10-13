@@ -9,9 +9,64 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
 - **Storage:** LocalStorage (untuk data lokal & foto produk)
 - **Barcode Scanner:** `html5-qrcode`
 
-## Konteks Terakhir (Update 12 Oktober 2026)
+## Konteks Terakhir (Update 13 Oktober 2026)
 
-### A. Fitur Grouping Transaksi Berdasarkan Faktur
+### A. Pemisahan Hak Akses Admin & Atasan (Mode Lihat Saja / Read-Only)
+**Waktu:** 13 Oktober 2026  
+**Tujuan:** Memisahkan hak akses antara **Admin** (akses penuh untuk operasional toko harian) dan **Atasan/Owner** (akses pantau laporan & seluruh halaman aplikasi secara realtime tanpa dapat mengedit, menghapus, atau menginput data apa pun).
+
+**Kredensial & Autentikasi:**
+- **PIN Admin:** `123456` (Dapat diubah oleh Admin di Pengaturan).
+- **PIN Atasan:** `888888` (Dapat diubah oleh Admin di Pengaturan).
+- Layar login PIN (`src/pages/pin-login.js`) secara otomatis mendeteksi role pengguna berdasarkan PIN yang dimasukkan tanpa menampilkan petunjuk PIN publik demi menjaga kerahasiaan.
+
+**Arsitektur & State Management Role:**
+1. **Store & Sesi** (`src/store/store.js`):
+   - Ditambahkan `getRole()` (mengambil role dari `sessionStorage['kas_juara_role']`), `setRole(role)`, `isAdmin()`, dan `logout()`.
+   - Menggunakan `sessionStorage` sehingga role aman terisolasi per sesi browser/tab dan hilang saat browser ditutup atau saat klik Kunci/Logout.
+2. **Router Guard & Propagasi Role** (`src/router.js`):
+   - Guard otentikasi: jika belum login, otomatis dialihkan ke `#/login`.
+   - Form input pembuatan data baru (`tambah-transaksi`, `tambah-pasok`, `tambah-opname`) diblokir untuk Atasan dengan toast notification peringatan dan dialihkan ke halaman daftar terkait.
+   - Atasan diizinkan mengakses **seluruh halaman aplikasi** (Dashboard, Transaksi, Stok, Kirim, Investor, Laporan, Laporan Stok, Stock Opname, Detail Opname, Pengaturan) dalam mode *read-only*.
+   - Parameter `isAdmin` diteruskan ke seluruh fungsi `render` dan `init` halaman.
+3. **Komponen Navigasi & Header**:
+   - `src/components/bottom-nav.js`: Menampilkan badge peran aktif di pojok kanan atas: `ADMIN` (hijau emerald) atau `ATASAN` (biru).
+   - `src/components/header.js`: Ditambahkan tombol kunci cepat (`#header-lock-btn`) untuk logout dan switch user dengan satu klik, serta perbaikan navigasi icon settings/logo.
+
+**Proteksi Read-Only Halaman per Halaman untuk Atasan:**
+- **Dashboard** (`src/pages/dashboard.js`):
+  - Greeting disesuaikan: "Halo, Atasan" dan subjudul "Mode Pantau (Hanya Lihat)".
+  - Tombol `+ Kas Masuk`, `- Kas Keluar`, dan `+ Belanja Stock Sepatu` disembunyikan; digantikan banner elegan *Mode Pantau Atasan (Lihat Saja)*.
+  - Tombol pantau pengiriman, laporan stok realtime, stock opname, dan investor tetap dapat diakses.
+- **Daftar Transaksi** (`src/pages/transaksi-list.js`):
+  - Tombol `+ Catat Transaksi Baru` disembunyikan.
+  - Tombol `Edit` dan `Hapus` pada tiap transaksi individual disembunyikan.
+- **Daftar Stok & Belanja** (`src/pages/barang-masuk-list.js`):
+  - Tombol `+ Belanja Baru` dan `+ Stock Opname` disembunyikan (diganti badge *Mode Lihat Saja*).
+  - Tombol aksi `+ Barang`, `Edit`, dan `Hapus` per nota belanja disembunyikan.
+- **Pengiriman Sepatu** (`src/pages/pengiriman.js`):
+  - Tombol update status paket (`Update`, `Next Status`, `Hold`) disembunyikan; digantikan label *Mode Pantau Pengiriman*.
+- **Investor & Modal Usaha** (`src/pages/investor.js`):
+  - Tombol `+ Tambah Investor Baru` disembunyikan.
+  - Kolom `Aksi` (Edit, Tandai Lunas, Hapus) pada tampilan tabel dan action bar pada tampilan kartu disembunyikan.
+- **Stock Opname & Detail Opname** (`src/pages/stock-opname.js`, `src/pages/detail-opname.js`):
+  - Tombol `+ Mulai Opname Baru` disembunyikan.
+  - Tombol `Hapus Riwayat` pada detail opname disembunyikan; tombol `Salin Laporan` tetap dapat digunakan.
+- **Pengaturan Toko** (`src/pages/pengaturan.js`):
+  - Tampil banner *Mode Atasan (Hanya Lihat)*.
+  - Form input dinonaktifkan/tombol simpan modal awal dan profil disembunyikan.
+  - Pengubahan PIN Admin dan PIN Atasan hanya dapat dilakukan oleh Admin.
+  - Tombol ekspor cadangan data JSON dan kunci aplikasi tetap dapat digunakan oleh Atasan.
+
+**Commits Terkait:**
+- `46321a1` - buat halaman atasan
+- `96205c1` - hapus teks badge admin dan atasan
+
+---
+
+## Konteks Sebelumnya (Update 12 Oktober 2026)
+
+### B. Fitur Grouping Transaksi Berdasarkan Faktur
 **Waktu:** 10-12 Oktober 2026  
 **Tujuan:** Ketika menambahkan barang ke faktur yang sama, semua barang ditampilkan dalam satu folder yang dapat di-expand/collapse.
 
@@ -111,6 +166,14 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Pola compact: `p-4` → `p-3`/`p-2.5`, `gap-4` → `gap-3`/`gap-2.5`, `rounded-2xl` → `rounded-xl`/`rounded-lg`, `text-xl` → `text-lg`, `h-14` → `h-11`, `h-12` → `h-10`.
    - Tujuan: susunan teks tidak memakan ruang besar, konsisten di Dashboard, Stock, Kirim, Laporan, dan Transaksi.
    - Build verified: `vite build` sukses (757 kB, gzip ~197 kB).
+
+6. **Laporan Sisa Stock Aktual (13 Okt 2026):**
+   - Menghapus card "Potensi Omset" dan "Potensi Laba" di halaman `laporan-stock.js` dan widget sisa stock di `laporan.js`.
+   - Menghilangkan asumsi keuntungan: laporan berfokus pada data stok aktual (Sisa Belum Terjual, Modal Aset Tertahan di Stok/HPP, riwayat pasang terjual aktual).
+   - Di rincian item sisa stok: kolom potensi laba diganti dengan metrik realisasi penjualan aktual (`Terjual (Aktual)` pasang dari total masuk).
+   - Menghapus teks "Jual: [nominal]" pada rincian sisa stock di widget Laporan (`laporan.js`), diganti dengan nilai modal aset sisa aktual (`Aset: [nominal]`).
+   - Opsi sort "Potensi Untung Tertinggi" diganti menjadi "Terjual Terbanyak (Aktual)".
+   - Ekspor CSV disesuaikan hanya menyertakan data stok dan realisasi aktual (menghilangkan kolom Potensi Omset dan Potensi Laba).
 
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
