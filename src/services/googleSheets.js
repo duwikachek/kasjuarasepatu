@@ -889,14 +889,14 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[1] KEUANGAN & ARUS KAS (CASH FLOW TOKO)', 'NOMINAL (RP)', 'STATUS', 'KETERANGAN'],
       [
         'Total Pemasukan Kas (Penjualan)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"))'),
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") & " Transaksi", (COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL")) & " Transaksi")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1") & " Transaksi", (COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1")) & " Transaksi")'),
         'Penerimaan uang kas penjualan toko'
       ],
       [
         'Total Pengeluaran Kas (Biaya & Belanja)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") + SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"))'),
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") & " Transaksi", (COUNTIFS(\'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") + COUNTIFS(\'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No")) & " Transaksi")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, ">0"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0") + SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, ">0"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Keluar\'!A:A, ">0") & " Transaksi", (COUNTIFS(\'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0") + COUNTIFS(\'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, ">0")) & " Transaksi")'),
         'Pengeluaran biaya & operasional toko'
       ],
       [
@@ -907,7 +907,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Saldo Kas Toko Saat Ini',
-        f('=B14 + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") - SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No")'),
+        f('=B14 + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1") - SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, ">0")'),
         f('=IF(B13>=0, "🟢 Kas Sehat", "🔴 Defisit Kas")'),
         'Modal Kas Awal + Total Masuk - Total Keluar'
       ],
@@ -922,13 +922,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[2] LAPORAN PENJUALAN SEPATU LAKU (REALISASI AKTUAL)', 'JUMLAH / NOMINAL', 'SATUAN', 'KETERANGAN'],
       [
         'Total Pasang Sepatu Laku (Terjual)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Pasang',
         'Total pasang fisik sepatu yang telah terjual'
       ],
       [
         'Total Omset Penjualan Sepatu',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Rupiah',
         'Total penerimaan dari penjualan sepatu di kasir'
       ],
@@ -940,7 +940,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Transaksi Penjualan',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Nota Penjualan',
         'Jumlah nota transaksi kasir tercatat'
       ],
@@ -957,19 +957,19 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[4] REKAP PENGADAAN BARANG', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
       [
         'Total Modal Belanja Pengadaan',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Rupiah',
         'Akumulasi seluruh modal belanja kulakan sesuai periode'
       ],
       [
         'Total Pasang Sepatu Masuk',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Pasang',
         'Akumulasi seluruh pasang sepatu masuk sesuai periode'
       ],
       [
         'Total Faktur / Item Belanja Masuk',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0"), COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Item / Baris',
         'Jumlah item pengadaan tercatat di sistem sesuai periode'
       ],
@@ -995,8 +995,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       const safeCat = c.name.replace(/"/g, '""');
       dashboardRows.push([
         c.name,
-        f(`=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") + SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))`),
-        f(`=(IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") + COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))) & " Trx"`),
+        f(`=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0") + SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, ">0"))`),
+        f(`=(IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0") + COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, ">0"))) & " Trx"`),
         f(`=IF($B$11>0, TEXT(B${rNum}/$B$11, "0.0%"), "0%")`)
       ]);
     });
