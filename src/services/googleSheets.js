@@ -1015,7 +1015,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['Kondisi Sisa Stok: Minus', Number(stockSummary.countKondisiMinus) || 0, 'Pasang', 'Sepatu dengan catatan cacat ringan/minus'],
       ['', '', '', ''],
 
-      ['[4] REKAP PENGADAAN BARANG (KULAKAN SUPLIER)', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
+      ['[4] REKAP PENGADAAN BARANG', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
       [
         'Total Modal Belanja Pengadaan',
         f('=SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, ">0", \'Barang Masuk (Belanja)\'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), \'Barang Masuk (Belanja)\'!D:D, IF(D6="SEMUA SUPLIER", "*", D6), \'Barang Masuk (Belanja)\'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))'),
@@ -1037,8 +1037,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       [
         'Mitra Suplier Aktif',
         f(`=IF(D6="SEMUA SUPLIER", ${sortedSuppliers.length}, 1)`),
-        'Suplier',
-        f('=IF(D6="SEMUA SUPLIER", "Seluruh mitra suplier rekanan", "Suplier terpilih: " & D6)')
+        'Ball',
+        f('=IF(D6="SEMUA SUPLIER", "Seluruh Ball", "Suplier terpilih: " & D6)')
       ],
       ['', '', '', ''],
 
