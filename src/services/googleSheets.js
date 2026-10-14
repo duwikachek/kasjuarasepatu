@@ -539,16 +539,28 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // 13. Data Validation Dropdowns (Hanya Sel B6: Filter Hari / Periode)
-    const validDates = ['SEMUA TANGGAL', 'HARI INI', ...(meta.uniqueDates || [])];
-    const uniqueDateList = [...new Set(validDates)];
+    // 13. Data Validation: Pop-up Kalender Interaktif (Date Picker) pada Sel B6
     requests.push({
       setDataValidation: {
         range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 },
         rule: {
-          condition: { type: 'ONE_OF_LIST', values: uniqueDateList.map((v) => ({ userEnteredValue: v })) },
-          showCustomUi: true, strict: false
+          condition: { type: 'DATE_IS_VALID' },
+          inputMessage: '📅 Klik dua kali (double click) untuk membuka pop-up kalender. Kosongkan sel untuk menampilkan Semua Tanggal.',
+          showCustomUi: true,
+          strict: false
         }
+      }
+    });
+    // Format tampilan tanggal sel B6
+    requests.push({
+      repeatCell: {
+        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 },
+        cell: {
+          userEnteredFormat: {
+            numberFormat: { type: 'DATE', pattern: 'yyyy-mm-dd' }
+          }
+        },
+        fields: 'userEnteredFormat.numberFormat'
       }
     });
 
@@ -830,13 +842,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['KAS JUARA SEPATU — EXECUTIVE DARK DASHBOARD', '', `Toko: ${shop.name || 'Kas Juara'}`, '', `Owner: ${shop.owner || '-'}`, '', `Sinkron Terakhir: ${nowStr}`, ''],
       ['', '', '', '', '', '', '', ''],
 
-      // 4 TOP KPI METRIC CARDS (Sesuai Referensi Gambar Dashboard - Dinamis terhadap Filter)
+      // 4 TOP KPI METRIC CARDS (Sesuai Referensi Gambar Dashboard - Dinamis terhadap Filter Kalender B6)
       [
-        f('=IF(B6<>"SEMUA TANGGAL", "TOTAL OMSET (" & B6 & ")", "TOTAL OMSET PENJUALAN")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), "TOTAL OMSET PENJUALAN", "TOTAL OMSET (" & TEXT(B6, "yyyy-mm-dd") & ")")'),
         '',
-        f('=IF(B6<>"SEMUA TANGGAL", "ARUS KAS BERSIH (" & B6 & ")", "SALDO KAS TOKO AKTUAL")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), "SALDO KAS TOKO AKTUAL", "ARUS KAS BERSIH (" & TEXT(B6, "yyyy-mm-dd") & ")")'),
         '',
-        f('=IF(B6<>"SEMUA TANGGAL", "TOTAL PENGELUARAN (" & B6 & ")", "TOTAL PENGELUARAN KAS")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), "TOTAL PENGELUARAN KAS", "TOTAL PENGELUARAN (" & TEXT(B6, "yyyy-mm-dd") & ")")'),
         '',
         'SISA STOK (NILAI MODAL HPP)',
         ''
@@ -844,7 +856,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       [
         f('=B18'),
         '',
-        f('=IF(B6<>"SEMUA TANGGAL", B12, B13)'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), B13, B12)'),
         '',
         f('=B11'),
         '',
@@ -862,14 +874,14 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         ''
       ],
 
-      // KARTU FILTER INTERAKTIF (DROPDOWN CONTROLS)
+      // KARTU FILTER KALENDER INTERAKTIF (DATE PICKER)
       [
-        '🎛️ FILTER HARI / PERIODE:',
-        'SEMUA TANGGAL',
+        '📅 FILTER TANGGAL (KLIK 2X):',
+        todayStr,
         '', '', '', '', '', ''
       ],
       [
-        '*Pilih menu dropdown di sel B6 di atas untuk menyaring KPI, laporan keuangan, dan grafik secara interaktif',
+        '*Klik dua kali (double click) pada sel B6 untuk membuka kalender pop-up. Kosongkan sel (Delete) untuk menampilkan Semua Tanggal.',
         '', '', '', '', '', '', ''
       ],
       ['', '', '', '', '', '', '', ''],
@@ -877,14 +889,14 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[1] KEUANGAN & ARUS KAS (CASH FLOW TOKO)', 'NOMINAL (RP)', 'STATUS', 'KETERANGAN'],
       [
         'Total Pemasukan Kas (Penjualan)',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Kas Masuk'!J:J, 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL"), SUMIFS('Kas Masuk'!J:J, 'Kas Masuk'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL"))`),
-        f(`=IF(B6="SEMUA TANGGAL", COUNTIFS('Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL") & " Transaksi", COUNTIFS('Kas Masuk'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL") & " Transaksi")`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") & " Transaksi", (COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL")) & " Transaksi")'),
         'Penerimaan uang kas penjualan toko'
       ],
       [
         'Total Pengeluaran Kas (Biaya & Belanja)',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))`),
-        f(`=IF(B6="SEMUA TANGGAL", COUNTIFS('Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") & " Transaksi", COUNTIFS('Kas Keluar'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") & " Transaksi")`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") + SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") & " Transaksi", (COUNTIFS(\'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No") + COUNTIFS(\'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, "<>TOTAL", \'Kas Keluar\'!A:A, "<>No")) & " Transaksi")'),
         'Pengeluaran biaya & operasional toko'
       ],
       [
@@ -910,13 +922,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[2] LAPORAN PENJUALAN SEPATU LAKU (REALISASI AKTUAL)', 'JUMLAH / NOMINAL', 'SATUAN', 'KETERANGAN'],
       [
         'Total Pasang Sepatu Laku (Terjual)',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Kas Masuk'!I:I, 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"), SUMIFS('Kas Masuk'!I:I, 'Kas Masuk'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Pasang',
         'Total pasang fisik sepatu yang telah terjual'
       ],
       [
         'Total Omset Penjualan Sepatu',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Kas Masuk'!J:J, 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"), SUMIFS('Kas Masuk'!J:J, 'Kas Masuk'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Rupiah',
         'Total penerimaan dari penjualan sepatu di kasir'
       ],
@@ -928,7 +940,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Transaksi Penjualan',
-        f(`=IF(B6="SEMUA TANGGAL", COUNTIFS('Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"), COUNTIFS('Kas Masuk'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Masuk'!A:A, "<>TOTAL", 'Kas Masuk'!B:B, "<>#SALDO-AWAL", 'Kas Masuk'!L:L, "<>*Investor*"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, "<>TOTAL", \'Kas Masuk\'!B:B, "<>#SALDO-AWAL", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Nota Penjualan',
         'Jumlah nota transaksi kasir tercatat'
       ],
@@ -945,19 +957,19 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[4] REKAP PENGADAAN BARANG', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
       [
         'Total Modal Belanja Pengadaan',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"), SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
         'Rupiah',
         'Akumulasi seluruh modal belanja kulakan sesuai periode'
       ],
       [
         'Total Pasang Sepatu Masuk',
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"), SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
         'Pasang',
         'Akumulasi seluruh pasang sepatu masuk sesuai periode'
       ],
       [
         'Total Faktur / Item Belanja Masuk',
-        f(`=IF(B6="SEMUA TANGGAL", COUNTIFS('Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"), COUNTIFS('Barang Masuk (Belanja)'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Barang Masuk (Belanja)'!A:A, "<>TOTAL", 'Barang Masuk (Belanja)'!A:A, "<>No"))`),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"), COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No") + COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, "<>TOTAL", \'Barang Masuk (Belanja)\'!A:A, "<>No"))'),
         'Item / Baris',
         'Jumlah item pengadaan tercatat di sistem sesuai periode'
       ],
@@ -983,8 +995,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       const safeCat = c.name.replace(/"/g, '""');
       dashboardRows.push([
         c.name,
-        f(`=IF(B6="SEMUA TANGGAL", SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))`),
-        f(`=IF(B6="SEMUA TANGGAL", COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, IF(B6="HARI INI", "${todayStr}", B6), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No")) & " Trx"`),
+        f(`=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") + SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))`),
+        f(`=(IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No") + COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, "<>TOTAL", 'Kas Keluar'!A:A, "<>No"))) & " Trx"`),
         f(`=IF($B$11>0, TEXT(B${rNum}/$B$11, "0.0%"), "0%")`)
       ]);
     });
