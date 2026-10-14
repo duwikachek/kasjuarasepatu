@@ -2,6 +2,7 @@ import { parseRupiah, formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
+import { getLocalDateString } from '../utils/date.js';
 import { Html5Qrcode } from 'html5-qrcode';
 import {
   buildScannerConfig1D,
@@ -127,7 +128,7 @@ export function renderTambahTransaksiPage(store, params = {}) {
   const defaultCategory = existingTrx ? (existingTrx.category || KATEGORI_KELUAR[0].label) : KATEGORI_KELUAR[0].label;
   const defaultNominalKeluar = (existingTrx && existingTrx.type === 'keluar') ? formatRupiah(existingTrx.amount, '') : '';
   const defaultPhoto = existingTrx ? (existingTrx.photo || '') : '';
-  const defaultDate = existingTrx ? (existingTrx.date || new Date().toISOString().split('T')[0]) : new Date().toISOString().split('T')[0];
+  const defaultDate = existingTrx ? (existingTrx.date || getLocalDateString()) : getLocalDateString();
   const totalItemsPrice = initialItems.reduce((s, it) => s + (Number(it.price) || 0), 0);
 
   return `
@@ -1332,7 +1333,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         }
 
         const dateInputMasuk = document.getElementById('input-trx-date-masuk');
-        const trxDate = (dateInputMasuk && dateInputMasuk.value) ? dateInputMasuk.value : new Date().toISOString().split('T')[0];
+        const trxDate = (dateInputMasuk && dateInputMasuk.value) ? dateInputMasuk.value : getLocalDateString();
         const buyerName = (document.getElementById('input-buyer-name') && document.getElementById('input-buyer-name').value.trim()) || '';
         const noteVal = (document.getElementById('input-notes') && document.getElementById('input-notes').value.trim()) || '';
         const ongkirRadio = document.querySelector('input[name="ongkirOption"]:checked');
@@ -1381,7 +1382,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         if (amount <= 0) { showToast('Nominal pengeluaran harus lebih dari 0', 'error'); return; }
         const keteranganKeluar = (document.getElementById('input-keluar-keterangan') && document.getElementById('input-keluar-keterangan').value.trim()) || selectedKategoriKeluar;
         const dateInputKeluar = document.getElementById('input-trx-date-keluar');
-        const trxDate = (dateInputKeluar && dateInputKeluar.value) ? dateInputKeluar.value : new Date().toISOString().split('T')[0];
+        const trxDate = (dateInputKeluar && dateInputKeluar.value) ? dateInputKeluar.value : getLocalDateString();
         const keluarData = {
           type: 'keluar',
           category: selectedKategoriKeluar,

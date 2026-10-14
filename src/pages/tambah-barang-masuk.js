@@ -2,6 +2,7 @@ import { parseRupiah, formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { compressImageFile } from '../utils/image.js';
+import { getLocalDateString } from '../utils/date.js';
 import { Html5Qrcode, Html5QrcodeSupportedFormats } from 'html5-qrcode';
 import { createPhotoSourceSheet } from '../components/photo-source-sheet.js';
 import {
@@ -235,7 +236,7 @@ export function renderTambahBarangMasukPage(store, params = {}) {
     : (isEdit ? store.getSupplyById(params.editId) : null);
 
   const defaultSupplier = targetSupply ? targetSupply.supplierName : '';
-  const defaultDate = targetSupply ? targetSupply.date : new Date().toISOString().split('T')[0];
+  const defaultDate = targetSupply ? targetSupply.date : getLocalDateString();
   const defaultStatus = targetSupply ? targetSupply.status : 'lunas';
 
   const cleanPrefix = (defaultSupplier || '').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_-]/g, '') || 'BALL';
@@ -1309,7 +1310,7 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
 
     // KASUS 2: EDIT NOTA SUPLIER
     const suplier = (document.getElementById('input-suplier-name') && document.getElementById('input-suplier-name').value.trim()) || 'Suplier Sepatu';
-    const date = (document.getElementById('input-belanja-date') && document.getElementById('input-belanja-date').value) || new Date().toISOString().split('T')[0];
+    const date = (document.getElementById('input-belanja-date') && document.getElementById('input-belanja-date').value) || getLocalDateString();
     const statusRadio = document.querySelector('input[name="supplyStatus"]:checked');
     const status = statusRadio ? statusRadio.value : (targetSupply ? targetSupply.status : 'lunas');
 

@@ -1,6 +1,7 @@
 import { INITIAL_DATA } from '../data/dummy.js';
 import { showToast } from '../components/toast.js';
 import { pushStateToSupabase, pullStateFromSupabase, subscribeToStateChanges } from '../services/supabase.js';
+import { getLocalDateString } from '../utils/date.js';
 
 const STORAGE_KEY = 'kas_juara_sepatu_data_v1';
 // Salinan darurat bila data tersimpan rusak / gagal diparse
@@ -576,7 +577,7 @@ class Store {
     const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
     const newTrx = {
       id: `TRX-${Date.now()}`,
-      date: trx.date || new Date().toISOString().split('T')[0],
+      date: trx.date || getLocalDateString(),
       time: trx.time || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
       nota: trx.nota || `#NOTA-${Math.floor(1000 + Math.random() * 9000)}`,
       shippingStatus: trx.shippingStatus !== undefined ? trx.shippingStatus : (trx.type === 'masuk' && !isInvestor ? 'kemas' : null),
@@ -641,7 +642,7 @@ class Store {
     const newSupply = {
       id: `PASOK-${Date.now()}`,
       invoiceNo: supply.invoiceNo || `${((supply.supplierName || 'BALL').trim().toUpperCase().replace(/\s+/g, '').replace(/[^A-Z0-9_-]/g, '')) || 'BALL'}-${Math.floor(100 + Math.random() * 900)}`,
-      date: supply.date || new Date().toISOString().split('T')[0],
+      date: supply.date || getLocalDateString(),
       status: supply.status || 'lunas',
       ...supply
     };
