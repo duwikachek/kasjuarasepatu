@@ -472,8 +472,6 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
 
     // 10. Section Headers with left accent border
     const sectionRowIndexes = [8, 15, 21, 28, 34, 38];
-    if (meta.supHeaderRowIndex) sectionRowIndexes.push(meta.supHeaderRowIndex);
-    if (meta.filterDetailHeaderRowIndex) sectionRowIndexes.push(meta.filterDetailHeaderRowIndex);
     sectionRowIndexes.forEach((rIdx) => {
       requests.push({
         repeatCell: {
@@ -490,42 +488,6 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // 10b. Style Section 8 Column Headers & Currency formatting
-    if (meta.filterDetailColHeaderRowIndex) {
-      requests.push({
-        repeatCell: {
-          range: {
-            sheetId: dashSheetId,
-            startRowIndex: meta.filterDetailColHeaderRowIndex,
-            endRowIndex: meta.filterDetailColHeaderRowIndex + 1,
-            startColumnIndex: 0,
-            endColumnIndex: 12
-          },
-          cell: {
-            userEnteredFormat: {
-              backgroundColor: { red: 0.118, green: 0.161, blue: 0.231 },
-              textFormat: { foregroundColor: { red: 0.56, green: 0.82, blue: 1.0 }, fontSize: 10, bold: true },
-              borders: { bottom: { style: 'SOLID', width: 2, color: { red: 0.22, green: 0.74, blue: 0.97 } } }
-            }
-          },
-          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
-        }
-      });
-      // Currency format for Harga Modal (col 7) and Total Modal (col 8)
-      requests.push({
-        repeatCell: {
-          range: {
-            sheetId: dashSheetId,
-            startRowIndex: meta.filterDetailColHeaderRowIndex + 1,
-            endRowIndex: meta.filterDetailColHeaderRowIndex + 100,
-            startColumnIndex: 7,
-            endColumnIndex: 9
-          },
-          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' } } },
-          fields: 'userEnteredFormat.numberFormat'
-        }
-      });
-    }
 
     // 11. Highlight key metric rows
     const highlights = [
@@ -557,9 +519,6 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
     ];
     if (meta.catStartRowIndex && meta.catRowCount) {
       currencyRanges.push({ start: meta.catStartRowIndex, end: meta.catStartRowIndex + meta.catRowCount + 1 });
-    }
-    if (meta.supStartRowIndex && meta.supRowCount) {
-      currencyRanges.push({ start: meta.supStartRowIndex, end: meta.supStartRowIndex + meta.supRowCount + 1 });
     }
     currencyRanges.forEach(({ start, end }) => {
       requests.push({
@@ -657,20 +616,6 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     }
 
-    // 17. Chart 4: Top Suplier (Column - Bottom Right)
-    if (meta.supStartRowIndex && meta.supRowCount > 0) {
-      const topSup = Math.min(meta.supRowCount, 5);
-      requests.push({
-        addChart: { chart: {
-          spec: { title: 'Top Belanja per Suplier', basicChart: {
-            chartType: 'COLUMN', legendPosition: 'NO_LEGEND',
-            domains: [{ domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.supStartRowIndex, endRowIndex: meta.supStartRowIndex + topSup, startColumnIndex: 0, endColumnIndex: 1 }] } } }],
-            series: [{ series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: meta.supStartRowIndex, endRowIndex: meta.supStartRowIndex + topSup, startColumnIndex: 1, endColumnIndex: 2 }] } }, targetAxis: 'LEFT_AXIS' }]
-          }},
-          position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 20, columnIndex: 11 }, widthPixels: 380, heightPixels: 260 } }
-        }}
-      });
-    }
 
     // Send batchUpdate
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
@@ -1064,62 +1009,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     dashboardRows.push(['TOTAL PENGELUARAN', f('=B11'), f('=C11'), '100%']);
     dashboardRows.push(['', '', '', '']);
 
-    const supHeaderRowIndex = dashboardRows.length;
-    dashboardRows.push(['[7] REKAP PENGADAAN PER SUPLIER REKANAN', 'TOTAL BELANJA (RP)', 'TOTAL PASANG', 'JUMLAH FAKTUR']);
-    const supStartRowIndex = dashboardRows.length;
-    sortedSuppliers.forEach((s) => {
-      const safeSup = s.name.replace(/"/g, '""');
-      dashboardRows.push([
-        s.name,
-        f(`=SUMIFS('Barang Masuk (Belanja)'!J:J, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6))`),
-        f(`=SUMIFS('Barang Masuk (Belanja)'!H:H, 'Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Psg"`),
-        f(`=COUNTIFS('Barang Masuk (Belanja)'!D:D, "${safeSup}", 'Barang Masuk (Belanja)'!A:A, ">0", 'Barang Masuk (Belanja)'!C:C, IF(B6="SEMUA TANGGAL", ">=0", IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)), 'Barang Masuk (Belanja)'!B:B, IF(F6="SEMUA FAKTUR", "*", F6)) & " Faktur"`)
-      ]);
-    });
-    dashboardRows.push(['TOTAL PENGADAAN', f('=B30'), f('=B31 & " Psg"'), f('=B32 & " Faktur"')]);
-    dashboardRows.push(['', '', '', '']);
-
-    // [8] TABEL RINCIAN BARANG MASUK SESUAI FILTER (REAL-TIME FILTERED SPILL TABLE)
-    const filterDetailHeaderRowIndex = dashboardRows.length;
-    dashboardRows.push([
-      '[8] TABEL RINCIAN BARANG MASUK SESUAI FILTER (REAL-TIME)',
-      '', '', '', '', '', '', '', '', '', '', ''
-    ]);
-    dashboardRows.push([
-      '*Tabel di bawah otomatis menyaring dan menampilkan data barang masuk secara instan saat Anda memilih Filter Hari/Periode (B6), Suplier (D6), atau Faktur (F6)',
-      '', '', '', '', '', '', '', '', '', '', ''
-    ]);
-    const filterDetailColHeaderRowIndex = dashboardRows.length;
-    dashboardRows.push([
-      'No. Faktur / ID',
-      'Tanggal',
-      'Supplier / Sumber',
-      'Barcode',
-      'Nama Sepatu / Barang',
-      'Kondisi',
-      'Jumlah (Psg)',
-      'Harga Modal (Rp)',
-      'Total Modal (Rp)',
-      'Status Bayar',
-      'Metode Bayar',
-      'Keterangan'
-    ]);
-    dashboardRows.push([
-      f('=IFERROR(FILTER(\'Barang Masuk (Belanja)\'!B2:M, (\'Barang Masuk (Belanja)\'!A2:A<>"TOTAL") * (\'Barang Masuk (Belanja)\'!A2:A<>"No") * (\'Barang Masuk (Belanja)\'!A2:A<>"") * IF(B6="SEMUA TANGGAL", 1, \'Barang Masuk (Belanja)\'!C2:C=IF(B6="HARI INI", TEXT(TODAY(),"yyyy-mm-dd"), B6)) * IF(D6="SEMUA SUPLIER", 1, \'Barang Masuk (Belanja)\'!D2:D=D6) * IF(F6="SEMUA FAKTUR", 1, \'Barang Masuk (Belanja)\'!B2:B=F6)), "Tidak ada data barang masuk yang cocok dengan kriteria filter di atas")'),
-      '', '', '', '', '', '', '', '', '', '', ''
-    ]);
 
     const dashboardMeta = {
       uniqueDates,
       supplierNames: sortedSuppliers.map((s) => s.name),
       invoiceNos,
       catStartRowIndex,
-      catRowCount: sortedCategories.length,
-      supHeaderRowIndex,
-      supStartRowIndex,
-      supRowCount: sortedSuppliers.length,
-      filterDetailHeaderRowIndex,
-      filterDetailColHeaderRowIndex
+      catRowCount: sortedCategories.length
     };
 
     // 1. Data Sheet: Ringkasan Usaha
