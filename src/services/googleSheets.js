@@ -979,7 +979,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         'Jumlah item pengadaan tercatat di sistem sesuai periode'
       ],
       [
-        'Mitra Suplier Aktif',
+        'BALL',
         sortedSuppliers.length,
         'Ball',
         'Seluruh Ball'
