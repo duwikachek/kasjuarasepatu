@@ -313,6 +313,14 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
     if (meta.filterDetailColHeaderRowIndex) {
       rowHeights.push({ start: meta.filterDetailColHeaderRowIndex, end: meta.filterDetailColHeaderRowIndex + 1, size: 26 });
     }
+    if (meta.bagusHeaderRowIndex) {
+      rowHeights.push({ start: meta.bagusHeaderRowIndex, end: meta.bagusHeaderRowIndex + 1, size: 28 });
+      rowHeights.push({ start: meta.bagusHeaderRowIndex + 1, end: meta.bagusHeaderRowIndex + 2, size: 24 });
+    }
+    if (meta.minusHeaderRowIndex) {
+      rowHeights.push({ start: meta.minusHeaderRowIndex, end: meta.minusHeaderRowIndex + 1, size: 28 });
+      rowHeights.push({ start: meta.minusHeaderRowIndex + 1, end: meta.minusHeaderRowIndex + 2, size: 24 });
+    }
     rowHeights.forEach(({ start, end, size }) => {
       requests.push({
         updateDimensionProperties: {
@@ -493,6 +501,8 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       { row: 12, bg: { red: 0.024, green: 0.224, blue: 0.173 }, fg: { red: 0.655, green: 0.953, blue: 0.816 }, sz: 11 },
       { row: 17, bg: { red: 0.024, green: 0.224, blue: 0.173 }, fg: { red: 0.655, green: 0.953, blue: 0.816 }, sz: 10 },
       { row: 23, bg: { red: 0.055, green: 0.173, blue: 0.259 }, fg: { red: 0.502, green: 0.827, blue: 0.976 }, sz: 10 },
+      { row: 25, bg: { red: 0.035, green: 0.165, blue: 0.115 }, fg: { red: 0.500, green: 0.920, blue: 0.700 }, sz: 10 },
+      { row: 26, bg: { red: 0.220, green: 0.120, blue: 0.040 }, fg: { red: 0.980, green: 0.760, blue: 0.320 }, sz: 10 },
       { row: 29, bg: { red: 0.045, green: 0.180, blue: 0.220 }, fg: { red: 0.550, green: 0.880, blue: 0.980 }, sz: 10 }
     ];
     highlights.forEach(({ row, bg, fg, sz }) => {
@@ -528,8 +538,8 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     });
 
-    // Integer number formatting for non-currency metrics (Row 17: Pasang, Row 20: Transaksi, Row 23: Sisa Stok, Row 31: Pasang Masuk, Row 32: Item Belanja)
-    [16, 19, 22, 30, 31].forEach((rIdx) => {
+    // Integer number formatting for non-currency metrics (Row 17: Pasang Laku, Row 20: Trx, Row 23: Sisa Stok, Row 25: Varian, Row 26: Stok Bagus, Row 27: Stok Minus, Row 31: Pasang Masuk, Row 32: Item Belanja)
+    [16, 19, 22, 24, 25, 26, 30, 31].forEach((rIdx) => {
       requests.push({
         repeatCell: {
           range: { sheetId: dashSheetId, startRowIndex: rIdx, endRowIndex: rIdx + 1, startColumnIndex: 1, endColumnIndex: 2 },
@@ -607,6 +617,206 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     }
 
+
+    // 17. Styling untuk Section [7] RINCIAN SISA STOK KONDISI BAGUS
+    if (meta.bagusHeaderRowIndex) {
+      const secRow = meta.bagusHeaderRowIndex;
+      const colHeaderRow = secRow + 1;
+      const dataStart = meta.bagusDataStartRowIndex;
+      const count = meta.bagusRowCount || 1;
+
+      // Section Header (Dark Emerald Accent)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: secRow, endRowIndex: secRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.04, green: 0.16, blue: 0.12 },
+              textFormat: { foregroundColor: { red: 0.55, green: 0.95, blue: 0.80 }, fontSize: 10, bold: true },
+              borders: { left: { style: 'SOLID', width: 3, color: { red: 0.06, green: 0.72, blue: 0.50 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+
+      // Table Columns Header
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.08, green: 0.16, blue: 0.18 },
+              textFormat: { foregroundColor: { red: 0.65, green: 0.90, blue: 0.85 }, fontSize: 9, bold: true },
+              horizontalAlignment: 'LEFT'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+        }
+      });
+
+      // Align header Col B & C
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 1, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat.horizontalAlignment'
+        }
+      });
+
+      // Number formatting for Data Rows
+      // Col B: Sisa (Psg)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + (meta.hasBagus ? 1 : 0), startColumnIndex: 1, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'NUMBER', pattern: '#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Col C: Modal Aset (Rp)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + (meta.hasBagus ? 1 : 0), startColumnIndex: 2, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Col D: Text format for notes
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count, startColumnIndex: 3, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              textFormat: { foregroundColor: { red: 0.60, green: 0.88, blue: 0.75 } }
+            }
+          },
+          fields: 'userEnteredFormat.textFormat'
+        }
+      });
+
+      // Total row highlight (if has bagus)
+      if (meta.hasBagus) {
+        const totalRowIdx = dataStart + count;
+        requests.push({
+          repeatCell: {
+            range: { sheetId: dashSheetId, startRowIndex: totalRowIdx, endRowIndex: totalRowIdx + 1, startColumnIndex: 0, endColumnIndex: 4 },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: 0.05, green: 0.20, blue: 0.15 },
+                textFormat: { foregroundColor: { red: 0.65, green: 0.95, blue: 0.82 }, bold: true },
+                borders: {
+                  top: { style: 'SOLID', width: 1, color: { red: 0.06, green: 0.72, blue: 0.50 } },
+                  bottom: { style: 'DOUBLE', width: 3, color: { red: 0.06, green: 0.72, blue: 0.50 } }
+                }
+              }
+            },
+            fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+          }
+        });
+      }
+    }
+
+    // 18. Styling untuk Section [8] RINCIAN SISA STOK KONDISI MINUS
+    if (meta.minusHeaderRowIndex) {
+      const secRow = meta.minusHeaderRowIndex;
+      const colHeaderRow = secRow + 1;
+      const dataStart = meta.minusDataStartRowIndex;
+      const count = meta.minusRowCount || 1;
+
+      // Section Header (Dark Amber Accent)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: secRow, endRowIndex: secRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.16, green: 0.11, blue: 0.04 },
+              textFormat: { foregroundColor: { red: 0.98, green: 0.75, blue: 0.30 }, fontSize: 10, bold: true },
+              borders: { left: { style: 'SOLID', width: 3, color: { red: 0.96, green: 0.62, blue: 0.04 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+
+      // Table Columns Header
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.10, green: 0.14, blue: 0.22 },
+              textFormat: { foregroundColor: { red: 0.70, green: 0.82, blue: 0.96 }, fontSize: 9, bold: true },
+              horizontalAlignment: 'LEFT'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+        }
+      });
+
+      // Align header Col B & C
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 1, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat.horizontalAlignment'
+        }
+      });
+
+      // Number formatting for Data Rows
+      // Col B: Sisa (Psg)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + (meta.hasMinus ? 1 : 0), startColumnIndex: 1, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'NUMBER', pattern: '#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Col C: Modal Aset (Rp)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + (meta.hasMinus ? 1 : 0), startColumnIndex: 2, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Col D: Warning text format for defect notes
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count, startColumnIndex: 3, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              textFormat: { foregroundColor: meta.hasMinus ? { red: 0.98, green: 0.75, blue: 0.35 } : { red: 0.50, green: 0.85, blue: 0.65 } }
+            }
+          },
+          fields: 'userEnteredFormat.textFormat'
+        }
+      });
+
+      // Total row highlight (if has minus)
+      if (meta.hasMinus) {
+        const totalRowIdx = dataStart + count;
+        requests.push({
+          repeatCell: {
+            range: { sheetId: dashSheetId, startRowIndex: totalRowIdx, endRowIndex: totalRowIdx + 1, startColumnIndex: 0, endColumnIndex: 4 },
+            cell: {
+              userEnteredFormat: {
+                backgroundColor: { red: 0.18, green: 0.12, blue: 0.05 },
+                textFormat: { foregroundColor: { red: 1.0, green: 0.82, blue: 0.38 }, bold: true },
+                borders: {
+                  top: { style: 'SOLID', width: 1, color: { red: 0.96, green: 0.62, blue: 0.04 } },
+                  bottom: { style: 'DOUBLE', width: 3, color: { red: 0.96, green: 0.62, blue: 0.04 } }
+                }
+              }
+            },
+            fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+          }
+        });
+      }
+    }
 
     // Send batchUpdate
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
@@ -770,6 +980,25 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     const pctTerjual = `${Math.min(100, Math.round((totalTerjualAktual / totalMasukSemua) * 100))}%`;
     const pctSisa = `${Math.min(100, Math.round((totalSisaAktual / totalMasukSemua) * 100))}%`;
 
+    // Filter Sisa Stok berdasarkan Kondisi (Bagus vs Minus)
+    const unsoldItems = stockReport.unsoldItems || [];
+    const minusItems = unsoldItems.filter((it) => (it.kondisi || '').toLowerCase() === 'minus');
+    const bagusItems = unsoldItems.filter((it) => (it.kondisi || '').toLowerCase() !== 'minus');
+
+    const totalMinusAset = minusItems.reduce((sum, it) => sum + (Number(it.totalNilaiBeli) || (Number(it.sisaStock) || 0) * (Number(it.buyPrice) || 0)), 0);
+    const totalBagusAset = bagusItems.reduce((sum, it) => sum + (Number(it.totalNilaiBeli) || (Number(it.sisaStock) || 0) * (Number(it.buyPrice) || 0)), 0);
+
+    const calcMinusPasang = minusItems.reduce((sum, it) => sum + (Number(it.sisaStock) || 0), 0);
+    const calcBagusPasang = bagusItems.reduce((sum, it) => sum + (Number(it.sisaStock) || 0), 0);
+
+    const countMinusPasang = (typeof stockSummary.countKondisiMinus === 'number' && !isNaN(stockSummary.countKondisiMinus))
+      ? stockSummary.countKondisiMinus
+      : calcMinusPasang;
+    const countBagusPasang = (typeof stockSummary.countKondisiBagus === 'number' && !isNaN(stockSummary.countKondisiBagus))
+      ? stockSummary.countKondisiBagus
+      : (calcBagusPasang > 0 ? calcBagusPasang : Math.max(0, totalSisaAktual - countMinusPasang));
+    const resolvedBagusAset = totalBagusAset > 0 ? totalBagusAset : Math.max(0, (Number(stockSummary.totalNilaiAsetModal) || 0) - totalMinusAset);
+
     // Pengeluaran Kas per Kategori
     const categoryMap = {};
     trxKeluarList.forEach((t) => {
@@ -875,7 +1104,9 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         '',
         f('="Biaya & Belanja: " & C11'),
         '',
-        `Tersedia: ${totalSisaAktual} Pasang Sepatu`,
+        countMinusPasang > 0
+          ? `Tersedia: ${totalSisaAktual} Psg • Bagus: ${countBagusPasang} | ⚠️ Minus: ${countMinusPasang}`
+          : `Tersedia: ${totalSisaAktual} Psg • Bagus: ${countBagusPasang} Psg (100% Normal)`,
         ''
       ],
 
@@ -894,14 +1125,14 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[1] KEUANGAN & ARUS KAS (CASH FLOW TOKO)', 'NOMINAL (RP)', 'STATUS', 'KETERANGAN'],
       [
         'Total Pemasukan Kas (Penjualan)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1"))'),
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1") & " Transaksi", (COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1")) & " Transaksi")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1") & " Transaksi", COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1") & " Transaksi")'),
         'Penerimaan uang kas penjualan toko'
       ],
       [
         'Total Pengeluaran Kas (Biaya & Belanja)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, ">0"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0") + SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, ">0"))'),
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Keluar\'!A:A, ">0") & " Transaksi", (COUNTIFS(\'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0") + COUNTIFS(\'Kas Keluar\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Keluar\'!A:A, ">0")) & " Transaksi")'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!A:A, ">0"), SUMIFS(\'Kas Keluar\'!H:H, \'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Keluar\'!A:A, ">0") & " Transaksi", COUNTIFS(\'Kas Keluar\'!C:C, B6, \'Kas Keluar\'!A:A, ">0") & " Transaksi")'),
         'Pengeluaran biaya & operasional toko'
       ],
       [
@@ -927,13 +1158,13 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['[2] LAPORAN PENJUALAN SEPATU LAKU (REALISASI AKTUAL)', 'JUMLAH / NOMINAL', 'SATUAN', 'KETERANGAN'],
       [
         'Total Pasang Sepatu Laku (Terjual)',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!I:I, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Pasang',
         'Total pasang fisik sepatu yang telah terjual'
       ],
       [
         'Total Omset Penjualan Sepatu',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), SUMIFS(\'Kas Masuk\'!J:J, \'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Rupiah',
         'Total penerimaan dari penjualan sepatu di kasir'
       ],
@@ -945,7 +1176,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ],
       [
         'Total Transaksi Penjualan',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*") + COUNTIFS(\'Kas Masuk\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"), COUNTIFS(\'Kas Masuk\'!C:C, B6, \'Kas Masuk\'!A:A, ">1", \'Kas Masuk\'!L:L, "<>*Investor*"))'),
         'Nota Penjualan',
         'Jumlah nota transaksi kasir tercatat'
       ],
@@ -955,34 +1186,36 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['Total Sisa Sepatu Belum Terjual', Number(stockSummary.totalSisaPasang) || 0, 'Pasang', 'Kuantitas fisik stok sisa sepatu di toko'],
       ['Nilai Modal Aset Sisa Stok (HPP)', Number(stockSummary.totalNilaiAsetModal) || 0, 'Rupiah', 'Modal uang riil yang masih tertahan di sisa stok'],
       ['Total Varian / Model Sepatu Aktif', Number(stockSummary.totalVarianSisa) || 0, 'Model', 'Jumlah varian sepatu yang masih tersedia'],
-      ['Kondisi Sisa Stok: Bagus', Number(stockSummary.countKondisiBagus) || 0, 'Pasang', 'Sepatu kondisi normal prima'],
-      ['Kondisi Sisa Stok: Minus', Number(stockSummary.countKondisiMinus) || 0, 'Pasang', 'Sepatu dengan catatan cacat ringan/minus'],
+      ['Kondisi Sisa Stok: Bagus', countBagusPasang, 'Pasang', resolvedBagusAset > 0 ? `Modal Aset: Rp ${resolvedBagusAset.toLocaleString('id-ID')} (${bagusItems.length > 0 ? bagusItems.length + ' model ' : ''}siap jual normal)` : 'Sepatu kondisi normal prima'],
+      ['Kondisi Sisa Stok: Minus', countMinusPasang, 'Pasang', countMinusPasang > 0 ? `⚠️ Modal Tertahan: Rp ${totalMinusAset.toLocaleString('id-ID')} (Lihat rincian tabel [8])` : 'Tidak ada sisa stok berkondisi minus (Semua normal)'],
       ['', '', '', ''],
 
       ['[4] REKAP PENGADAAN BARANG', 'JUMLAH / NILAI', 'SATUAN', 'KETERANGAN'],
       [
         'Total Modal Belanja Pengadaan',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!J:J, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Rupiah',
         'Akumulasi seluruh modal belanja kulakan sesuai periode'
       ],
       [
         'Total Pasang Sepatu Masuk',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!A:A, ">0"), SUMIFS(\'Barang Masuk (Belanja)\'!H:H, \'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Pasang',
         'Akumulasi seluruh pasang sepatu masuk sesuai periode'
       ],
       [
         'Total Faktur / Item Belanja Masuk',
-        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0"), COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0") + COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, TEXT(B6, "yyyy-mm-dd"), \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
+        f('=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS(\'Barang Masuk (Belanja)\'!A:A, ">0"), COUNTIFS(\'Barang Masuk (Belanja)\'!C:C, B6, \'Barang Masuk (Belanja)\'!A:A, ">0"))'),
         'Item / Baris',
         'Jumlah item pengadaan tercatat di sistem sesuai periode'
       ],
       [
-        'BALL',
+        'Jumlah Suplier Aktif (Rekanan)',
         sortedSuppliers.length,
-        'Ball',
-        'Seluruh Ball'
+        'Suplier',
+        sortedSuppliers.length > 0
+          ? sortedSuppliers.map((s) => s.name).slice(0, 5).join(', ') + (sortedSuppliers.length > 5 ? ` & ${sortedSuppliers.length - 5} lainnya` : '')
+          : 'Belum ada data suplier tercatat'
       ],
       ['', '', '', ''],
 
@@ -1000,19 +1233,107 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       const safeCat = c.name.replace(/"/g, '""');
       dashboardRows.push([
         c.name,
-        f(`=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0") + SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, ">0"))`),
-        f(`=(IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0") + COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, TEXT(B6, "yyyy-mm-dd"), 'Kas Keluar'!A:A, ">0"))) & " Trx"`),
+        f(`=IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0"))`),
+        f(`=(IF(OR(ISBLANK(B6), B6="SEMUA TANGGAL", B6=""), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!A:A, ">0"), COUNTIFS('Kas Keluar'!E:E, "${safeCat}", 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0"))) & " Trx"`),
         f(`=IF($B$11>0, TEXT(B${rNum}/$B$11, "0.0%"), "0%")`)
       ]);
     });
     dashboardRows.push(['TOTAL PENGELUARAN', f('=B11'), f('=C11'), '100%']);
     dashboardRows.push(['', '', '', '']);
 
+    // 7. Tabel Rincian Sisa Stok Kondisi Bagus (Siap Jual / Normal)
+    const bagusHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['[7] RINCIAN SISA STOK KONDISI BAGUS (SIAP JUAL / NORMAL)', '', '', '']);
+    dashboardRows.push(['NAMA SEPATU / MODEL & BARCODE', 'SISA (PSG)', 'MODAL ASET (RP)', 'SUPLIER REKANAN & STATUS']);
+
+    const bagusDataStartRowIndex = dashboardRows.length;
+    if (bagusItems.length > 0) {
+      bagusItems.forEach((it) => {
+        const sisa = Number(it.sisaStock) || 0;
+        const buyPrice = Number(it.buyPrice) || 0;
+        const totalAset = Number(it.totalNilaiBeli) || (sisa * buyPrice);
+        const codeStr = it.barcode && it.barcode !== '-' ? ` [${it.barcode}]` : '';
+        const nameWithBarcode = `${it.name || 'Sepatu'}${codeStr}`;
+        const supInfo = it.supplier ? `✓ ${it.supplier}` : '✓ Suplier Toko';
+
+        dashboardRows.push([
+          nameWithBarcode,
+          sisa,
+          totalAset,
+          supInfo
+        ]);
+      });
+
+      // Baris Total Bagus
+      dashboardRows.push([
+        `TOTAL SISA STOK BAGUS (${bagusItems.length} Model)`,
+        countBagusPasang,
+        resolvedBagusAset,
+        '✓ Kondisi normal prima siap dijual'
+      ]);
+    } else {
+      dashboardRows.push([
+        'Semua Sisa Stok Normal',
+        countBagusPasang,
+        resolvedBagusAset,
+        '✓ Kondisi prima siap dijual'
+      ]);
+    }
+    dashboardRows.push(['', '', '', '']);
+
+    // 8. Tabel Rincian Sisa Stok Kondisi Minus (Cacat / Defect)
+    const minusHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['[8] RINCIAN SISA STOK KONDISI MINUS (CATATAN CACAT / DEFECT)', '', '', '']);
+    dashboardRows.push(['NAMA SEPATU / MODEL & BARCODE', 'SISA (PSG)', 'MODAL ASET (RP)', 'CATATAN CACAT / MINUS & SUPLIER']);
+
+    const minusDataStartRowIndex = dashboardRows.length;
+    if (minusItems.length > 0) {
+      minusItems.forEach((it) => {
+        const sisa = Number(it.sisaStock) || 0;
+        const buyPrice = Number(it.buyPrice) || 0;
+        const totalAset = Number(it.totalNilaiBeli) || (sisa * buyPrice);
+        const codeStr = it.barcode && it.barcode !== '-' ? ` [${it.barcode}]` : '';
+        const nameWithBarcode = `${it.name || 'Sepatu'}${codeStr}`;
+        const catatanDefect = it.catatanMinus ? `⚠️ ${it.catatanMinus}` : '⚠️ Kondisi Minus';
+        const supInfo = it.supplier && it.supplier !== 'Suplier Umum' ? ` • ${it.supplier}` : '';
+
+        dashboardRows.push([
+          nameWithBarcode,
+          sisa,
+          totalAset,
+          `${catatanDefect}${supInfo}`
+        ]);
+      });
+
+      // Baris Total Minus
+      dashboardRows.push([
+        `TOTAL SISA STOK MINUS (${minusItems.length} Model)`,
+        countMinusPasang,
+        totalMinusAset,
+        'Perlu perhatian khusus / pertimbangan diskon cuci gudang'
+      ]);
+    } else {
+      dashboardRows.push([
+        'Tidak Ada Sisa Stok Minus',
+        0,
+        0,
+        '✓ Seluruh sisa stok sepatu dalam kondisi Bagus / Prima (100% Normal)'
+      ]);
+    }
+    dashboardRows.push(['', '', '', '']);
 
     const dashboardMeta = {
       uniqueDates,
       catStartRowIndex,
-      catRowCount: sortedCategories.length
+      catRowCount: sortedCategories.length,
+      bagusHeaderRowIndex,
+      bagusDataStartRowIndex,
+      bagusRowCount: bagusItems.length > 0 ? bagusItems.length : 1,
+      hasBagus: bagusItems.length > 0,
+      minusHeaderRowIndex,
+      minusDataStartRowIndex,
+      minusRowCount: minusItems.length > 0 ? minusItems.length : 1,
+      hasMinus: minusItems.length > 0
     };
 
     // 1. Data Sheet: Ringkasan Usaha

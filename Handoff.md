@@ -215,6 +215,28 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
       - **Tabel Rincian Hasil Filter ([8]):** Menampilkan spill-table real-time via formula `=IFERROR(FILTER(...))` untuk daftar barang belanja sesuai filter yang aktif.
       - **Data Validation Dropdown:** Selalu dipastikan aktif pada sel B6, D6, F6 dengan fallback lengkap hingga 30 entri unik.
 
+12. **Tampilan Lengkap Kondisi Sisa Stock (Bagus & Minus) di Sheet Dashboard Google Sheets (16 Okt 2026):**
+    - **Top KPI Card 4 (Amber Card):** Subtext selalu menampilkan informasi stok bagus dan minus secara eksplisit: `Tersedia: X Psg • Bagus: Y | ⚠️ Minus: Z`.
+    - **Section [3] Laporan Sisa Stock:** 
+      - Menampilkan baris `Kondisi Sisa Stok: Bagus` dengan kuantitas pasang, jumlah model, serta total modal aset HPP normal siap jual.
+      - Menampilkan baris `Kondisi Sisa Stok: Minus` di-highlight warna amber dengan kuantitas pasang dan modal uang yang tertahan pada stok minus.
+      - Number formatting `#,##0` diterapkan pada metrik varian dan kondisi stok.
+    - **Section [7] Rincian Sisa Stok Kondisi Bagus (Siap Jual / Normal):**
+      - Menambahkan tabel lengkap khusus untuk seluruh sisa sepatu berkondisi normal: Nama Sepatu & Barcode, Sisa (Psg), Modal Aset (Rp), serta Suplier Rekanan & Status Siap Jual.
+      - Dilengkapi baris TOTAL SISA STOK BAGUS beraksen emerald green.
+    - **Section [8] Rincian Sisa Stok Kondisi Minus (Cacat / Defect):**
+      - Menambahkan tabel khusus yang merinci setiap sepatu berkondisi minus: Nama Sepatu & Barcode, Sisa (Psg), Modal Aset (Rp), serta Catatan Cacat/Minus dan Suplier Rekanan.
+      - Dilengkapi baris TOTAL SISA STOK MINUS beraksen amber warning.
+
+13. **Perbaikan Formula Duplikasi Nilai di Google Sheets Dashboard (16 Okt 2026):**
+    - **Akar Masalah:** Rumus filter tanggal sebelumnya menggunakan penjumlahan ganda `SUMIFS(..., C:C, B6, ...) + SUMIFS(..., C:C, TEXT(B6, "yyyy-mm-dd"), ...)`. Karena sel filter `B6` dan kolom tanggal sama-sama bertipe serial tanggal Google Sheets, kedua kondisi cocok secara bersamaan sehingga seluruh nominal dan jumlah transaksi terhitung 2x lipat (misal pengeluaran belanja 800.000 menjadi 1.600.000 dan transaksi 7 menjadi 14).
+    - **Solusi:** 
+      - Membersihkan seluruh formula di `src/services/googleSheets.js` menjadi formula tunggal yang presisi: `SUMIFS('Kas Keluar'!H:H, 'Kas Keluar'!C:C, B6, 'Kas Keluar'!A:A, ">0")` dan `COUNTIFS(...)`.
+      - Memperbaiki formula Arus Kas Bersih (Sel CD4 / C4), Total Pengeluaran Kas (Sel EF4 / E4), Rekap Pengadaan Barang (Sel B30, B31, B32), Penjualan (B17, B18, B20), dan Laporan Kategori Pengeluaran (B40, C40).
+      - Memperbaiki format number cell pada B17, B20, B31, B32, B36, B37 agar menampilkan angka kuantitas murni (`#,##0`), bukan mata uang `Rp`.
+      - Menambahkan mekanisme deduplikasi transaksi belanja di `src/store/store.js` saat menarik state dari Supabase (`_initSupabase`).
+      - Langsung disinkronkan dan diverifikasi real-time di Google Spreadsheet aktif: Arus Kas Bersih kembali tepat `-Rp 800.000` (Defisit belanja stok), Total Pengeluaran Kas tepat `Rp 800.000` (7 Transaksi), Rekap Pengadaan tepat `Rp 800.000` (7 Pasang & 7 Item), dan Komposisi Stok tepat `7 Pasang (100%)`.
+
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.

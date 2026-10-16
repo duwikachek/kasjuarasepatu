@@ -33,12 +33,19 @@ class Store {
         // Simpan timestamp cloud sebagai push terakhir agar realtime echo awal diabaikan
         this._lastPushTimestamp = remoteResult.updatedAt || null;
 
-        // PENTING: remoteResult = { data, updatedAt } — gunakan .data sebagai state
         // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
         const merged = this._mergeWithLocalPhotos(remoteResult.data);
+        const prevCount = Array.isArray(merged.transactions) ? merged.transactions.length : 0;
+        this._migrateDeduplicateBelanjaTrx(merged);
+        const newCount = Array.isArray(merged.transactions) ? merged.transactions.length : 0;
         this.state = merged;
         this._stockReportCache = null;
         this.saveState();
+        if (prevCount !== newCount) {
+          const ts = new Date().toISOString();
+          this._lastPushTimestamp = ts;
+          pushStateToSupabase(this.state, ts).catch((e) => console.warn('[Supabase] Dedup push failed:', e.message));
+        }
         // Notifikasi listeners hanya jika halaman sudah aktif (listeners terdaftar)
         // Ini mencegah re-render ke halaman kosong saat app baru dibuka
         if (this.listeners.length > 0) {
@@ -152,6 +159,8 @@ class Store {
         this._migratePurgeDummyData(parsed);
         // Migrate: sinkronisasi investor & kas (hapus transaksi kas orphan bila investor telah dihapus)
         this._migrateReconcileInvestorsAndTransactions(parsed);
+        // Migrate: hapus duplikat transaksi Belanja Barang yg disebabkan double-entry supply
+        this._migrateDeduplicateBelanjaTrx(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -171,6 +180,46 @@ class Store {
     };
     this.saveState(fresh);
     return fresh;
+  }
+
+  /**
+   * Migrasi: Hapus transaksi Kas Keluar 'Belanja Barang' yang duplikat.
+   * Penyebab: supply yang sama di-input dua kali (manual + otomatis), atau
+   * supply diupdate dan membuat transaksi keluar baru.
+   * Aturan: untuk setiap invoiceNo supply, hanya boleh ada SATU transaksi
+   * keluar 'Belanja Barang' dengan nota yang sama.
+   */
+  _migrateDeduplicateBelanjaTrx(data) {
+    if (!data || !Array.isArray(data.transactions) || !Array.isArray(data.supplies)) return;
+
+    // Kumpulkan semua invoiceNo dari supplies yang ada
+    const supplyInvoiceNos = new Set(
+      (data.supplies || []).map((s) => (s.invoiceNo || '').trim()).filter(Boolean)
+    );
+
+    // Untuk transaksi Belanja Barang yang nota-nya cocok dengan invoiceNo supply:
+    // hanya simpan 1 (yang pertama/terlama) per invoiceNo
+    const seenNota = new Set();
+    const before = data.transactions.length;
+
+    data.transactions = data.transactions.filter((t) => {
+      if (t.type !== 'keluar') return true;
+      if (t.category !== 'Belanja Barang') return true;
+      const nota = (t.nota || '').trim();
+      if (!nota || !supplyInvoiceNos.has(nota)) return true;
+      // Sudah ada transaksi dengan nota ini? Buang duplikatnya
+      if (seenNota.has(nota)) return false;
+      seenNota.add(nota);
+      return true;
+    });
+
+    const removed = before - data.transactions.length;
+    if (removed > 0) {
+      console.log(`[Store] Deduplikasi: ${removed} transaksi Belanja Barang duplikat dihapus`);
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
   }
 
   _migrateKulakan(data) {
