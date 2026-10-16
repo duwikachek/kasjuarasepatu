@@ -540,13 +540,18 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
     });
 
     // 13. Data Validation: Pop-up Kalender Interaktif (Date Picker) pada Sel B6
+    // Hapus/bersihkan aturan dropdown atau validasi lama pada B6 agar card opsi dropdown tidak bertumpuk
+    requests.push({
+      setDataValidation: {
+        range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 }
+      }
+    });
+    // Terapkan validasi tanggal murni (DATE_IS_VALID)
     requests.push({
       setDataValidation: {
         range: { sheetId: dashSheetId, startRowIndex: 5, endRowIndex: 6, startColumnIndex: 1, endColumnIndex: 2 },
         rule: {
           condition: { type: 'DATE_IS_VALID' },
-          inputMessage: '📅 Klik dua kali (double click) untuk membuka pop-up kalender. Kosongkan sel untuk menampilkan Semua Tanggal.',
-          showCustomUi: true,
           strict: false
         }
       }
@@ -876,12 +881,12 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
       // KARTU FILTER KALENDER INTERAKTIF (DATE PICKER)
       [
-        '📅 FILTER TANGGAL (KLIK 2X):',
+        '📅 FILTER TANGGAL:',
         todayStr,
         '', '', '', '', '', ''
       ],
       [
-        '*Klik dua kali (double click) pada sel B6 untuk membuka kalender pop-up. Kosongkan sel (Delete) untuk menampilkan Semua Tanggal.',
+        '*Pilih tanggal pada sel B6 dari pop-up kalender. Kosongkan sel (Delete) untuk menampilkan Semua Tanggal.',
         '', '', '', '', '', '', ''
       ],
       ['', '', '', '', '', '', '', ''],
