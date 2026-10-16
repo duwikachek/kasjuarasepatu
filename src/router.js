@@ -26,6 +26,13 @@ export class Router {
     window.addEventListener('hashchange', () => {
       this.handleHash();
     });
+
+    // Otomatis re-render halaman aktif saat data store berubah (misal sinkronisasi Supabase masuk)
+    this.store.subscribe(() => {
+      if (this.currentRoute && this.currentRoute !== 'login') {
+        this.render();
+      }
+    });
   }
 
   init() {

@@ -35,9 +35,15 @@ class Store {
 
         // Gabungkan: gunakan remote sebagai base, pertahankan foto dari localStorage
         const merged = this._mergeWithLocalPhotos(remoteResult.data);
+        const reconciled = this._migrateReconcileSupplyTransactions(merged);
         this.state = merged;
         this._stockReportCache = null;
         this.saveState();
+        if (reconciled) {
+          const ts = new Date().toISOString();
+          this._lastPushTimestamp = ts;
+          pushStateToSupabase(this.state, ts).catch((e) => console.warn('[Supabase] Reconcile push failed:', e.message));
+        }
         // Notifikasi listeners hanya jika halaman sudah aktif (listeners terdaftar)
         // Ini mencegah re-render ke halaman kosong saat app baru dibuka
         if (this.listeners.length > 0) {
@@ -151,6 +157,8 @@ class Store {
         this._migratePurgeDummyData(parsed);
         // Migrate: sinkronisasi investor & kas (hapus transaksi kas orphan bila investor telah dihapus)
         this._migrateReconcileInvestorsAndTransactions(parsed);
+        // Migrate: pastikan seluruh faktur belanja lunas memiliki transaksi kas keluar yang lengkap
+        this._migrateReconcileSupplyTransactions(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -170,6 +178,97 @@ class Store {
     };
     this.saveState(fresh);
     return fresh;
+  }
+
+  /**
+   * Rekonsiliasi Otomatis:
+   * Memastikan setiap faktur pengadaan belanja (supplies) yang berstatus 'lunas'
+   * memiliki transaksi kas keluar 'Belanja Barang' yang lengkap sejumlah totalAmount faktur.
+   * Mencegah ketidaksesuaian laporan pengeluaran kas dengan faktur pengadaan.
+   */
+  _migrateReconcileSupplyTransactions(data) {
+    if (!data || !Array.isArray(data.supplies) || !Array.isArray(data.transactions)) return false;
+    let changed = false;
+
+    data.supplies.forEach((s) => {
+      if (s.status !== 'lunas') return;
+      const invNo = (s.invoiceNo || '').trim();
+      if (!invNo) return;
+
+      const expectedTotal = Number(s.totalAmount) || 0;
+      if (expectedTotal <= 0) return;
+
+      // Cari transaksi keluar yang terhubung ke faktur ini
+      const existingTrxs = data.transactions.filter(
+        (t) => t.type === 'keluar' &&
+          (t.category === 'Belanja Barang' || t.category === 'Belanja') &&
+          ((t.nota || '').trim() === invNo)
+      );
+
+      const existingTotal = existingTrxs.reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+
+      // Jika nominal kas keluar belanja kurang dari total faktur:
+      if (existingTotal < expectedTotal) {
+        if (s.items && Array.isArray(s.items) && s.items.length > 0) {
+          // Hapus transaksi parsial faktur ini dan bangun ulang secara akurat per-item
+          data.transactions = data.transactions.filter(
+            (t) => !(t.type === 'keluar' && (t.category === 'Belanja Barang' || t.category === 'Belanja') && ((t.nota || '').trim() === invNo))
+          );
+
+          s.items.forEach((it, idx) => {
+            const itemQty = Number(it.qty) || 1;
+            const itemPrice = Number(it.buyPrice) || 0;
+            const itemTotal = itemQty * itemPrice;
+            const title = idx === 0
+              ? `Belanja ${s.supplierName || 'Stok'} (1 pasang)`
+              : `Tambah Belanja: ${it.name || 'TB'} (${s.supplierName || 'Stok'})`;
+
+            data.transactions.push({
+              id: `TRX-${Date.now()}-${idx}-${Math.floor(100 + Math.random() * 900)}`,
+              date: s.date || '2026-10-16',
+              nota: invNo,
+              time: '14.00 WIB',
+              type: 'keluar',
+              title: title,
+              amount: itemTotal,
+              category: 'Belanja Barang',
+              paymentMethod: s.paymentMethod || 'Tunai (Laci)',
+              shippingNote: null,
+              shippingResi: null,
+              shippingStatus: null,
+              shippingCourier: null
+            });
+          });
+          changed = true;
+        } else {
+          // Tambahkan selisih nominal yang kurang
+          const diff = expectedTotal - existingTotal;
+          data.transactions.push({
+            id: `TRX-${Date.now()}-${Math.floor(100 + Math.random() * 900)}`,
+            date: s.date || '2026-10-16',
+            nota: invNo,
+            time: '14.00 WIB',
+            type: 'keluar',
+            title: `Belanja ${s.supplierName || 'Stok'}`,
+            amount: diff,
+            category: 'Belanja Barang',
+            paymentMethod: s.paymentMethod || 'Tunai (Laci)',
+            shippingNote: null,
+            shippingResi: null,
+            shippingStatus: null,
+            shippingCourier: null
+          });
+          changed = true;
+        }
+      }
+    });
+
+    if (changed) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+    return changed;
   }
 
   _migrateKulakan(data) {
