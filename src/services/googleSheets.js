@@ -1257,9 +1257,9 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         'Jumlah item pengadaan tercatat di sistem sesuai periode'
       ],
       [
-        'Jumlah Suplier Aktif (Rekanan)',
+        'Jumlah Ball yang Tercatat',
         sortedSuppliers.length,
-        'Suplier',
+        'BALL',
         sortedSuppliers.length > 0
           ? sortedSuppliers.map((s) => s.name).slice(0, 5).join(', ') + (sortedSuppliers.length > 5 ? ` & ${sortedSuppliers.length - 5} lainnya` : '')
           : 'Belum ada data suplier tercatat'
