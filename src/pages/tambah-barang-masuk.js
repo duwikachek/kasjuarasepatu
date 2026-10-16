@@ -613,6 +613,7 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   let torchOn = false;          // status lampu kilat
   let useFrontCamera = false;   // false = kamera belakang (default)
   let scannerStartedOnce = false; // scanner pernah start (untuk reset state)
+  let isProcessingScan = false;
   const scanDebouncer = createScanDebouncer(1500);
 
   const barcodeModal = document.getElementById('barcode-scanner-modal');
@@ -987,6 +988,11 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     setScannerStatus('Meminta izin kamera...', 'info');
     showRetryButton(false);
 
+    isProcessingScan = false;
+    if (scanDebouncer && typeof scanDebouncer.reset === 'function') {
+      scanDebouncer.reset();
+    }
+
     // Reset state zoom, kamera, dan senter
     scannerZoom = 1;
     useFrontCamera = scannerStartedOnce ? !useFrontCamera : false;
@@ -995,16 +1001,28 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
     if (torchBtn) torchBtn.classList.remove('bg-amber-500/70');
 
     const onSuccess = (decodedText) => {
+      if (isProcessingScan) return;
       if (!scanDebouncer(decodedText)) return;
 
-      playBeep('success'); // Suara bip saat barcode terbaca
+      const cleanBarcode = (decodedText || '').trim();
+      if (!cleanBarcode) return;
+
+      isProcessingScan = true;
+      if (typeof scanDebouncer.lock === 'function') scanDebouncer.lock();
+
+      playBeep('success'); // Suara bip saat barcode terbaca (tepat sekali)
 
       const lastRead = document.getElementById('scanner-last-read');
       if (lastRead) {
-        lastRead.textContent = decodedText;
+        lastRead.textContent = cleanBarcode;
         lastRead.classList.remove('hidden');
       }
-      if (activeScanItemId) onBarcodeScanned(activeScanItemId, decodedText);
+
+      if (activeScanItemId) {
+        onBarcodeScanned(activeScanItemId, cleanBarcode);
+      } else {
+        closeScanner();
+      }
     };
     const onError = () => { /* frame tanpa barcode */ };
 
@@ -1166,16 +1184,45 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
   }
 
   function closeScanner() {
+    isProcessingScan = true;
+    if (typeof scanDebouncer.lock === 'function') scanDebouncer.lock();
+
     if (!barcodeModal) return;
     barcodeModal.classList.add('hidden');
     applyTorch(false);
 
+    // Hentikan hardware track video seketika
+    try {
+      const video = document.querySelector('#qr-reader video');
+      if (video && video.srcObject) {
+        const stream = video.srcObject;
+        if (stream && typeof stream.getTracks === 'function') {
+          stream.getTracks().forEach((track) => {
+            try { track.stop(); } catch (_) {}
+          });
+        }
+        video.srcObject = null;
+      }
+    } catch (_) {}
+
     const oldScanner = html5Scanner;
     html5Scanner = null;
     if (oldScanner) {
-      oldScanner.stop()
-        .then(() => { try { oldScanner.clear(); } catch (_) {} })
-        .catch(() => {});
+      try {
+        const isScanning = typeof oldScanner.isScanning === 'boolean'
+          ? oldScanner.isScanning
+          : (oldScanner.getState && oldScanner.getState() === 2);
+
+        if (isScanning) {
+          oldScanner.stop()
+            .then(() => { try { oldScanner.clear(); } catch (_) {} })
+            .catch(() => { try { oldScanner.clear(); } catch (_) {} });
+        } else {
+          try { oldScanner.clear(); } catch (_) {}
+        }
+      } catch (_) {
+        try { oldScanner.clear(); } catch (_) {}
+      }
     }
 
     activeScanItemId = null;

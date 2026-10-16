@@ -374,12 +374,13 @@ function openOpnameScanner() {
 
   const onSuccess = (text) => {
     const now = Date.now();
+    if (now - lastScannedTime < 800) return;
     if (text === lastScanned && now - lastScannedTime < 1500) return;
     lastScanned = text;
     lastScannedTime = now;
 
     playBeep('success');
-    markFoundFromScan(text.trim());
+    markFoundFromScan((text || '').trim());
   };
 
   const tryStart = (constraint, label) => {
@@ -410,6 +411,19 @@ function closeOpnameScanner() {
   const modal = document.getElementById('opname-scanner-modal');
   if (modal) modal.classList.add('hidden');
   _scannerOpen = false;
+
+  try {
+    const video = document.querySelector('#opname-qr-reader video');
+    if (video && video.srcObject) {
+      const stream = video.srcObject;
+      if (stream && typeof stream.getTracks === 'function') {
+        stream.getTracks().forEach((track) => {
+          try { track.stop(); } catch (_) {}
+        });
+      }
+      video.srcObject = null;
+    }
+  } catch (_) {}
 
   if (_qrScanner) {
     try {

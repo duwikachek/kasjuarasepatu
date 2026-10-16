@@ -189,18 +189,35 @@ export const VIDEO_ENHANCE_STYLE = {
 
 /**
  * Debounce hasil scan: mencegah callback berulang dari frame yang sama
- * (html5-qrcode dapat memanggil callback beberapa kali per detik).
+ * atau pembacaan barcode parsial yang bergetar.
  */
-export function createScanDebouncer(delayMs = 1500) {
+export function createScanDebouncer(delayMs = 1500, minIntervalMs = 800) {
   let lastText = '';
   let lastTime = 0;
-  return function shouldAccept(text) {
+  let isLocked = false;
+
+  const debouncer = function shouldAccept(text) {
+    if (isLocked) return false;
     const now = Date.now();
+    // Cegah pembacaan bertubi-tubi dalam jeda singkat (termasuk pembacaan barcode parsial/flicker)
+    if (now - lastTime < minIntervalMs) return false;
+    // Debounce lebih ketat untuk barcode yang sama persis
     if (text === lastText && now - lastTime < delayMs) return false;
+
     lastText = text;
     lastTime = now;
     return true;
   };
+
+  debouncer.lock = () => { isLocked = true; };
+  debouncer.unlock = () => { isLocked = false; };
+  debouncer.reset = () => {
+    lastText = '';
+    lastTime = 0;
+    isLocked = false;
+  };
+
+  return debouncer;
 }
 
 /**
@@ -246,15 +263,26 @@ export function enhanceVideoElement(readerId, _attempt = 0) {
   }
 }
 
+// Cooldown global untuk mencegah nada bip berbunyi berulang tanpa henti
+let _lastBeepTimestamp = 0;
+
 /**
  * Mainkan suara "bip" pendek saat barcode berhasil terbaca.
  * Menggunakan Web Audio API — tidak perlu file audio eksternal.
+ * Dilengkapi throttle cooldown (min 500ms) agar tidak memekakkan telinga.
  *
  * @param {'success'|'double'} type
  *   'success' = satu bip singkat (default)
  *   'double'  = dua bip cepat (untuk konfirmasi)
  */
 export function playBeep(type = 'success') {
+  const nowMs = Date.now();
+  if (nowMs - _lastBeepTimestamp < 500) {
+    // Abaikan panggilan berulang dalam 500ms
+    return;
+  }
+  _lastBeepTimestamp = nowMs;
+
   try {
     const ctx = new (window.AudioContext || window.webkitAudioContext)();
 

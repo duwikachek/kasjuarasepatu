@@ -417,6 +417,7 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   let torchOn = false;
   let useFrontCamera = false;
   let scannerStartedOnce = false;
+  let isProcessingScan = false;
   const scanDebouncer = createScanDebouncer(1500);
 
   // Baca item kartu yang sudah ada di DOM agar ID 100% cocok dengan elemen HTML
@@ -1127,6 +1128,11 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     setScannerStatus('Meminta izin kamera...', 'info');
     showRetryButton(false);
 
+    isProcessingScan = false;
+    if (scanDebouncer && typeof scanDebouncer.reset === 'function') {
+      scanDebouncer.reset();
+    }
+
     scannerZoom = 1;
     useFrontCamera = scannerStartedOnce ? !useFrontCamera : false;
     torchOn = false;
@@ -1134,23 +1140,24 @@ export function initTambahTransaksiPage(router, store, params = {}) {
     if (torchBtn) torchBtn.classList.remove('bg-amber-500/70');
 
     const onSuccess = (decodedText) => {
+      // Jika scan sedang diproses atau sudah selesai, abaikan frame berikutnya
+      if (isProcessingScan) return;
       if (!scanDebouncer(decodedText)) return;
 
-      playBeep('success');
+      const cleanBarcode = (decodedText || '').trim();
+      if (!cleanBarcode) return;
 
       const lastRead = document.getElementById('scanner-last-read');
       if (lastRead) {
-        lastRead.textContent = decodedText;
+        lastRead.textContent = cleanBarcode;
         lastRead.classList.remove('hidden');
       }
 
       if (activeScanItemId) {
-        const cleanBarcode = decodedText.trim();
-        
         // Validasi barcode terhadap stok yang tersedia
         const stockReport = store.getRealtimeStockReport();
         const availableItems = stockReport.unsoldItems || [];
-        
+
         // Cari item dengan barcode yang sama di stok
         const matchedItem = availableItems.find((item) => {
           if (item.hasRealBarcode && item.barcode) {
@@ -1158,22 +1165,35 @@ export function initTambahTransaksiPage(router, store, params = {}) {
           }
           return false;
         });
-        
+
         if (!matchedItem) {
-          // Barcode tidak ada di stok atau sudah habis terjual
-          showToast('❌ Barang sudah laku atau tidak ada di stok', 'error', 4000);
+          // Barcode tidak ada di stok atau sudah habis terjual:
+          // PENTING: Jangan bunyikan beep success dan jangan loop berulang!
+          showToast('❌ Barang sudah laku atau tidak ada di stok', 'error', 3000);
           setScannerStatus('Barang tidak ditemukan di stok', 'error');
           showRetryButton(true);
           return;
         }
-        
+
+        // Kunci pemrosesan agar tidak membaca frame berikutnya
+        isProcessingScan = true;
+        if (typeof scanDebouncer.lock === 'function') scanDebouncer.lock();
+
+        // Bunyikan bip sukses tepat SATU KALI setelah barang terbukti valid
+        playBeep('success');
+
         // Barcode valid — simpan ke input
         const barcodeInput = document.querySelector('.sale-item-barcode[data-sale-item-id="' + activeScanItemId + '"]');
         if (barcodeInput) {
           barcodeInput.value = cleanBarcode;
           barcodeInput.dispatchEvent(new Event('input', { bubbles: true }));
         }
+      } else {
+        isProcessingScan = true;
+        if (typeof scanDebouncer.lock === 'function') scanDebouncer.lock();
+        playBeep('success');
       }
+
       closeScanner();
     };
     const onError = () => { /* frame tanpa barcode, abaikan */ };
@@ -1229,16 +1249,45 @@ export function initTambahTransaksiPage(router, store, params = {}) {
   }
 
   function closeScanner() {
+    isProcessingScan = true;
+    if (typeof scanDebouncer.lock === 'function') scanDebouncer.lock();
+
     if (!barcodeScannerModal) return;
     barcodeScannerModal.classList.add('hidden');
     applyTorch(false);
 
+    // Hentikan track kamera secara langsung untuk mematikan hardware kamera seketika
+    try {
+      const video = document.querySelector('#qr-reader video');
+      if (video && video.srcObject) {
+        const stream = video.srcObject;
+        if (stream && typeof stream.getTracks === 'function') {
+          stream.getTracks().forEach((track) => {
+            try { track.stop(); } catch (_) {}
+          });
+        }
+        video.srcObject = null;
+      }
+    } catch (_) {}
+
     const oldScanner = html5Scanner;
     html5Scanner = null;
     if (oldScanner) {
-      oldScanner.clear().then(() => oldScanner.stop()).catch(() => {})
-        .then(() => { try { oldScanner.clear(); } catch (_) {} })
-        .catch(() => {});
+      try {
+        const isScanning = typeof oldScanner.isScanning === 'boolean'
+          ? oldScanner.isScanning
+          : (oldScanner.getState && oldScanner.getState() === 2);
+
+        if (isScanning) {
+          oldScanner.stop()
+            .then(() => { try { oldScanner.clear(); } catch (_) {} })
+            .catch(() => { try { oldScanner.clear(); } catch (_) {} });
+        } else {
+          try { oldScanner.clear(); } catch (_) {}
+        }
+      } catch (_) {
+        try { oldScanner.clear(); } catch (_) {}
+      }
     }
 
     activeScanItemId = null;
