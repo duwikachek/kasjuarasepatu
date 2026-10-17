@@ -275,6 +275,7 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
 15. **Laporan Investasi & Bagi Hasil di Google Spreadsheet (17 Okt 2026):**
     - **Sheet Baru `Investasi & Bagi Hasil`:** Merekap data pemodal, total modal masuk, riwayat payout bagi hasil (rasio 60% Investor : 40% Pengelola), dan pengembalian modal pokok.
     - **Seksi [9] di Sheet Dashboard Google Sheets:** Ringkasan akumulasi dana masuk investor, bagi hasil investor, bagi hasil pengelola, total bagi hasil, serta daftar pemodal aktif dengan styling bertema dark gold accent.
+    - **Perbaikan Pembacaan Modal Investor (Sel B57):** Memperbaiki properti ekstraksi modal pemodal di `googleSheets.js` untuk membaca `inv.totalAmount` (didukung fallback `totalInvestment`, `amount`, `totalModal`, serta transaksi kas masuk `Dana Investor`) sehingga nominal modal pemodal (seperti MUSTAFA Rp 35.000.000) tercatat akurat dan tidak lagi bernilai 0.
 
 16. **Statistik Penjualan Harian & Grafik Tren Hari ke Hari di Google Spreadsheet (17 Okt 2026):**
     - **Sheet Baru `Statistik Harian`:** Merekap data transaksi penjualan per tanggal secara kronologis: No, Tanggal, Omset Penjualan (Rp), Kas Masuk Total (Rp), Kas Keluar (Rp), Sepatu Laku (Psg), dan Net Cash Flow (Rp). Dilengkapi styling dark slate header, format rupiah, dan penyesuaian lebar kolom otomatis.

@@ -1723,7 +1723,15 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
     // ─── SEKSI [9] LAPORAN INVESTASI & BAGI HASIL ───────────────────────────
     // Ringkasan data dari investors store
-    const totalDanaInvestor = investors.reduce((sum, inv) => sum + (Number(inv.totalInvestment) || Number(inv.amount) || 0), 0);
+    const getInvModal = (inv) => {
+      return Number(inv.totalAmount) || Number(inv.totalInvestment) || Number(inv.amount) || Number(inv.totalModal) || Number(inv.cicilan) || 0;
+    };
+    let totalDanaInvestor = investors.reduce((sum, inv) => sum + getInvModal(inv), 0);
+    if (totalDanaInvestor === 0) {
+      totalDanaInvestor = transactions
+        .filter((t) => t.type === 'masuk' && (t.category === 'Dana Investor' || t.category === 'Investasi Modal'))
+        .reduce((sum, t) => sum + (Number(t.amount) || 0), 0);
+    }
     const totalBagiHasilInvestor = investors.reduce((sum, inv) => {
       if (!Array.isArray(inv.payouts)) return sum;
       return sum + inv.payouts.filter((p) => p.recipient === 'investor' || p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0);
@@ -1737,7 +1745,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       return sum + inv.payouts.filter((p) => p.type === 'pengembalian').reduce((s, p) => s + (Number(p.amount) || 0), 0);
     }, 0);
     const totalBagiHasilSemua = totalBagiHasilInvestor + totalBagiHasilPengelola;
-    const jumlahPemodalAktif = investors.length;
+    const jumlahPemodalAktif = investors.length || (totalDanaInvestor > 0 ? 1 : 0);
 
     const invHeaderRowIndex = dashboardRows.length;
     dashboardRows.push(['[9] LAPORAN INVESTASI & BAGI HASIL (60% Investor : 40% Pengelola)', '', '', '']);
@@ -1779,7 +1787,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     dashboardRows.push(['DAFTAR PEMODAL AKTIF', 'TOTAL MODAL (RP)', 'BAGI HASIL DITERIMA (RP)', 'STATUS & METODE']);
     if (investors.length > 0) {
       investors.forEach((inv) => {
-        const modalAmt = Number(inv.totalInvestment) || Number(inv.amount) || 0;
+        const modalAmt = getInvModal(inv);
         const payoutTotal = Array.isArray(inv.payouts)
           ? inv.payouts.filter((p) => p.recipient === 'investor' || p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0)
           : 0;
@@ -2267,7 +2275,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['', '', ''],
 
       ['[1] RINGKASAN MODAL & KEWAJIBAN BAGI HASIL', 'NOMINAL (RP)', 'KETERANGAN'],
-      ['Total Modal Diterima', invSummary.totalInvested || 0, `Akumulasi modal dari ${investorsList.length} pemodal`],
+      ['Total Modal Diterima', invSummary.totalInvested || totalDanaInvestor || 0, `Akumulasi modal dari ${investorsList.length} pemodal`],
       ['Sisa Modal Pokok', invSummary.totalPokokSisa || 0, 'Sisa modal pokok yang belum dikembalikan'],
       ['Modal Pokok Sudah Dikembalikan', invSummary.totalPokokDikembalikan || 0, 'Realisasi pengembalian modal pokok'],
       ['Total Hak Bagi Hasil Investor (60%)', invSummary.totalHakInvestor60 || 0, 'Bagian keuntungan 60% pemodal (sesi >= 50%)'],
