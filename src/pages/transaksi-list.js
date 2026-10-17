@@ -311,36 +311,43 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
               ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
             </span>
             <div class="flex items-center gap-1 mt-1">
-              ${isMasuk ? `
-                <button
-                  type="button"
-                  data-add-item-trx="${trx.id}"
-                  class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
-                  title="Tambah Barang ke Transaksi Ini"
+              ${(['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || trx.sourceType === 'investor' || trx.sourceType === 'investor_payout') ? `
+                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-100/80 text-amber-800 text-[9px] font-semibold border border-amber-300/60">
+                  <span class="material-symbols-outlined text-[11px]">handshake</span>
+                  <span>Menu Investasi</span>
+                </span>
+              ` : `
+                ${isMasuk ? `
+                  <button
+                    type="button"
+                    data-add-item-trx="${trx.id}"
+                    class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
+                    title="Tambah Barang ke Transaksi Ini"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">add_shopping_cart</span>
+                    <span>+ Barang</span>
+                  </button>
+                ` : ''}
+                <button 
+                  type="button" 
+                  data-edit-trx="${trx.id}"
+                  data-type="${trx.type}"
+                  class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
+                  title="Edit Transaksi"
                 >
-                  <span class="material-symbols-outlined text-[12px]">add_shopping_cart</span>
-                  <span>+ Barang</span>
+                  <span class="material-symbols-outlined text-[12px]">edit</span>
+                  <span>Edit</span>
                 </button>
-              ` : ''}
-              <button 
-                type="button" 
-                data-edit-trx="${trx.id}"
-                data-type="${trx.type}"
-                class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
-                title="Edit Transaksi"
-              >
-                <span class="material-symbols-outlined text-[12px]">edit</span>
-                <span>Edit</span>
-              </button>
-              <button 
-                type="button" 
-                data-delete-trx="${trx.id}"
-                class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
-                title="Hapus Transaksi"
-              >
-                <span class="material-symbols-outlined text-[12px]">delete</span>
-                <span>Hapus</span>
-              </button>
+                <button 
+                  type="button" 
+                  data-delete-trx="${trx.id}"
+                  class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
+                  title="Hapus Transaksi"
+                >
+                  <span class="material-symbols-outlined text-[12px]">delete</span>
+                  <span>Hapus</span>
+                </button>
+              `}
             </div>
           </div>
         </div>
@@ -448,7 +455,12 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                 </span>
               </div>
               <div class="flex items-center gap-1 mt-1">
-                ${isAdmin ? `<button 
+                ${(['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || trx.sourceType === 'investor' || trx.sourceType === 'investor_payout') ? `
+                  <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded bg-amber-100/80 text-amber-800 text-[9px] font-semibold border border-amber-300/60">
+                    <span class="material-symbols-outlined text-[10px]">handshake</span>
+                    <span>Menu Investasi</span>
+                  </span>
+                ` : isAdmin ? `<button 
                   type="button" 
                   data-edit-trx="${trx.id}"
                   data-type="${trx.type}"
