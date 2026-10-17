@@ -277,8 +277,12 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
     - **Seksi [9] di Sheet Dashboard Google Sheets:** Ringkasan akumulasi dana masuk investor, bagi hasil investor, bagi hasil pengelola, total bagi hasil, serta daftar pemodal aktif dengan styling bertema dark gold accent.
 
 16. **Statistik Penjualan Harian & Grafik Tren Hari ke Hari di Google Spreadsheet (17 Okt 2026):**
-    - **Sheet Baru `Statistik Harian`:** Merekap data transaksi penjualan per tanggal secara kronologis: No, Tanggal, Omset Penjualan (Rp), Kas Masuk Total (Rp), Kas Keluar (Rp), Sepatu Laku (Psg), dan Net Cash Flow (Rp).
-    - **Chart 4 di Sheet Dashboard (Line Chart):** Grafik garis ganda interaktif yang memvisualisasikan tren Omset Penjualan (garis hijau emerald), Kas Keluar (garis merah crimson), dan Sepatu Laku Pasang (garis putus-putus kuning pada sumbu kanan) untuk pemantauan performa harian secara komprehensif.
+    - **Sheet Baru `Statistik Harian`:** Merekap data transaksi penjualan per tanggal secara kronologis: No, Tanggal, Omset Penjualan (Rp), Kas Masuk Total (Rp), Kas Keluar (Rp), Sepatu Laku (Psg), dan Net Cash Flow (Rp). Dilengkapi styling dark slate header, format rupiah, dan penyesuaian lebar kolom otomatis.
+    - **Seksi [10] di Sheet Dashboard:** Tabel `[10] STATISTIK PENJUALAN DARI HARI KE HARI` langsung ditampilkan di dashboard utama dengan rincian per tanggal (Omset, Sepatu Laku, Net Cash Flow) dan baris TOTAL beraksen cyan/teal.
+    - **Chart 4 di Sheet Dashboard (Line Chart - Grid 2x2 Sempurna):**
+      - Ditempatkan di Row 20, Kolom L (bersebelahan dengan Chart 3 Pengeluaran per Kategori) membentuk tata letak 4 grafik seimbang.
+      - Menghubungkan langsung data sheet `Statistik Harian` via Google Sheets API dengan `headerCount: 1` untuk menampilkan legend dinamis Omset Penjualan (Hijau Emerald), Kas Keluar (Merah Crimson), dan Sepatu Laku Pasang (Kuning Aksen di sumbu kanan).
+      - Menghapus atribut `lineStyle: dashType` yang sebelumnya menyebabkan respons 400 Bad Request dari Google Sheets API, sehingga batch update grafik kini 100% sukses terpasang.
 
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.

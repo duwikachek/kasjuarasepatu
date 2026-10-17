@@ -662,60 +662,114 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
         }}
       });
     }
-    // 17. Chart 4: Statistik Penjualan Harian (Line Chart — referensi sheet 'Statistik Harian')
-    try {
-      const statMetaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      if (statMetaRes.ok) {
-        const statMeta = await statMetaRes.json();
-        const statSheet = statMeta.sheets?.find((s) => s.properties?.title === 'Statistik Harian');
-        if (statSheet) {
-          const statSheetId = statSheet.properties.sheetId;
-          const dataRowCount = meta.statistikHarianRowCount || 7;
-          requests.push({
-            addChart: { chart: {
-              spec: {
-                title: '📈 Statistik Penjualan Harian',
-                titleTextFormat: { bold: true, fontSize: 11 },
-                basicChart: {
-                  chartType: 'LINE',
-                  legendPosition: 'BOTTOM_LEGEND',
-                  domains: [{ domain: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 1, endColumnIndex: 2 }] } } }],
-                  series: [
-                    {
-                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 2, endColumnIndex: 3 }] } },
-                      targetAxis: 'LEFT_AXIS',
-                      lineStyle: { width: 2 },
-                      color: { red: 0.06, green: 0.72, blue: 0.50 }
-                    },
-                    {
-                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 4, endColumnIndex: 5 }] } },
-                      targetAxis: 'LEFT_AXIS',
-                      lineStyle: { width: 2 },
-                      color: { red: 0.88, green: 0.20, blue: 0.25 }
-                    },
-                    {
-                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 5, endColumnIndex: 6 }] } },
-                      targetAxis: 'RIGHT_AXIS',
-                      lineStyle: { width: 1, dashType: 'DOT' },
-                      color: { red: 0.98, green: 0.75, blue: 0.20 }
-                    }
-                  ],
-                  axis: [
-                    { position: 'BOTTOM_AXIS', title: 'Tanggal' },
-                    { position: 'LEFT_AXIS', title: 'Nominal (Rp)' },
-                    { position: 'RIGHT_AXIS', title: 'Sepatu Laku (Psg)' }
-                  ]
+    // 17. Chart 4: Statistik Penjualan Hari ke Hari (Line Chart — referensi sheet 'Statistik Harian')
+    const statSheet = sheetData.sheets?.find((s) => s.properties?.title === 'Statistik Harian');
+    if (statSheet) {
+      const statSheetId = statSheet.properties?.sheetId;
+      const dataRowCount = meta.statistikHarianRowCount || 1;
+      requests.push({
+        addChart: { chart: {
+          spec: {
+            title: '📈 Statistik Penjualan Hari ke Hari',
+            titleTextFormat: { bold: true, fontSize: 11 },
+            basicChart: {
+              chartType: 'LINE',
+              legendPosition: 'BOTTOM_LEGEND',
+              headerCount: 1,
+              domains: [{ domain: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 0, endRowIndex: 1 + dataRowCount, startColumnIndex: 1, endColumnIndex: 2 }] } } }],
+              series: [
+                {
+                  series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 0, endRowIndex: 1 + dataRowCount, startColumnIndex: 2, endColumnIndex: 3 }] } },
+                  targetAxis: 'LEFT_AXIS',
+                  color: { red: 0.06, green: 0.72, blue: 0.50 }
+                },
+                {
+                  series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 0, endRowIndex: 1 + dataRowCount, startColumnIndex: 4, endColumnIndex: 5 }] } },
+                  targetAxis: 'LEFT_AXIS',
+                  color: { red: 0.88, green: 0.20, blue: 0.25 }
+                },
+                {
+                  series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 0, endRowIndex: 1 + dataRowCount, startColumnIndex: 5, endColumnIndex: 6 }] } },
+                  targetAxis: 'RIGHT_AXIS',
+                  color: { red: 0.98, green: 0.75, blue: 0.20 }
                 }
-              },
-              position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 33, columnIndex: 5 }, widthPixels: 820, heightPixels: 300 } }
-            }}
-          });
+              ],
+              axis: [
+                { position: 'BOTTOM_AXIS', title: 'Tanggal' },
+                { position: 'LEFT_AXIS', title: 'Nominal (Rp)' },
+                { position: 'RIGHT_AXIS', title: 'Sepatu Laku (Psg)' }
+              ]
+            }
+          },
+          position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 20, columnIndex: 11 }, widthPixels: 420, heightPixels: 260 } }
+        }}
+      });
+
+      // Styling untuk Sheet 'Statistik Harian'
+      const count = meta.statistikHarianRowCount || 1;
+      requests.push({
+        repeatCell: {
+          range: { sheetId: statSheetId, startRowIndex: 0, endRowIndex: 1, startColumnIndex: 0, endColumnIndex: 7 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.06, green: 0.09, blue: 0.15 },
+              textFormat: { foregroundColor: { red: 1, green: 1, blue: 1 }, bold: true, fontSize: 10 },
+              horizontalAlignment: 'CENTER'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
         }
-      }
-    } catch (chartErr) {
-      console.warn('[GoogleSheets] Non-fatal: Chart harian gagal ditambah:', chartErr.message);
+      });
+      [2, 3, 4, 6].forEach((colIdx) => {
+        requests.push({
+          repeatCell: {
+            range: { sheetId: statSheetId, startRowIndex: 1, endRowIndex: 2 + count, startColumnIndex: colIdx, endColumnIndex: colIdx + 1 },
+            cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+            fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+          }
+        });
+      });
+      requests.push({
+        repeatCell: {
+          range: { sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + count, startColumnIndex: 0, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { horizontalAlignment: 'CENTER' } },
+          fields: 'userEnteredFormat.horizontalAlignment'
+        }
+      });
+      requests.push({
+        repeatCell: {
+          range: { sheetId: statSheetId, startRowIndex: 1, endRowIndex: 2 + count, startColumnIndex: 5, endColumnIndex: 6 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'NUMBER', pattern: '#,##0" Psg"' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+      const statTotalRow = 1 + count;
+      requests.push({
+        repeatCell: {
+          range: { sheetId: statSheetId, startRowIndex: statTotalRow, endRowIndex: statTotalRow + 1, startColumnIndex: 0, endColumnIndex: 7 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.12, green: 0.16, blue: 0.24 },
+              textFormat: { bold: true, foregroundColor: { red: 0.35, green: 0.88, blue: 0.95 } },
+              borders: {
+                top: { style: 'SOLID', width: 1, color: { red: 0.2, green: 0.4, blue: 0.6 } },
+                bottom: { style: 'DOUBLE', width: 3, color: { red: 0.2, green: 0.4, blue: 0.6 } }
+              }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+      const colWidths = [50, 110, 150, 150, 140, 120, 150];
+      colWidths.forEach((w, idx) => {
+        requests.push({
+          updateDimensionProperties: {
+            range: { sheetId: statSheetId, dimension: 'COLUMNS', startIndex: idx, endIndex: idx + 1 },
+            properties: { pixelSize: w },
+            fields: 'pixelSize'
+          }
+        });
+      });
     }
 
 
@@ -1020,6 +1074,88 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       });
     }
 
+    // 20. Styling untuk Section [10] STATISTIK PENJUALAN DARI HARI KE HARI
+    if (meta.statHeaderRowIndex !== undefined) {
+      const secRow = meta.statHeaderRowIndex;
+      const colHeaderRow = secRow + 1;
+      const dataStart = meta.statDataStartRowIndex;
+      const count = meta.statRowCount || 1;
+
+      // Section Header (Dark Teal/Cyan Accent)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: secRow, endRowIndex: secRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.04, green: 0.14, blue: 0.16 },
+              textFormat: { foregroundColor: { red: 0.35, green: 0.88, blue: 0.95 }, fontSize: 10, bold: true },
+              borders: { left: { style: 'SOLID', width: 3, color: { red: 0.12, green: 0.75, blue: 0.85 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+
+      // Table Columns Header
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.08, green: 0.16, blue: 0.20 },
+              textFormat: { foregroundColor: { red: 0.60, green: 0.90, blue: 0.95 }, fontSize: 9, bold: true },
+              horizontalAlignment: 'LEFT'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+        }
+      });
+
+      // Currency format Col B (Omset) & Col D (Net Cash Flow)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + 1, startColumnIndex: 1, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + 1, startColumnIndex: 3, endColumnIndex: 4 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Col C (Sepatu Laku) center alignment
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + count + 1, startColumnIndex: 2, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { horizontalAlignment: 'CENTER', textFormat: { foregroundColor: { red: 0.98, green: 0.82, blue: 0.40 } } } },
+          fields: 'userEnteredFormat(horizontalAlignment,textFormat)'
+        }
+      });
+
+      // Total Row highlight
+      const statTotalRow = dataStart + count;
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: statTotalRow, endRowIndex: statTotalRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.06, green: 0.18, blue: 0.20 },
+              textFormat: { foregroundColor: { red: 0.45, green: 0.95, blue: 0.95 }, bold: true },
+              borders: {
+                top: { style: 'SOLID', width: 1, color: { red: 0.12, green: 0.75, blue: 0.85 } },
+                bottom: { style: 'DOUBLE', width: 3, color: { red: 0.12, green: 0.75, blue: 0.85 } }
+              }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+    }
+
     // Send batchUpdate
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
       method: 'POST',
@@ -1127,13 +1263,19 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     });
 
     const dailyDates = Object.keys(dailyStatsMap).sort(); // urutan lama ke baru untuk chart
+    if (dailyDates.length === 0) {
+      const todayStr = getLocalDateString();
+      dailyStatsMap[todayStr] = { masukPenjualan: 0, masukTotal: 0, keluar: 0, pasang: 0 };
+      dailyDates.push(todayStr);
+    }
     const statistikHarianRows = [
       ['No', 'Tanggal', 'Omset Penjualan (Rp)', 'Kas Masuk Total (Rp)', 'Kas Keluar (Rp)', 'Sepatu Laku (Psg)', 'Net Cash Flow (Rp)']
     ];
-    let grandOmset = 0, grandKeluar = 0, grandPasang = 0;
+    let grandOmset = 0, grandMasukTotal = 0, grandKeluar = 0, grandPasang = 0;
     dailyDates.forEach((d, idx) => {
       const s = dailyStatsMap[d];
       grandOmset += s.masukPenjualan;
+      grandMasukTotal += s.masukTotal;
       grandKeluar += s.keluar;
       grandPasang += s.pasang;
       statistikHarianRows.push([
@@ -1146,7 +1288,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         s.masukTotal - s.keluar
       ]);
     });
-    statistikHarianRows.push(['TOTAL', `${dailyDates.length} Hari`, grandOmset, grandOmset, grandKeluar, grandPasang, grandOmset - grandKeluar]);
+    statistikHarianRows.push(['TOTAL', `${dailyDates.length} Hari`, grandOmset, grandMasukTotal, grandKeluar, grandPasang, grandMasukTotal - grandKeluar]);
     // ─────────────────────────────────────────────────────────────────────────
 
     // Pisahkan transaksi kas masuk dan kas keluar
@@ -1660,6 +1802,32 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     }
     dashboardRows.push(['', '', '', '']);
 
+    // ─── SEKSI [10] STATISTIK PENJUALAN DARI HARI KE HARI ───────────────────
+    const statHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['[10] STATISTIK PENJUALAN DARI HARI KE HARI', '', '', '']);
+    dashboardRows.push(['TANGGAL', 'OMSET PENJUALAN (RP)', 'SEPATU LAKU', 'NET CASH FLOW (RP)']);
+    const statDataStartRowIndex = dashboardRows.length;
+    if (dailyDates.length > 0) {
+      dailyDates.forEach((d) => {
+        const s = dailyStatsMap[d];
+        dashboardRows.push([
+          d,
+          s.masukPenjualan,
+          `${s.pasang} Psg`,
+          s.masukTotal - s.keluar
+        ]);
+      });
+      dashboardRows.push([
+        `TOTAL (${dailyDates.length} Hari)`,
+        grandOmset,
+        `${grandPasang} Psg`,
+        grandMasukTotal - grandKeluar
+      ]);
+    } else {
+      dashboardRows.push(['Belum ada data penjualan', 0, '0 Psg', 0]);
+    }
+    dashboardRows.push(['', '', '', '']);
+
     const dashboardMeta = {
       uniqueDates,
       catStartRowIndex,
@@ -1676,6 +1844,9 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       invHeaderRowIndex,
       invListHeaderRowIndex,
       invRowCount: investors.length > 0 ? investors.length : 1,
+      statHeaderRowIndex,
+      statDataStartRowIndex,
+      statRowCount: dailyDates.length > 0 ? dailyDates.length : 1,
       statistikHarianRowCount: Math.max(1, dailyDates.length)
     };
 
