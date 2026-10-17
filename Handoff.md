@@ -267,6 +267,19 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
       - Menambahkan mekanisme deduplikasi transaksi belanja di `src/store/store.js` saat menarik state dari Supabase (`_initSupabase`).
       - Langsung disinkronkan dan diverifikasi real-time di Google Spreadsheet aktif: Arus Kas Bersih kembali tepat `-Rp 800.000` (Defisit belanja stok), Total Pengeluaran Kas tepat `Rp 800.000` (7 Transaksi), Rekap Pengadaan tepat `Rp 800.000` (7 Pasang & 7 Item), dan Komposisi Stok tepat `7 Pasang (100%)`.
 
+14. **Proteksi & Tata Kelola Transaksi Investasi di Buku Transaksi (17 Okt 2026):**
+    - Menyembunyikan tombol aksi `+Barang`, `Edit`, dan `Hapus` pada kartu transaksi kategori investasi/dana investor di halaman Buku Transaksi (`src/pages/laporan.js`).
+    - Kategori terproteksi: `Dana Investor`, `Investasi Modal`, `Bagi Hasil Investor`, `Bagi Hasil Pengelola`, dan `Pengembalian Modal Investor`.
+    - Menampilkan badge proteksi `🔒 Dikelola di Menu Investor` dengan tombol direct shortcut `"Buka Menu Investor"` agar alur keuangan dan konsistensi data tetap terjaga dari modul Investor/Pemodal.
+
+15. **Laporan Investasi & Bagi Hasil di Google Spreadsheet (17 Okt 2026):**
+    - **Sheet Baru `Investasi & Bagi Hasil`:** Merekap data pemodal, total modal masuk, riwayat payout bagi hasil (rasio 60% Investor : 40% Pengelola), dan pengembalian modal pokok.
+    - **Seksi [9] di Sheet Dashboard Google Sheets:** Ringkasan akumulasi dana masuk investor, bagi hasil investor, bagi hasil pengelola, total bagi hasil, serta daftar pemodal aktif dengan styling bertema dark gold accent.
+
+16. **Statistik Penjualan Harian & Grafik Tren Hari ke Hari di Google Spreadsheet (17 Okt 2026):**
+    - **Sheet Baru `Statistik Harian`:** Merekap data transaksi penjualan per tanggal secara kronologis: No, Tanggal, Omset Penjualan (Rp), Kas Masuk Total (Rp), Kas Keluar (Rp), Sepatu Laku (Psg), dan Net Cash Flow (Rp).
+    - **Chart 4 di Sheet Dashboard (Line Chart):** Grafik garis ganda interaktif yang memvisualisasikan tren Omset Penjualan (garis hijau emerald), Kas Keluar (garis merah crimson), dan Sepatu Laku Pasang (garis putus-putus kuning pada sumbu kanan) untuk pemantauan performa harian secara komprehensif.
+
 ## File Kunci
 - `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.
