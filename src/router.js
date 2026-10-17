@@ -96,7 +96,7 @@ export class Router {
       'barang-masuk': 'pasok',
       'transaksi': 'transaksi',
       'pengiriman': 'pengiriman',
-      'investor': 'dashboard',
+      'investor': 'investor',
       'laporan': 'laporan',
       'laporan-stock': 'laporan',
       'pengaturan': 'pengaturan',

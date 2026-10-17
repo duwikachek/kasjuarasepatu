@@ -5,6 +5,7 @@ export function renderBottomNav(activeRoute = 'dashboard', isAdmin = true) {
     { route: 'dashboard', icon: 'storefront', label: 'Dashboard' },
     { route: 'pasok', icon: 'inventory_2', label: 'Stock' },
     { route: 'transaksi', icon: 'point_of_sale', label: 'Transaksi' },
+    { route: 'investor', icon: 'handshake', label: 'Investasi' },
     { route: 'pengiriman', icon: 'local_shipping', label: 'Kirim' },
     { route: 'laporan', icon: 'analytics', label: 'Laporan' },
   ];
@@ -21,7 +22,7 @@ export function renderBottomNav(activeRoute = 'dashboard', isAdmin = true) {
   return `
     <nav class="w-full bg-black shadow-[0_-4px_25px_rgba(0,0,0,0.6)] border-t border-neutral-800 select-none pb-1 sm:pb-2 pt-1 relative" style="background-color: #000000 !important;">
       ${roleBadge}
-      <div class="flex justify-around items-center h-16 sm:h-[68px] px-2 max-w-[430px] mx-auto bg-black" style="background-color: #000000 !important;">
+      <div class="flex justify-around items-center h-16 sm:h-[68px] px-1.5 max-w-[430px] mx-auto bg-black" style="background-color: #000000 !important;">
         ${tabs.map((tab) => {
           const isActive = activeRoute === tab.route;
           const activeClass = isActive
@@ -31,11 +32,11 @@ export function renderBottomNav(activeRoute = 'dashboard', isAdmin = true) {
             <button
               type="button"
               data-nav="${tab.route}"
-              class="flex flex-col items-center justify-center w-16 h-12 rounded-xl transition-all active:scale-95 ${activeClass}"
+              class="flex flex-col items-center justify-center flex-1 min-w-0 max-w-[66px] h-12 rounded-xl transition-all active:scale-95 px-0.5 ${activeClass}"
               aria-label="${tab.label}"
             >
-              <span class="material-symbols-outlined text-[22px]">${tab.icon}</span>
-              <span class="font-label-sm text-[11px] leading-tight mt-0.5">${tab.label}</span>
+              <span class="material-symbols-outlined text-[20px]">${tab.icon}</span>
+              <span class="font-label-sm text-[9.5px] leading-tight mt-0.5 truncate">${tab.label}</span>
             </button>
           `;
         }).join('')}

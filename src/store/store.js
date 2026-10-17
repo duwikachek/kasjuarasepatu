@@ -1489,7 +1489,7 @@ class Store {
   }
 
   // =====================
-  // Investor Management
+  // Investor Management (Bagi Hasil 60:40 & Sesi Pembelanjaan >= 50%)
   // =====================
 
   getInvestors() {
@@ -1518,10 +1518,12 @@ class Store {
       status: data.status || 'aktif',
       notes: data.notes || '',
       paymentMethod: data.paymentMethod || 'Transfer Bank',
+      sessionInvoices: Array.isArray(data.sessionInvoices) ? data.sessionInvoices : (data.sessionInvoices ? [data.sessionInvoices] : []),
+      payouts: [],
       createdAt: new Date().toISOString()
     };
 
-    // User requirement: Dana investor masuk sebagai kas pemasukan
+    // Aturan 2: Dana investor masuk otomatis menambah Saldo Kas Toko (Kas Masuk)
     const trx = this.addTransaction({
       type: 'masuk',
       category: 'Dana Investor',
@@ -1537,6 +1539,7 @@ class Store {
     newInvestor.trxId = trx.id;
 
     this.state.investors.unshift(newInvestor);
+    this.saveState();
     this.notify();
     return newInvestor;
   }
@@ -1551,6 +1554,9 @@ class Store {
     const totalAmount = data.totalAmount !== undefined ? Number(data.totalAmount) : old.totalAmount;
     const tenor = data.tenor !== undefined ? Number(data.tenor) : old.tenor;
     const cicilan = data.cicilan !== undefined ? Number(data.cicilan) : Math.round(totalAmount / (tenor || 1));
+    const sessionInvoices = data.sessionInvoices !== undefined
+      ? (Array.isArray(data.sessionInvoices) ? data.sessionInvoices : (data.sessionInvoices ? [data.sessionInvoices] : []))
+      : (old.sessionInvoices || []);
 
     const updated = {
       ...old,
@@ -1558,25 +1564,18 @@ class Store {
       investorName,
       totalAmount,
       tenor,
-      cicilan
+      cicilan,
+      sessionInvoices,
+      payouts: old.payouts || []
     };
 
-    // Cari transaksi kas terkait
+    // Sinkronkan catatan kas masuk terkait
     let linkedTrx = null;
     if (old.trxId) {
       linkedTrx = this.getTransactionById(old.trxId);
     }
     if (!linkedTrx && Array.isArray(this.state.transactions)) {
-      linkedTrx = this.state.transactions.find((t) => t.investorId === id);
-    }
-    if (!linkedTrx && Array.isArray(this.state.transactions)) {
-      const oldName = (old.investorName || '').toLowerCase().trim();
-      linkedTrx = this.state.transactions.find((t) =>
-        (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || (typeof t.nota === 'string' && t.nota.startsWith('#INV-'))) &&
-        oldName &&
-        t.title &&
-        t.title.toLowerCase().includes(oldName)
-      );
+      linkedTrx = this.state.transactions.find((t) => t.investorId === id && t.type === 'masuk');
     }
 
     if (linkedTrx) {
@@ -1606,8 +1605,79 @@ class Store {
     }
 
     this.state.investors[idx] = updated;
+    this.saveState();
     this.notify();
     return updated;
+  }
+
+  // Aturan 2: Saat membayar Bagi Hasil / Pokok, Saldo Kas Toko OTOMATIS BERKURANG (Kas Keluar)
+  addInvestorPayout(investorId, payoutData) {
+    if (!this.state.investors) return null;
+    const inv = this.state.investors.find((i) => i.id === investorId);
+    if (!inv) return null;
+
+    if (!Array.isArray(inv.payouts)) inv.payouts = [];
+
+    const amount = Number(payoutData.amount) || 0;
+    const type = payoutData.type || 'bagi_hasil'; // 'bagi_hasil' atau 'pokok'
+    const date = payoutData.date || new Date().toISOString().split('T')[0];
+    const paymentMethod = payoutData.paymentMethod || 'Transfer Bank';
+    const notes = (payoutData.notes || '').trim();
+
+    // Catat ke Buku Kas Toko sebagai Kas Keluar
+    const category = type === 'pokok' ? 'Pengembalian Modal Investor' : 'Bagi Hasil Investor';
+    const title = type === 'pokok'
+      ? `Pengembalian Modal: ${inv.investorName}`
+      : `Bagi Hasil (60%): ${inv.investorName}`;
+
+    const trx = this.addTransaction({
+      type: 'keluar',
+      category,
+      amount,
+      title,
+      paymentMethod,
+      date,
+      nota: `#PAY-INV-${Math.floor(1000 + Math.random() * 9000)}`,
+      investorId,
+      sourceType: 'investor_payout',
+      notes
+    });
+
+    const payout = {
+      id: `PAY-${Date.now()}`,
+      amount,
+      type,
+      date,
+      paymentMethod,
+      notes,
+      trxId: trx.id,
+      createdAt: new Date().toISOString()
+    };
+
+    inv.payouts.unshift(payout);
+    this.saveState();
+    this.notify();
+    return payout;
+  }
+
+  deleteInvestorPayout(investorId, payoutId) {
+    if (!this.state.investors) return false;
+    const inv = this.state.investors.find((i) => i.id === investorId);
+    if (!inv || !Array.isArray(inv.payouts)) return false;
+
+    const pIdx = inv.payouts.findIndex((p) => p.id === payoutId);
+    if (pIdx === -1) return false;
+
+    const payout = inv.payouts[pIdx];
+    // Hapus transaksi kas keluar terkait agar saldo kas kembali
+    if (payout.trxId && Array.isArray(this.state.transactions)) {
+      this.state.transactions = this.state.transactions.filter((t) => t.id !== payout.trxId);
+    }
+
+    inv.payouts.splice(pIdx, 1);
+    this.saveState();
+    this.notify();
+    return true;
   }
 
   deleteInvestor(id) {
@@ -1618,6 +1688,11 @@ class Store {
       const invName = (inv.investorName || '').toLowerCase().trim();
       const linkedTrxIds = new Set();
       if (inv.trxId) linkedTrxIds.add(inv.trxId);
+      if (Array.isArray(inv.payouts)) {
+        inv.payouts.forEach((p) => {
+          if (p.trxId) linkedTrxIds.add(p.trxId);
+        });
+      }
 
       if (Array.isArray(this.state.transactions)) {
         this.state.transactions.forEach((t) => {
@@ -1626,7 +1701,7 @@ class Store {
           } else if (inv.trxId && t.id === inv.trxId) {
             linkedTrxIds.add(t.id);
           } else if (
-            (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || (typeof t.nota === 'string' && t.nota.startsWith('#INV-'))) &&
+            (t.category === 'Dana Investor' || t.category === 'Bagi Hasil Investor' || t.category === 'Pengembalian Modal Investor') &&
             invName &&
             t.title &&
             t.title.toLowerCase().includes(invName)
@@ -1642,25 +1717,218 @@ class Store {
     }
 
     this.state.investors = this.state.investors.filter((i) => i.id !== id);
+    this.saveState();
     this.notify();
+  }
+
+  // Hitung Analisis Sesi Pembelanjaan & Skema Bagi Hasil (60% Investor : 40% Pengelola setelah >= 50% terjual)
+  getInvestmentSessionReport(investorId = null) {
+    const investors = this.getInvestors();
+    const supplies = this.getSupplies();
+    const transactions = this.getTransactions();
+
+    // Kumpulkan penjualan aktual sepatu
+    const stockReport = this.getRealtimeStockReport ? this.getRealtimeStockReport() : { summary: {} };
+    const stockSummary = stockReport.summary || {};
+
+    const targetInvestors = investorId ? investors.filter((i) => i.id === investorId) : investors;
+
+    const reports = targetInvestors.map((inv) => {
+      const linkedInvoices = Array.isArray(inv.sessionInvoices) && inv.sessionInvoices.length > 0
+        ? inv.sessionInvoices
+        : [];
+
+      // Ambil faktur belanja terkait
+      const matchedSupplies = linkedInvoices.length > 0
+        ? supplies.filter((s) => linkedInvoices.includes(s.invoiceNo) || linkedInvoices.includes(s.id))
+        : supplies; // Default ke semua belanja jika belum ditautkan spesifik
+
+      // 1. Total Pasang Belanja Sesi & Total Modal Belanja (HPP Total)
+      let totalBeliPasang = 0;
+      let totalModalBelanja = 0;
+      const sessionBarcodes = new Set();
+      const sessionProductNames = new Set();
+
+      matchedSupplies.forEach((sup) => {
+        totalModalBelanja += Number(sup.totalAmount) || 0;
+        if (sup.items && Array.isArray(sup.items) && sup.items.length > 0) {
+          sup.items.forEach((it) => {
+            const q = Number(it.qty) || 1;
+            totalBeliPasang += q;
+            if (it.barcode) sessionBarcodes.add(it.barcode.toString().trim().toUpperCase());
+            if (it.name) sessionProductNames.add(it.name.toString().trim().toLowerCase());
+          });
+        } else {
+          totalBeliPasang += Number(sup.itemsCount) || 1;
+        }
+      });
+
+      // 2. Hitung Penjualan Aktual dari Sesi Ini
+      let totalTerjualPasang = 0;
+      let omzetPenjualan = 0;
+      let hppTerjual = 0;
+
+      transactions.forEach((t) => {
+        if (t.type !== 'masuk') return;
+        if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang') return;
+
+        // Cek apakah item transaksi cocok dengan produk dalam sesi belanja ini
+        if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+          t.items.forEach((it) => {
+            const bc = it.barcode ? it.barcode.toString().trim().toUpperCase() : '';
+            const nm = (it.name || '').toString().trim().toLowerCase();
+            const isMatch = linkedInvoices.length === 0 ||
+              (bc && sessionBarcodes.has(bc)) ||
+              (nm && sessionProductNames.has(nm));
+
+            if (isMatch) {
+              totalTerjualPasang += 1;
+              const sellP = Number(it.price) || 0;
+              omzetPenjualan += sellP;
+              // Cari buyPrice dari supply atau fallback
+              let buyP = 0;
+              for (const sup of matchedSupplies) {
+                const found = (sup.items || []).find((si) => (si.barcode && si.barcode.toUpperCase() === bc) || (si.name && si.name.toLowerCase() === nm));
+                if (found && found.buyPrice) { buyP = Number(found.buyPrice); break; }
+              }
+              if (!buyP && sellP > 0) buyP = Math.round(sellP / 1.35);
+              hppTerjual += buyP;
+            }
+          });
+        } else {
+          const bc = t.barcode ? t.barcode.toString().trim().toUpperCase() : '';
+          const nm = (t.productName || t.title || '').toString().trim().toLowerCase();
+          const isMatch = linkedInvoices.length === 0 ||
+            (bc && sessionBarcodes.has(bc)) ||
+            (nm && sessionProductNames.has(nm));
+
+          if (isMatch) {
+            const count = Number(t.itemCount) || 1;
+            totalTerjualPasang += count;
+            const amt = Number(t.amount) || 0;
+            omzetPenjualan += amt;
+            let buyP = 0;
+            for (const sup of matchedSupplies) {
+              const found = (sup.items || []).find((si) => (si.barcode && si.barcode.toUpperCase() === bc) || (si.name && si.name.toLowerCase() === nm));
+              if (found && found.buyPrice) { buyP = Number(found.buyPrice); break; }
+            }
+            if (!buyP && amt > 0) buyP = Math.round(amt / 1.35);
+            hppTerjual += buyP;
+          }
+        }
+      });
+
+      // 3. Persentase Terjual & Status Aturan 50%
+      const persentaseTerjual = totalBeliPasang > 0
+        ? Math.min(100, Math.round((totalTerjualPasang / totalBeliPasang) * 100))
+        : 0;
+      const isEligible50 = persentaseTerjual >= 50;
+
+      // 4. Biaya Operasional & Biaya Lain Toko Sesi
+      // Mengambil total pengeluaran non-belanja & non-investor
+      let totalBiayaOperasionalToko = 0;
+      transactions.forEach((t) => {
+        if (t.type === 'keluar') {
+          const cat = (t.category || '').toLowerCase();
+          if (!cat.includes('belanja') && !cat.includes('investor') && !cat.includes('pasok')) {
+            totalBiayaOperasionalToko += Number(t.amount) || 0;
+          }
+        }
+      });
+
+      // Proporsi biaya operasional yang dialokasikan ke sesi ini (berdasarkan rasio omzet sesi vs total omzet)
+      const totalOmzetToko = transactions.filter((t) => t.type === 'masuk' && t.category !== 'Dana Investor').reduce((s, t) => s + (Number(t.amount) || 0), 0) || 1;
+      const rasioSesi = Math.min(1, Math.max(0, omzetPenjualan / totalOmzetToko));
+      const biayaOpsSesi = Math.round(totalBiayaOperasionalToko * rasioSesi);
+
+      // 5. Keuntungan Bersih Sesi
+      // Laba Kotor = Omzet - HPP Terjual
+      const labaKotor = Math.max(0, omzetPenjualan - hppTerjual);
+      // Laba Bersih = Laba Kotor - Biaya Operasional Sesi
+      const labaBersih = Math.max(0, labaKotor - biayaOpsSesi);
+
+      // 6. Skema Bagi Hasil (60% Investor : 40% Pengelola HANYA jika terjual >= 50%)
+      const hakInvestor60 = isEligible50 ? Math.round(labaBersih * 0.60) : 0;
+      const hakPengelola40 = isEligible50 ? Math.round(labaBersih * 0.40) : 0;
+
+      // 7. Riwayat Payouts
+      const payouts = Array.isArray(inv.payouts) ? inv.payouts : [];
+      const bagiHasilDibayar = payouts.filter((p) => p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0);
+      const pokokDikembalikan = payouts.filter((p) => p.type === 'pokok').reduce((s, p) => s + (Number(p.amount) || 0), 0);
+
+      const sisaBagiHasil = Math.max(0, hakInvestor60 - bagiHasilDibayar);
+      const sisaPokok = Math.max(0, (Number(inv.totalAmount) || 0) - pokokDikembalikan);
+
+      return {
+        investorId: inv.id,
+        investorName: inv.investorName,
+        date: inv.date,
+        totalModal: Number(inv.totalAmount) || 0,
+        status: inv.status || 'aktif',
+        notes: inv.notes || '',
+        sessionInvoices: linkedInvoices,
+        totalBeliPasang,
+        totalTerjualPasang,
+        sisaPasang: Math.max(0, totalBeliPasang - totalTerjualPasang),
+        persentaseTerjual,
+        isEligible50,
+        omzetPenjualan,
+        hppTerjual,
+        biayaOpsSesi,
+        labaKotor,
+        labaBersih,
+        hakInvestor60,
+        hakPengelola40,
+        bagiHasilDibayar,
+        sisaBagiHasil,
+        pokokDikembalikan,
+        sisaPokok,
+        payouts
+      };
+    });
+
+    return reports;
   }
 
   getInvestorSummary() {
     const list = this.getInvestors();
+    const sessionReports = this.getInvestmentSessionReport();
+
     const totalInvested = list.reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
     const aktifList = list.filter((i) => (i.status || 'aktif') === 'aktif');
-    const totalOutstanding = aktifList.reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
-    const totalCicilan = aktifList.reduce((sum, i) => {
-      const c = i.cicilan !== undefined ? i.cicilan : (i.tenor > 0 ? Math.round(i.totalAmount / i.tenor) : 0);
-      return sum + (Number(c) || 0);
-    }, 0);
+    
+    let totalBagiHasilSiap = 0;
+    let totalHakInvestor60 = 0;
+    let totalHakPengelola40 = 0;
+    let totalBagiHasilDibayar = 0;
+    let totalSisaBagiHasil = 0;
+    let totalPokokDikembalikan = 0;
+    let countEligible50 = 0;
+
+    sessionReports.forEach((r) => {
+      if (r.isEligible50) countEligible50 += 1;
+      totalHakInvestor60 += r.hakInvestor60;
+      totalHakPengelola40 += r.hakPengelola40;
+      totalBagiHasilDibayar += r.bagiHasilDibayar;
+      totalSisaBagiHasil += r.sisaBagiHasil;
+      totalPokokDikembalikan += r.pokokDikembalikan;
+    });
+
+    const totalPokokSisa = Math.max(0, totalInvested - totalPokokDikembalikan);
 
     return {
       totalInvested,
-      totalOutstanding,
-      totalCicilan,
+      totalOutstanding: totalPokokSisa,
+      totalPokokSisa,
+      totalPokokDikembalikan,
+      totalHakInvestor60,
+      totalHakPengelola40,
+      totalBagiHasilDibayar,
+      totalSisaBagiHasil,
+      countEligible50,
       countAktif: aktifList.length,
-      countTotal: list.length
+      countTotal: list.length,
+      sessionReports
     };
   }
 

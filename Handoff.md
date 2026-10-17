@@ -9,7 +9,34 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
 - **Storage:** LocalStorage (untuk data lokal & foto produk)
 - **Barcode Scanner:** `html5-qrcode`
 
-## Konteks Terakhir (Update 13 Oktober 2026)
+## Konteks Terakhir (Update 17 Oktober 2026)
+
+### Fitur Menu Investasi, Sesi Belanja (Syarat ≥ 50% Terjual) & Bagi Hasil 60:40
+**Waktu:** 17 Oktober 2026  
+**Tujuan:** Mengelola modal pemodal/investor yang masuk ke usaha kas juara sepatu dengan skema bagi hasil proporsional berbasis sesi pembelanjaan barang, otomatisasi arus kas masuk/keluar, proteksi read-only bagi pemodal (Atasan), tampilan di Bottom Navigation, laporan di halaman Laporan, dan sinkronisasi sheet terpisah di Google Spreadsheet.
+
+**Ketentuan & Logika Bisnis:**
+1. **Skema Sesi Belanja & Syarat ≥ 50% Terjual:**
+   - Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah laku terjual **≥ 50%**, maka keuntungan bersih (setelah dipotong modal pokok HPP belanja & biaya operasional toko) dibagi: **60% untuk Investor** dan **40% untuk Pengelola**.
+   - Jika penjualan sesi belum mencapai 50%, hak bagi hasil berstatus *Menunggu Target 50% Terjual* dan belum dapat dicairkan.
+2. **Integrasi Arus Kas Otomatis:**
+   - **Modal Masuk:** Setiap kali modal baru disetor pemodal, otomatis dicatat sebagai **Kas Masuk** (kategori: *"Dana Investor"*) dan menambah saldo kas toko.
+   - **Pembayaran Bagi Hasil / Pengembalian Pokok:** Setiap kali toko membayarkan bagi hasil atau mencicil modal pokok, otomatis dicatat sebagai **Kas Keluar** (kategori: *"Bagi Hasil Investor"* / *"Pengembalian Modal Investor"*) dan memotong saldo kas toko.
+3. **Navigasi Bawah (Bottom Navigation Bar):**
+   - Ditambahkan tab **Investasi** (`route: 'investor'`, ikon `handshake`) di navigasi bawah sehingga mudah diakses kapan saja.
+4. **Hak Akses Pemodal / Atasan:**
+   - Pemodal menggunakan akses Atasan (PIN `888888`) dengan mode *Read-Only*.
+   - Pemodal dapat memantau seluruh progres penjualan sesi, capaian target 50%, pembagian keuntungan bersih 60:40, dan mutasi kas tanpa tombol edit/hapus/tambah.
+5. **Laporan di Halaman Laporan:**
+   - Ditambahkan seksi khusus *"Laporan Investasi & Bagi Hasil (60:40)"* di `src/pages/laporan.js` dengan ringkasan hak bagi hasil, progres sesi, dan tombol cepat ke menu investasi.
+6. **Sheet Sendiri di Google Spreadsheet:**
+   - Sinkronisasi otomatis ke Google Spreadsheet menambahkan tab sheet baru bernama **`'Investasi & Bagi Hasil'`** yang memuat Ringkasan Modal & Kewajiban, Tabel Rincian Sesi Pembelanjaan (Target 50% & Bagi Hasil 60:40), serta Tabel Riwayat Pembayaran Kas Keluar ke Pemodal.
+7. **Fitur Ekspor WhatsApp:**
+   - Tombol *Salin Format WA* untuk mengirimkan laporan transparansi pembagian hasil dan progres sesi langsung ke pemodal via WhatsApp dengan 1 klik.
+
+---
+
+## Konteks Sebelumnya (Update 13 Oktober 2026)
 
 ### A. Pemisahan Hak Akses Admin & Atasan (Mode Lihat Saja / Read-Only)
 **Waktu:** 13 Oktober 2026  

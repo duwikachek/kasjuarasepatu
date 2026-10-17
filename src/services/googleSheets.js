@@ -907,7 +907,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
     const token = await getAccessToken(store);
 
-    const sheetNames = ['Dashboard', 'Ringkasan Usaha', 'Kas Masuk', 'Kas Keluar', 'Barang Masuk (Belanja)', 'Pengiriman'];
+    const sheetNames = ['Dashboard', 'Ringkasan Usaha', 'Kas Masuk', 'Kas Keluar', 'Barang Masuk (Belanja)', 'Pengiriman', 'Investasi & Bagi Hasil'];
     const { locale = 'in_ID' } = (await ensureSheetsExist(token, spreadsheetId, sheetNames)) || {};
 
     // Locale-aware formula separator (';' untuk regional Indonesia in_ID / id_ID, ',' untuk en_US)
@@ -1788,6 +1788,125 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ''
     ]);
 
+    // 6. Data Sheet: INVESTASI & BAGI HASIL (Skema 60% Investor : 40% Pengelola & Target >= 50%)
+    const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
+    const sessionReports = store.getInvestmentSessionReport ? store.getInvestmentSessionReport() : [];
+    const investorsList = store.getInvestors ? store.getInvestors() : [];
+
+    const investorSheetRows = [
+      ['LAPORAN INVESTASI & SKEMA BAGI HASIL (60% INVESTOR : 40% PENGELOLA)', shop.name || 'Kas Juara Sepatu'],
+      ['Waktu Sinkronisasi', nowStr],
+      ['Ketentuan Skema', 'Bagi Hasil 60:40 aktif jika dalam 1 sesi pembelanjaan telah terjual >= 50%'],
+      ['', '', ''],
+
+      ['[1] RINGKASAN MODAL & KEWAJIBAN BAGI HASIL', 'NOMINAL (RP)', 'KETERANGAN'],
+      ['Total Modal Diterima', invSummary.totalInvested || 0, `Akumulasi modal dari ${investorsList.length} pemodal`],
+      ['Sisa Modal Pokok', invSummary.totalPokokSisa || 0, 'Sisa modal pokok yang belum dikembalikan'],
+      ['Modal Pokok Sudah Dikembalikan', invSummary.totalPokokDikembalikan || 0, 'Realisasi pengembalian modal pokok'],
+      ['Total Hak Bagi Hasil Investor (60%)', invSummary.totalHakInvestor60 || 0, 'Bagian keuntungan 60% pemodal (sesi >= 50%)'],
+      ['Total Hak Pengelola (40%)', invSummary.totalHakPengelola40 || 0, 'Bagian keuntungan 40% pengelola toko'],
+      ['Bagi Hasil Sudah Dibayarkan', invSummary.totalBagiHasilDibayar || 0, 'Total bagi hasil yang telah ditransfer ke pemodal'],
+      ['Sisa Hak Bagi Hasil Belum Dibayarkan', invSummary.totalSisaBagiHasil || 0, 'Kewajiban bagi hasil siap bayar'],
+      ['Jumlah Sesi Siap Bagi Hasil', `${invSummary.countEligible50 || 0} dari ${sessionReports.length} Sesi`, 'Sesi yang sudah mencapai penjualan >= 50%'],
+      ['', '', ''],
+
+      ['[2] RINCIAN SESI PEMBELANJAAN & CAPAIAN TARGET 50%', '', ''],
+      [
+        'No',
+        'Nama Pemodal',
+        'Tanggal Masuk',
+        'Modal Disetor (Rp)',
+        'Faktur Sesi Belanja',
+        'Total Beli (Psg)',
+        'Sepatu Terjual (Psg)',
+        'Sisa (Psg)',
+        '% Terjual',
+        'Status Syarat (>= 50%)',
+        'Omzet Penjualan Sesi (Rp)',
+        'HPP Terjual (Rp)',
+        'Biaya Operasional (Rp)',
+        'Laba Bersih Sesi (Rp)',
+        'Hak Investor 60% (Rp)',
+        'Hak Pengelola 40% (Rp)',
+        'Bagi Hasil Dibayar (Rp)',
+        'Sisa Bagi Hasil (Rp)',
+        'Sisa Pokok (Rp)'
+      ]
+    ];
+
+    let sessionRowIdx = 1;
+    sessionReports.forEach((r) => {
+      investorSheetRows.push([
+        sessionRowIdx++,
+        r.investorName,
+        cleanDateString(r.date) || r.date || '-',
+        r.totalModal,
+        r.sessionInvoices && r.sessionInvoices.length > 0 ? r.sessionInvoices.join(', ') : 'Semua Belanja',
+        r.totalBeliPasang,
+        r.totalTerjualPasang,
+        r.sisaPasang,
+        `${r.persentaseTerjual}%`,
+        r.isEligible50 ? 'SIAP BAGI HASIL (>= 50%)' : 'BELUM CAPAI 50%',
+        r.omzetPenjualan,
+        r.hppTerjual,
+        r.biayaOpsSesi,
+        r.labaBersih,
+        r.hakInvestor60,
+        r.hakPengelola40,
+        r.bagiHasilDibayar,
+        r.sisaBagiHasil,
+        r.sisaPokok
+      ]);
+    });
+
+    // Tabel 3: Riwayat Pembayaran Kas Keluar ke Investor
+    investorSheetRows.push(['', '', '']);
+    investorSheetRows.push(['[3] RIWAYAT PEMBAYARAN KAS KELUAR KE INVESTOR', '', '']);
+    investorSheetRows.push([
+      'No',
+      'ID Pembayaran',
+      'Tanggal',
+      'Nama Pemodal',
+      'Jenis Pembayaran',
+      'Nominal Dibayar (Rp)',
+      'Metode Pembayaran Kas',
+      'No. Kas Keluar',
+      'Keterangan / Rekening'
+    ]);
+
+    let payoutRowIdx = 1;
+    let grandTotalPayout = 0;
+    investorsList.forEach((inv) => {
+      if (Array.isArray(inv.payouts)) {
+        inv.payouts.forEach((p) => {
+          grandTotalPayout += Number(p.amount) || 0;
+          investorSheetRows.push([
+            payoutRowIdx++,
+            p.id,
+            cleanDateString(p.date) || p.date || '-',
+            inv.investorName,
+            p.type === 'pokok' ? 'Pengembalian Modal Pokok' : 'Bagi Hasil (60%)',
+            Number(p.amount) || 0,
+            p.paymentMethod || 'Transfer Bank',
+            p.trxId || '-',
+            p.notes || '-'
+          ]);
+        });
+      }
+    });
+
+    investorSheetRows.push([
+      'TOTAL PEMBAYARAN',
+      '',
+      '',
+      '',
+      '',
+      grandTotalPayout,
+      '',
+      '',
+      ''
+    ]);
+
     // Step 1: Clear old ranges cleanly in ONE atomic call
     await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}/values:batchClear`, {
       method: 'POST',
@@ -1802,7 +1921,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
           "'Kas Masuk'!A1:Z2000",
           "'Kas Keluar'!A1:Z2000",
           "'Barang Masuk (Belanja)'!A1:Z2000",
-          "'Pengiriman'!A1:Z2000"
+          "'Pengiriman'!A1:Z2000",
+          "'Investasi & Bagi Hasil'!A1:Z1000"
         ]
       })
     });
@@ -1848,6 +1968,11 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
               range: "'Pengiriman'!A1",
               majorDimension: 'ROWS',
               values: shipmentRows
+            },
+            {
+              range: "'Investasi & Bagi Hasil'!A1",
+              majorDimension: 'ROWS',
+              values: investorSheetRows
             }
           ]
         })

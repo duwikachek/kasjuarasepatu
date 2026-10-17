@@ -148,6 +148,8 @@ export function renderLaporanPage(store, period = 'bulan') {
   const supplies = store.getSupplies();
   const totalBelanja = supplies.reduce((s, item) => s + (Number(item.totalAmount) || 0), 0);
   const totalItems = supplies.reduce((s, item) => s + (Number(item.itemsCount) || 0), 0);
+  const invSummary = store.getInvestorSummary ? store.getInvestorSummary() : {};
+  const invReports = store.getInvestmentSessionReport ? store.getInvestmentSessionReport() : [];
 
   // Get unique faktur list from supplies (faktur belanja)
   const fakturList = supplies
@@ -379,6 +381,72 @@ export function renderLaporanPage(store, period = 'bulan') {
           <div id="container-daftar-sisa-stock" class="hidden flex flex-col gap-1.5 pt-1 border-t border-white/45"></div>
         </section>
 
+        <!-- FITUR KHUSUS: Laporan Investasi & Bagi Hasil (60:40) -->
+        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5 relative overflow-hidden" id="section-investasi-laporan">
+          <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-amber-500/10 pointer-events-none"></div>
+
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <div class="w-6 h-6 rounded-lg bg-amber-500/20 text-amber-400 border border-amber-500/30 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[14px]">handshake</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-[11px] text-on-surface">Laporan Investasi & Bagi Hasil</h3>
+                <p class="text-[9px] text-on-surface-variant">Skema 60% Investor : 40% Pengelola (Target ≥ 50%)</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center gap-1 px-1.5 py-0.2 rounded-full bg-amber-500/20 text-amber-300 text-[9px] font-bold border border-amber-500/30">
+              60:40
+            </span>
+          </div>
+
+          <!-- Grid KPI Investasi di Laporan -->
+          <div class="grid grid-cols-2 gap-1 mt-0.5">
+            <div class="glass-card rounded-lg p-1.5 flex flex-col justify-between border border-amber-500/30">
+              <span class="text-[9px] text-amber-400 font-bold uppercase tracking-wider">Hak Investor (60%)</span>
+              <div class="flex items-baseline gap-1 mt-0.5">
+                <span class="text-sm font-extrabold text-amber-300 font-tabular">${formatRupiah(invSummary.totalHakInvestor60 || 0)}</span>
+              </div>
+              <span class="text-[9px] text-neutral-400 mt-0.5">Sisa Belum Bayar: ${formatRupiah(invSummary.totalSisaBagiHasil || 0, '')}</span>
+            </div>
+
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
+              <span class="text-[9px] text-blue-400 font-bold uppercase tracking-wider">Hak Pengelola (40%)</span>
+              <div class="mt-0.5">
+                <span class="text-sm font-extrabold text-blue-300 font-tabular truncate block">${formatRupiah(invSummary.totalHakPengelola40 || 0)}</span>
+              </div>
+              <span class="text-[9px] text-neutral-400 mt-0.5">${invSummary.countEligible50 || 0} dari ${invReports.length} Sesi Siap Bagi</span>
+            </div>
+          </div>
+
+          <!-- Quick List Sesi -->
+          <div class="flex flex-col gap-1.5 mt-1 pt-1 border-t border-neutral-800">
+            ${invReports.length === 0 ? `
+              <span class="text-[10px] text-neutral-400 italic py-1">Belum ada sesi pemodal tercatat.</span>
+            ` : invReports.slice(0, 3).map((r) => `
+              <div class="glass-panel p-2 rounded-lg flex items-center justify-between text-xs">
+                <div class="flex flex-col min-w-0 pr-2">
+                  <span class="font-bold text-white text-[11px] truncate">${r.investorName}</span>
+                  <span class="text-[9px] text-neutral-400">Terjual: ${r.totalTerjualPasang}/${r.totalBeliPasang} psg (${r.persentaseTerjual}%)</span>
+                </div>
+                <div class="flex flex-col items-end shrink-0">
+                  <span class="text-[10px] font-bold ${r.isEligible50 ? 'text-emerald-400' : 'text-amber-400'}">
+                    ${r.isEligible50 ? 'Laba Bersih ' + formatRupiah(r.labaBersih) : 'Target < 50%'}
+                  </span>
+                  <span class="text-[9px] text-neutral-400">Hak 60%: ${formatRupiah(r.hakInvestor60)}</span>
+                </div>
+              </div>
+            `).join('')}
+          </div>
+
+          <!-- Tombol Pintas ke Menu Investasi -->
+          <button type="button" id="btn-goto-investor-menu"
+            class="glass-chip-btn w-full py-1.5 px-2 rounded-lg text-amber-300 hover:text-white text-[10px] font-bold flex items-center justify-center gap-1 active:scale-[0.99] mt-0.5">
+            <span class="material-symbols-outlined text-[13px]">open_in_new</span>
+            <span>Buka Detail Lengkap Menu Investasi</span>
+          </button>
+        </section>
+
         <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
         <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-kategori-pengeluaran">
           <div class="flex items-center justify-between">
@@ -513,6 +581,13 @@ export function renderLaporanPage(store, period = 'bulan') {
 
 export function initLaporanPage(router, store, initialPeriod = 'bulan') {
   bindHeaderEvents(router);
+
+  const btnGotoInvestor = document.getElementById('btn-goto-investor-menu');
+  if (btnGotoInvestor) {
+    btnGotoInvestor.addEventListener('click', () => {
+      router.navigate('investor');
+    });
+  }
 
   let currentPeriod = initialPeriod;
   let selectedExpenseCategory = 'all';

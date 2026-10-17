@@ -2,17 +2,6 @@ import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
-function statusBadge(status) {
-  if (status === 'lunas') return 'glass-chip text-emerald-800';
-  if (status === 'macet') return 'glass-chip text-rose-800';
-  return 'glass-chip text-blue-800';
-}
-function statusLabel(status) {
-  if (status === 'lunas') return 'Lunas';
-  if (status === 'macet') return 'Macet';
-  return 'Aktif';
-}
-
 function formatDate(d) {
   if (!d) return '-';
   try {
@@ -22,223 +11,647 @@ function formatDate(d) {
   }
 }
 
-function daysUntilDue(dueDate) {
-  if (!dueDate) return null;
-  const now = new Date();
-  now.setHours(0, 0, 0, 0);
-  const due = new Date(dueDate);
-  due.setHours(0, 0, 0, 0);
-  return Math.round((due - now) / (1000 * 60 * 60 * 24));
-}
-
 export function renderInvestorPage(store, isAdmin = true) {
   const summary = store.getInvestorSummary ? store.getInvestorSummary() : {};
+  const reports = store.getInvestmentSessionReport ? store.getInvestmentSessionReport() : [];
+  const supplies = store.getSupplies ? store.getSupplies() : [];
+
   return `
-    <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
+    <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-28">
       ${renderHeader({
-        title: 'Investor & Modal',
-        badge: 'MODAL',
-        subtitle: 'Pencatatan Investor & Cicilan',
+        title: 'Investasi & Modal',
+        badge: 'BAGI HASIL 60:40',
+        subtitle: 'Sesi Belanja, Target 50% & Laba Bersih',
         showBack: true,
         backRoute: 'dashboard'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-24 gap-4">
+      <div class="flex flex-col w-full px-4 pt-3 gap-3.5">
 
-        <!-- KPI Cards -->
-        <div class="grid grid-cols-2 gap-2.5">
-          <div class="glass-dark glass-sheen rounded-2xl p-3.5 flex flex-col gap-1 text-surface-container-lowest">
-            <span class="material-symbols-outlined text-primary-fixed-dim text-[18px]">account_balance_wallet</span>
-            <span class="font-bold text-lg text-surface-bright font-tabular">${formatRupiah(summary.totalInvested || 0, '')}</span>
-            <span class="text-[10px] text-primary-fixed-dim font-semibold uppercase tracking-wide">Total Diinvestasi</span>
+        <!-- Role Badge Banner (Atasan / Pemodal Mode) -->
+        ${!isAdmin ? `
+        <div class="glass-sheet rounded-xl p-3 flex items-start gap-2.5 border border-blue-500/30">
+          <div class="w-7 h-7 rounded-lg bg-blue-500/20 text-blue-400 flex items-center justify-center shrink-0 mt-0.5">
+            <span class="material-symbols-outlined text-[18px]">visibility</span>
           </div>
-          <div class="glass-rose glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
-            <span class="material-symbols-outlined text-rose-700 text-[18px]">payments</span>
-            <span class="font-bold text-lg text-rose-900 font-tabular">${formatRupiah(summary.totalOutstanding || 0, '')}</span>
-            <span class="text-[10px] text-rose-800 font-semibold uppercase tracking-wide">Sisa Kewajiban</span>
+          <div class="flex-1 min-w-0">
+            <div class="flex items-center gap-1.5">
+              <span class="text-xs font-bold text-blue-300">Mode Pemodal (Pantau Saja)</span>
+              <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 font-bold">READ ONLY</span>
+            </div>
+            <p class="text-[11px] text-neutral-300 mt-0.5 leading-relaxed">
+              Anda dapat memantau seluruh progres penjualan sesi, capaian target 50%, pembagian laba bersih 60:40, dan mutasi kas tanpa dapat mengubah data.
+            </p>
           </div>
-          <div class="glass-blue glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
-            <span class="material-symbols-outlined text-blue-700 text-[18px]">people</span>
-            <span class="font-bold text-lg text-blue-900 font-tabular">${summary.countAktif || 0}</span>
-            <span class="text-[10px] text-blue-800 font-semibold uppercase tracking-wide">Investor Aktif</span>
+        </div>
+        ` : ''}
+
+        <!-- KPI 4 Cards: Ringkasan Investasi & Bagi Hasil -->
+        <div class="grid grid-cols-2 gap-2">
+          <!-- Total Modal Diterima -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">account_balance_wallet</span>
+                Modal Masuk
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate">
+                ${formatRupiah(summary.totalInvested || 0)}
+              </span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">${summary.countTotal || 0} Pemodal Tercatat</span>
+            </div>
           </div>
-          <div class="glass-amber glass-sheen rounded-2xl p-3.5 flex flex-col gap-1">
-            <span class="material-symbols-outlined text-amber-700 text-[18px]">event_upcoming</span>
-            <span class="font-bold text-lg text-amber-900 font-tabular">${formatRupiah(summary.totalCicilan || 0, '')}</span>
-            <span class="text-[10px] text-amber-800 font-semibold uppercase tracking-wide">Cicilan / Bulan</span>
+
+          <!-- Sisa Pokok Modal -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-blue-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-blue-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">savings</span>
+                Sisa Pokok
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-blue-300 font-tabular block truncate">
+                ${formatRupiah(summary.totalPokokSisa || 0)}
+              </span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">Dikembalikan: ${formatRupiah(summary.totalPokokDikembalikan || 0, '')}</span>
+            </div>
+          </div>
+
+          <!-- Hak Investor 60% -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-amber-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">pie_chart</span>
+                Hak Investor (60%)
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate">
+                ${formatRupiah(summary.totalHakInvestor60 || 0)}
+              </span>
+              <span class="text-[10px] text-amber-400/90 block mt-0.5">
+                Pengelola 40%: ${formatRupiah(summary.totalHakPengelola40 || 0, '')}
+              </span>
+            </div>
+          </div>
+
+          <!-- Sisa Bagi Hasil Belum Terbayar -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-rose-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-rose-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">payments</span>
+                Sisa Bagi Hasil
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-rose-300 font-tabular block truncate">
+                ${formatRupiah(summary.totalSisaBagiHasil || 0)}
+              </span>
+              <span class="text-[10px] text-emerald-400 block mt-0.5">
+                Terbayar: ${formatRupiah(summary.totalBagiHasilDibayar || 0, '')}
+              </span>
+            </div>
           </div>
         </div>
 
-        <!-- Action Button -->
+        <!-- Action Buttons (Khusus Admin) -->
         ${isAdmin ? `
-        <button type="button" id="btn-tambah-investor"
-          class="glass-primary glass-btn glass-sheen w-full h-12 py-3 text-primary-btn rounded-xl font-bold text-sm flex items-center justify-center gap-2 active:scale-[0.98]">
-          <span class="material-symbols-outlined text-[20px]">add_circle</span>
-          <span>+ Tambah Investor Baru</span>
-        </button>
-        ` : `
-        <div class="h-10 rounded-xl glass-panel flex items-center justify-center gap-2 text-xs font-semibold text-on-surface-variant">
-          <span class="material-symbols-outlined text-[16px]">visibility</span>
-          <span>Mode Atasan: Pantau Data & Kewajiban Investor</span>
-        </div>
-        `}
+        <div class="grid grid-cols-2 gap-2">
+          <button type="button" id="btn-tambah-investor"
+            class="glass-primary glass-btn glass-sheen h-11 py-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+            <span>+ Terima Modal Baru</span>
+          </button>
 
-        <!-- View Controls & Header -->
+          <button type="button" id="btn-bayar-payout"
+            class="glass-emerald glass-btn glass-sheen h-11 py-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">payments</span>
+            <span>Bayar Bagi Hasil / Pokok</span>
+          </button>
+        </div>
+        ` : ''}
+
+        <!-- Aturan Skema Info Box -->
+        <div class="glass-sheet rounded-xl p-3 border border-amber-500/20 flex flex-col gap-1.5">
+          <div class="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
+            <span class="material-symbols-outlined text-[16px]">info</span>
+            <span>Ketentuan Skema Kerjasama Sesi:</span>
+          </div>
+          <p class="text-[11px] text-neutral-300 leading-relaxed">
+            Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah <strong>laku terjual ≥ 50%</strong>, maka <strong>keuntungan bersih</strong> (setelah dipotong modal HPP & biaya operasional) dibagi: <strong>60% untuk Investor</strong> dan <strong>40% untuk Pengelola</strong>.
+          </p>
+        </div>
+
+        <!-- Tab Navigasi: Sesi Bagi Hasil vs Daftar Pemodal -->
         <div class="flex items-center justify-between pt-1">
-          <div>
-            <h3 class="text-sm font-bold text-on-surface">Data Investor</h3>
-            <p class="text-[11px] text-on-surface-variant">Kolom lengkap rincian investasi</p>
-          </div>
-          <div class="glass-track inline-flex p-0.5 rounded-lg text-xs">
-            <button type="button" id="toggle-view-table"
-              class="px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary">
-              <span class="material-symbols-outlined text-[15px] align-middle mr-0.5">table_chart</span> Tabel
+          <div class="glass-track inline-flex p-0.5 rounded-lg text-xs w-full">
+            <button type="button" id="tab-btn-sesi"
+              class="flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">analytics</span>
+              <span>Sesi & Bagi Hasil (60:40)</span>
             </button>
-            <button type="button" id="toggle-view-cards"
-              class="px-2.5 py-1 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface">
-              <span class="material-symbols-outlined text-[15px] align-middle mr-0.5">view_agenda</span> Kartu
+            <button type="button" id="tab-btn-pemodal"
+              class="flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">people</span>
+              <span>Daftar Pemodal (${summary.countTotal || 0})</span>
             </button>
           </div>
         </div>
 
-        <!-- Investor Content Container (Table & Card Views) -->
-        <div id="investor-view-container" class="flex flex-col gap-3"></div>
+        <!-- Tab 1: Daftar Sesi & Bagi Hasil 60:40 -->
+        <div id="tab-content-sesi" class="flex flex-col gap-3">
+          ${reports.length === 0 ? `
+            <div class="glass-sheet rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-2">
+              <div class="w-14 h-14 rounded-full bg-neutral-800 text-neutral-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl">handshake</span>
+              </div>
+              <p class="text-sm font-bold text-white mt-1">Belum Ada Sesi Investasi</p>
+              <p class="text-xs text-neutral-400 max-w-[280px]">
+                Tambahkan pemodal dan tautkan faktur belanja untuk mulai melacak capaian target 50% & pembagian laba bersih 60:40.
+              </p>
+              ${isAdmin ? `
+              <button type="button" id="btn-empty-add-investor" class="mt-2 px-4 py-2 rounded-xl glass-primary font-bold text-xs text-primary-btn">
+                + Tambah Pemodal Baru
+              </button>
+              ` : ''}
+            </div>
+          ` : reports.map((r) => {
+            const pct = r.persentaseTerjual || 0;
+            const isEligible = r.isEligible50;
+            const progressColor = isEligible ? 'bg-emerald-500 shadow-[0_0_10px_rgba(16,185,129,0.5)]' : 'bg-amber-500';
+            const statusBadgeClass = isEligible
+              ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40'
+              : 'bg-amber-500/20 text-amber-300 border border-amber-500/40';
+
+            return `
+              <div class="glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-3 border ${isEligible ? 'border-emerald-500/40' : 'border-neutral-800'}">
+                
+                <!-- Header Sesi -->
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2 min-w-0">
+                    <div class="w-9 h-9 rounded-xl ${isEligible ? 'bg-emerald-500/20 text-emerald-400' : 'bg-amber-500/20 text-amber-400'} flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[20px]">${isEligible ? 'verified' : 'hourglass_top'}</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <h4 class="font-bold text-sm text-white truncate">${r.investorName}</h4>
+                      <span class="text-[10px] text-neutral-400 truncate">
+                        Modal: <strong class="text-white">${formatRupiah(r.totalModal)}</strong> • Masuk: ${formatDate(r.date)}
+                      </span>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${statusBadgeClass}">
+                    ${isEligible ? 'SIAP BAGI HASIL' : 'PROGRESS SESI'}
+                  </span>
+                </div>
+
+                <!-- Info Faktur Sesi -->
+                <div class="glass-panel rounded-lg p-2 text-[11px] text-neutral-300 flex items-center justify-between">
+                  <span class="text-neutral-400 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[14px]">receipt_long</span>
+                    Faktur Sesi:
+                  </span>
+                  <span class="font-mono font-bold text-white truncate max-w-[200px]">
+                    ${r.sessionInvoices.length > 0 ? r.sessionInvoices.join(', ') : 'Semua Pembelanjaan'}
+                  </span>
+                </div>
+
+                <!-- Progress Target 50% Penjualan -->
+                <div class="flex flex-col gap-1.5 bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-800">
+                  <div class="flex items-center justify-between text-xs">
+                    <span class="text-neutral-400 flex items-center gap-1 font-semibold text-[11px]">
+                      <span class="material-symbols-outlined text-[14px] ${isEligible ? 'text-emerald-400' : 'text-amber-400'}">flag</span>
+                      Progres Penjualan (Target ≥ 50%)
+                    </span>
+                    <span class="font-extrabold ${isEligible ? 'text-emerald-400' : 'text-amber-400'} font-tabular text-[12px]">
+                      ${pct}% Terjual
+                    </span>
+                  </div>
+
+                  <!-- Bar -->
+                  <div class="w-full h-3 bg-neutral-800 rounded-full overflow-hidden relative">
+                    <!-- Marker 50% -->
+                    <div class="absolute top-0 bottom-0 left-1/2 w-0.5 bg-white/40 z-10" title="Target 50%"></div>
+                    <div class="h-full rounded-full transition-all duration-500 ${progressColor}" style="width: ${Math.min(100, pct)}%"></div>
+                  </div>
+
+                  <div class="flex items-center justify-between text-[10px] text-neutral-400 mt-0.5">
+                    <span>Terjual: <strong class="text-white">${r.totalTerjualPasang}</strong> psg</span>
+                    <span class="text-amber-400 font-bold">Target: 50%</span>
+                    <span>Total Beli: <strong class="text-white">${r.totalBeliPasang}</strong> psg</span>
+                  </div>
+                </div>
+
+                <!-- Rincian Keuangan Sesi & Laba Bersih -->
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                  <div class="bg-neutral-900/40 p-2 rounded-lg flex flex-col justify-between border border-neutral-800">
+                    <span class="text-[10px] text-neutral-400">Omzet Penjualan Sesi</span>
+                    <span class="font-bold text-emerald-400 font-tabular text-xs mt-0.5">+${formatRupiah(r.omzetPenjualan)}</span>
+                  </div>
+                  <div class="bg-neutral-900/40 p-2 rounded-lg flex flex-col justify-between border border-neutral-800">
+                    <span class="text-[10px] text-neutral-400">HPP Barang Terjual</span>
+                    <span class="font-bold text-rose-400 font-tabular text-xs mt-0.5">-${formatRupiah(r.hppTerjual)}</span>
+                  </div>
+                  <div class="bg-neutral-900/40 p-2 rounded-lg flex flex-col justify-between border border-neutral-800">
+                    <span class="text-[10px] text-neutral-400">Biaya Ops & Lain-lain</span>
+                    <span class="font-bold text-neutral-300 font-tabular text-xs mt-0.5">-${formatRupiah(r.biayaOpsSesi)}</span>
+                  </div>
+                  <div class="bg-emerald-950/40 p-2 rounded-lg flex flex-col justify-between border border-emerald-500/30">
+                    <span class="text-[10px] text-emerald-400 font-bold">KEUNTUNGAN BERSIH</span>
+                    <span class="font-extrabold text-emerald-300 font-tabular text-xs mt-0.5">${formatRupiah(r.labaBersih)}</span>
+                  </div>
+                </div>
+
+                <!-- Skema Pembagian Laba 60% : 40% -->
+                <div class="glass-sheet rounded-xl p-2.5 flex flex-col gap-2 border border-white/10">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Pembagian Hasil (60 : 40)</span>
+                  
+                  <div class="grid grid-cols-2 gap-2">
+                    <div class="bg-amber-950/30 border border-amber-500/30 p-2 rounded-lg flex flex-col">
+                      <span class="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">person</span> Hak Investor (60%)
+                      </span>
+                      <span class="text-sm font-extrabold text-amber-300 font-tabular mt-0.5">
+                        ${isEligible ? formatRupiah(r.hakInvestor60) : 'Rp 0'}
+                      </span>
+                      ${!isEligible ? '<span class="text-[9px] text-amber-400/80 mt-0.5">Menunggu terjual 50%</span>' : ''}
+                    </div>
+
+                    <div class="bg-blue-950/30 border border-blue-500/30 p-2 rounded-lg flex flex-col">
+                      <span class="text-[10px] text-blue-300 font-bold flex items-center gap-1">
+                        <span class="material-symbols-outlined text-[13px]">store</span> Hak Pengelola (40%)
+                      </span>
+                      <span class="text-sm font-extrabold text-blue-300 font-tabular mt-0.5">
+                        ${isEligible ? formatRupiah(r.hakPengelola40) : 'Rp 0'}
+                      </span>
+                      ${!isEligible ? '<span class="text-[9px] text-blue-400/80 mt-0.5">Menunggu terjual 50%</span>' : ''}
+                    </div>
+                  </div>
+
+                  <!-- Status Pembayaran Hak Investor -->
+                  <div class="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-800">
+                    <span class="text-neutral-400">Bagi Hasil Dibayar: <strong class="text-emerald-400">${formatRupiah(r.bagiHasilDibayar)}</strong></span>
+                    <span class="text-neutral-400">Sisa Hak: <strong class="${r.sisaBagiHasil > 0 ? 'text-rose-400' : 'text-neutral-300'}">${formatRupiah(r.sisaBagiHasil)}</strong></span>
+                  </div>
+                </div>
+
+                <!-- Tombol Aksi & Salin Laporan -->
+                <div class="flex items-center gap-2 pt-1">
+                  <button type="button" data-copy-wa="${r.investorId}"
+                    class="glass-chip-btn flex-1 h-9 rounded-xl text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">share</span>
+                    <span>Salin Format WA</span>
+                  </button>
+
+                  ${isAdmin && isEligible && r.sisaBagiHasil > 0 ? `
+                  <button type="button" data-quick-pay="${r.investorId}" data-suggest-amount="${r.sisaBagiHasil}"
+                    class="glass-emerald glass-btn flex-1 h-9 rounded-xl text-emerald-950 font-bold text-xs flex items-center justify-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[16px]">payments</span>
+                    <span>Bayar Bagi Hasil</span>
+                  </button>
+                  ` : ''}
+
+                  <button type="button" data-toggle-payouts="${r.investorId}"
+                    class="p-2 rounded-xl glass-chip-btn text-neutral-400 hover:text-white" title="Riwayat Pembayaran">
+                    <span class="material-symbols-outlined text-[18px]">history</span>
+                  </button>
+                </div>
+
+                <!-- Riwayat Pembayaran Collapsible -->
+                <div id="payouts-container-${r.investorId}" class="hidden flex flex-col gap-2 pt-2 border-t border-neutral-800">
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Riwayat Pembayaran ke Investor</span>
+                  ${r.payouts.length === 0 ? `
+                    <span class="text-xs text-neutral-500 italic py-1">Belum ada pembayaran dicatat.</span>
+                  ` : `
+                    <div class="flex flex-col gap-1.5">
+                      ${r.payouts.map((p) => `
+                        <div class="glass-sheet rounded-lg p-2 flex items-center justify-between text-xs">
+                          <div class="flex flex-col">
+                            <span class="font-bold text-white flex items-center gap-1">
+                              <span class="w-1.5 h-1.5 rounded-full ${p.type === 'pokok' ? 'bg-blue-400' : 'bg-emerald-400'}"></span>
+                              ${p.type === 'pokok' ? 'Kembali Modal Pokok' : 'Bagi Hasil (60%)'}
+                            </span>
+                            <span class="text-[10px] text-neutral-400">${formatDate(p.date)} • ${p.paymentMethod}</span>
+                            ${p.notes ? `<span class="text-[10px] text-neutral-500 italic">"${p.notes}"</span>` : ''}
+                          </div>
+                          <div class="flex items-center gap-2">
+                            <span class="font-bold text-emerald-400 font-tabular">${formatRupiah(p.amount)}</span>
+                            ${isAdmin ? `
+                            <button type="button" data-delete-payout="${p.id}" data-investor-id="${r.investorId}"
+                              class="text-neutral-500 hover:text-rose-400 p-1 rounded" title="Hapus Pembayaran">
+                              <span class="material-symbols-outlined text-[16px]">delete</span>
+                            </button>
+                            ` : ''}
+                          </div>
+                        </div>
+                      `).join('')}
+                    </div>
+                  `}
+                </div>
+              </div>
+            `;
+          }).join('')}
+        </div>
+
+        <!-- Tab 2: Daftar Pemodal & Mutasi Modal -->
+        <div id="tab-content-pemodal" class="hidden flex flex-col gap-3">
+          ${reports.length === 0 ? `
+            <div class="glass-sheet rounded-2xl p-6 text-center text-xs text-neutral-400">
+              Belum ada data pemodal. Klik tombol "+ Terima Modal Baru" untuk menambahkan pemodal.
+            </div>
+          ` : reports.map((inv) => `
+            <div class="glass-sheet rounded-2xl p-3.5 flex flex-col gap-2.5 border border-white/10">
+              <div class="flex items-start justify-between">
+                <div>
+                  <h4 class="font-bold text-sm text-white">${inv.investorName}</h4>
+                  <span class="text-[10px] text-neutral-400">Terdaftar sejak: ${formatDate(inv.date)}</span>
+                </div>
+                <span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-blue-500/20 text-blue-300 border border-blue-500/30">
+                  ${inv.status.toUpperCase()}
+                </span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-2 text-xs bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-800">
+                <div>
+                  <span class="text-[10px] text-neutral-400 block">Total Modal Disetor</span>
+                  <span class="font-bold text-white font-tabular">${formatRupiah(inv.totalModal)}</span>
+                </div>
+                <div>
+                  <span class="text-[10px] text-neutral-400 block">Sisa Pokok Belum Kembali</span>
+                  <span class="font-bold text-blue-300 font-tabular">${formatRupiah(inv.sisaPokok)}</span>
+                </div>
+              </div>
+
+              ${inv.notes ? `
+              <div class="text-[11px] text-neutral-400 bg-black/30 p-2 rounded-lg">
+                <strong class="text-neutral-300">Catatan / Rekening:</strong> ${inv.notes}
+              </div>
+              ` : ''}
+
+              ${isAdmin ? `
+              <div class="flex items-center justify-end gap-2 pt-1 border-t border-neutral-800">
+                <button type="button" data-edit-investor="${inv.investorId}"
+                  class="glass-chip-btn px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1 active:scale-95">
+                  <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                </button>
+                <button type="button" data-delete-investor="${inv.investorId}"
+                  class="glass-rose glass-btn px-3 py-1.5 rounded-lg text-xs font-bold text-rose-300 flex items-center gap-1 active:scale-95">
+                  <span class="material-symbols-outlined text-[14px]">delete</span> Hapus
+                </button>
+              </div>
+              ` : ''}
+            </div>
+          `).join('')}
+        </div>
+
       </div>
 
-      <!-- Modal Tambah/Edit Investor -->
-      <div id="investor-modal" class="hidden absolute inset-0 z-50 flex items-end justify-center overflow-hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-xs" id="investor-modal-backdrop"></div>
-        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-6 flex flex-col gap-3 max-h-[92%] overflow-y-auto z-10">
-          <div class="flex items-center justify-between border-b border-white/55 pb-3 mb-1">
+      <!-- Modal Tambah / Edit Pemodal -->
+      <div id="investor-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="investor-modal-backdrop"></div>
+        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-8 flex flex-col gap-3.5 max-h-[92%] overflow-y-auto z-10 border-t border-white/20">
+          
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
             <div class="flex items-center gap-2.5">
-              <div class="w-8 h-8 rounded-full glass-amber text-amber-800 flex items-center justify-center">
+              <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
                 <span class="material-symbols-outlined text-[18px]">account_balance_wallet</span>
               </div>
               <div>
-                <h3 class="font-bold text-sm text-on-surface" id="investor-modal-title">Tambah Investor</h3>
-                <p class="text-[11px] text-on-surface-variant">Dana otomatis masuk sebagai Kas Pemasukan</p>
+                <h3 class="font-bold text-sm text-white" id="investor-modal-title">Terima Modal Pemodal Baru</h3>
+                <p class="text-[11px] text-neutral-400">Otomatis menambah saldo Kas Masuk toko</p>
               </div>
             </div>
-            <button id="btn-close-investor-modal" class="p-1.5 rounded-full glass-chip-btn text-on-surface-variant">
+            <button id="btn-close-investor-modal" class="p-1.5 rounded-full glass-chip-btn text-neutral-400 hover:text-white">
               <span class="material-symbols-outlined text-[18px]">close</span>
             </button>
           </div>
 
           <input type="hidden" id="investor-edit-id" value="" />
 
-          <div class="grid grid-cols-2 gap-3">
-            <div class="flex flex-col gap-1 col-span-2">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">person</span> Nama Investor
-              </label>
-              <input type="text" id="inv-name" placeholder="Nama investor / pihak pemberi modal..."
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
-            </div>
-
+          <div class="flex flex-col gap-3 text-xs">
+            <!-- Nama Pemodal -->
             <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Masuk
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">person</span> Nama Pemodal / Investor
               </label>
-              <input type="date" id="inv-date"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
+              <input type="text" id="inv-name" placeholder="Nama investor..."
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
             </div>
 
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">event_upcoming</span> Jatuh Tempo
-              </label>
-              <input type="date" id="inv-due-date"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all" />
-            </div>
-
-            <div class="flex flex-col gap-1 col-span-2">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">payments</span> Total Investasi (Rp)
-              </label>
-              <input type="number" id="inv-amount" placeholder="0" min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono" />
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">schedule</span> Tenor (Bulan)
-              </label>
-              <input type="number" id="inv-tenor" placeholder="6" min="1"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all text-center font-mono" />
-            </div>
-
-            <div class="flex flex-col gap-1">
-              <div class="flex items-center justify-between">
-                <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                  <span class="material-symbols-outlined text-amber-600 text-[14px]">currency_exchange</span> Cicilan / Bulan
+            <!-- Tanggal & Jumlah Modal -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Setor
                 </label>
-                <button type="button" id="btn-calc-cicilan" class="text-[10px] text-primary hover:text-primary/80 font-bold hover:underline" title="Hitung otomatis: Total / Tenor">
-                  Hitung Otomatis
-                </button>
+                <input type="date" id="inv-date"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
               </div>
-              <input type="number" id="inv-cicilan" placeholder="0" min="0"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all font-mono font-bold text-amber-800" />
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Jumlah Modal (Rp)
+                </label>
+                <input type="number" id="inv-amount" placeholder="0" min="0"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
             </div>
 
-            <div class="flex flex-col gap-1 col-span-2">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">description</span> Catatan / Perjanjian
-              </label>
-              <textarea id="inv-notes" rows="2" placeholder="Catatan kesepakatan, bagi hasil, atau nomor rekening..."
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all resize-none"></textarea>
-            </div>
-
-            <div class="flex flex-col gap-1 col-span-2">
-              <label class="text-xs font-bold text-on-surface flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">account_balance</span> Metode Pembayaran
+            <!-- Metode Penerimaan -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">account_balance</span> Masuk ke Rekening / Laci Toko
               </label>
               <select id="inv-payment"
-                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm focus:outline-none focus:ring-2 focus:ring-primary transition-all">
-                <option value="Transfer Bank">Transfer Bank</option>
-                <option value="Tunai (Laci)">Tunai (Laci)</option>
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="Transfer Bank BCA">Transfer Bank BCA (Kas Bank)</option>
+                <option value="Transfer Bank Mandiri">Transfer Bank Mandiri (Kas Bank)</option>
+                <option value="Transfer Bank BRI">Transfer Bank BRI (Kas Bank)</option>
+                <option value="Tunai (Laci)">Tunai / Cash (Kas Laci Toko)</option>
                 <option value="QRIS / E-Wallet">QRIS / E-Wallet</option>
               </select>
             </div>
-          </div>
 
-          <!-- Info box -->
-          <div class="glass-blue rounded-xl p-3 flex items-start gap-2 mt-1">
-            <span class="material-symbols-outlined text-blue-600 text-[18px] shrink-0 mt-0.5">info</span>
-            <p class="text-[11px] text-blue-800">
-              Dana investor akan otomatis dicatat sebagai <strong>Kas Pemasukan</strong> kategori <em>"Dana Investor"</em> dan menambah saldo kas toko.
-            </p>
-          </div>
+            <!-- Tautkan Faktur Belanja Sesi -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-amber-400 text-[14px]">inventory_2</span> Tautkan Faktur Belanja Sesi Ini
+              </label>
+              <p class="text-[10px] text-neutral-400">Pilih faktur belanja yang dibiayai oleh modal pemodal ini:</p>
+              <div id="inv-supplies-checklist" class="max-h-32 overflow-y-auto glass-panel p-2 rounded-xl flex flex-col gap-1.5 border border-neutral-800">
+                ${supplies.length === 0 ? `
+                  <span class="text-[11px] text-neutral-500 italic">Belum ada faktur belanja sepatu tercatat.</span>
+                ` : supplies.map((s) => `
+                  <label class="flex items-center gap-2 cursor-pointer hover:bg-neutral-800/40 p-1 rounded">
+                    <input type="checkbox" name="inv-supply-item" value="${s.invoiceNo || s.id}" class="rounded text-primary focus:ring-0" />
+                    <span class="text-[11px] text-neutral-200 font-mono">${s.invoiceNo || s.id}</span>
+                    <span class="text-[10px] text-neutral-400 truncate">(${s.supplierName || 'Suplier'}, ${formatRupiah(s.totalAmount)})</span>
+                  </label>
+                `).join('')}
+              </div>
+            </div>
 
-          <button type="button" id="btn-save-investor"
-            class="w-full h-12 glass-primary glass-btn glass-sheen text-primary-btn rounded-xl text-sm font-bold flex items-center justify-center gap-2 mt-1">
-            <span class="material-symbols-outlined text-[18px]">save</span>
-            <span id="btn-save-investor-label">Simpan & Catat ke Kas</span>
-          </button>
+            <!-- Catatan Perjanjian / No Rekening -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">description</span> Rekening Pengembalian / Catatan
+              </label>
+              <textarea id="inv-notes" rows="2" placeholder="Nomor rekening bank investor untuk transfer bagi hasil..."
+                class="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+            </div>
+
+            <!-- Notice Box -->
+            <div class="glass-blue rounded-xl p-2.5 flex items-start gap-2 border border-blue-500/20">
+              <span class="material-symbols-outlined text-blue-400 text-[16px] shrink-0 mt-0.5">info</span>
+              <p class="text-[10.5px] text-blue-200">
+                Uang yang disetor pemodal akan <strong>otomatis menambah Saldo Kas Toko</strong> (tercatat sebagai Kas Masuk kategori <em>"Dana Investor"</em>).
+              </p>
+            </div>
+
+            <button type="button" id="btn-save-investor"
+              class="w-full h-11 glass-primary glass-btn glass-sheen text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 mt-1 active:scale-98">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              <span id="btn-save-investor-label">Simpan & Tambah ke Kas</span>
+            </button>
+          </div>
         </div>
       </div>
 
-      <!-- Modal Konfirmasi Hapus -->
-      <div id="investor-delete-modal" class="hidden absolute inset-0 z-50 flex items-center justify-center p-6 overflow-hidden">
-        <div class="absolute inset-0 bg-black/60 backdrop-blur-xs" id="investor-delete-backdrop"></div>
-        <div class="relative w-full max-w-[360px] glass-sheet rounded-2xl p-5 flex flex-col gap-3 z-10">
+      <!-- Modal Bayar Bagi Hasil / Pokok (- Kas Keluar) -->
+      <div id="payout-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="payout-modal-backdrop"></div>
+        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-8 flex flex-col gap-3.5 max-h-[92%] overflow-y-auto z-10 border-t border-emerald-500/30">
+          
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">payments</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Bayar Bagi Hasil / Pokok</h3>
+                <p class="text-[11px] text-rose-300">Otomatis memotong Saldo Kas Keluar toko</p>
+              </div>
+            </div>
+            <button id="btn-close-payout-modal" class="p-1.5 rounded-full glass-chip-btn text-neutral-400 hover:text-white">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-3 text-xs">
+            <!-- Pilih Investor -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">person</span> Pilih Pemodal / Investor
+              </label>
+              <select id="payout-investor-id"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                ${reports.map((r) => `
+                  <option value="${r.investorId}">
+                    ${r.investorName} (Hak Sisa: ${formatRupiah(r.sisaBagiHasil)})
+                  </option>
+                `).join('')}
+              </select>
+            </div>
+
+            <!-- Jenis Pembayaran -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">category</span> Jenis Pembayaran
+              </label>
+              <div class="grid grid-cols-2 gap-2">
+                <label class="flex items-center gap-2 p-2.5 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
+                  <input type="radio" name="payout-type" value="bagi_hasil" checked class="text-emerald-500 focus:ring-0" />
+                  <span class="font-bold text-emerald-300 text-xs">Bagi Hasil (60%)</span>
+                </label>
+                <label class="flex items-center gap-2 p-2.5 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
+                  <input type="radio" name="payout-type" value="pokok" class="text-blue-500 focus:ring-0" />
+                  <span class="font-bold text-blue-300 text-xs">Kembali Modal Pokok</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Tanggal & Nominal -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Bayar
+                </label>
+                <input type="date" id="payout-date"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Nominal (Rp)
+                </label>
+                <input type="number" id="payout-amount" placeholder="0" min="0"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+            </div>
+
+            <!-- Metode Pembayaran Keluar -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">account_balance</span> Sumber Pembayaran Kas Toko
+              </label>
+              <select id="payout-payment-method"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="Transfer Bank BCA">Transfer Bank BCA (Potong Kas Bank)</option>
+                <option value="Transfer Bank Mandiri">Transfer Bank Mandiri (Potong Kas Bank)</option>
+                <option value="Transfer Bank BRI">Transfer Bank BRI (Potong Kas Bank)</option>
+                <option value="Tunai (Laci)">Tunai / Cash (Potong Kas Laci)</option>
+              </select>
+            </div>
+
+            <!-- Catatan -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">description</span> Keterangan Transfer
+              </label>
+              <input type="text" id="payout-notes" placeholder="No referensi transfer / catatan..."
+                class="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+
+            <!-- Warning Saldo Berkurang -->
+            <div class="glass-rose rounded-xl p-2.5 flex items-start gap-2 border border-rose-500/30">
+              <span class="material-symbols-outlined text-rose-400 text-[16px] shrink-0 mt-0.5">warning</span>
+              <p class="text-[10.5px] text-rose-200">
+                Peringatan: Transaksi ini <strong>otomatis dicatat sebagai KAS KELUAR</strong> di buku kas utama toko, sehingga saldo kas toko langsung berkurang.
+              </p>
+            </div>
+
+            <button type="button" id="btn-submit-payout"
+              class="w-full h-11 glass-emerald glass-btn glass-sheen text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 mt-1 active:scale-98">
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              <span>Konfirmasi & Potong Saldo Kas</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Modal Konfirmasi Hapus Pemodal -->
+      <div id="investor-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="investor-delete-backdrop"></div>
+        <div class="relative w-full max-w-[360px] glass-sheet rounded-2xl p-5 flex flex-col gap-3 z-10 border border-rose-500/40">
           <div class="flex items-center gap-2.5">
-            <div class="w-10 h-10 rounded-full glass-rose text-rose-800 flex items-center justify-center shrink-0">
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
               <span class="material-symbols-outlined text-[22px]">delete_forever</span>
             </div>
             <div>
-              <h3 class="font-bold text-sm text-on-surface">Hapus Data Investor?</h3>
-              <p class="text-[11px] text-on-surface-variant">Data investasi akan dihapus permanen.</p>
+              <h3 class="font-bold text-sm text-white">Hapus Data Pemodal?</h3>
+              <p class="text-[11px] text-neutral-400">Seluruh riwayat sesi & mutasi terkait.</p>
             </div>
           </div>
-          <p class="text-xs text-on-surface-variant glass-panel rounded-xl p-3">
-            Catatan kas masuk terkait <strong>akan otomatis ikut dihapus</strong> sehingga saldo kas toko berkurang dan tetap akurat.
+          <p class="text-xs text-neutral-300 glass-panel rounded-xl p-3 border border-neutral-800">
+            Transaksi kas masuk & keluar terkait pemodal ini <strong>akan otomatis ikut dibersihkan</strong> agar buku kas toko tetap seimbang.
           </p>
           <div class="flex items-center gap-2.5 mt-1">
-            <button id="btn-cancel-delete-investor" class="glass-chip-btn flex-1 h-10 rounded-xl text-on-surface text-sm font-bold">Batal</button>
-            <button id="btn-confirm-delete-investor" class="glass-rose glass-btn flex-1 h-10 rounded-xl text-rose-800 text-sm font-bold">Ya, Hapus</button>
+            <button id="btn-cancel-delete-investor" class="glass-chip-btn flex-1 h-10 rounded-xl text-white text-xs font-bold">Batal</button>
+            <button id="btn-confirm-delete-investor" class="glass-rose glass-btn flex-1 h-10 rounded-xl text-rose-200 text-xs font-bold">Ya, Hapus</button>
           </div>
         </div>
       </div>
+
     </div>
   `;
 }
@@ -247,411 +660,289 @@ export function initInvestorPage(router, store, isAdmin = true) {
   bindHeaderEvents(router);
   let deletingId = null;
   let isEditMode = false;
-  let currentViewMode = 'table'; // 'table' or 'cards'
-  const phoneFrame = document.getElementById('phone-frame') || document.querySelector('.relative.mx-auto') || document.body;
 
   function g(id) {
     return document.getElementById(id);
   }
 
-  function updateCicilanAuto(force = false) {
-    const amount = parseFloat((g('inv-amount') || {}).value) || 0;
-    const tenor = parseFloat((g('inv-tenor') || {}).value) || 0;
-    const cicilanInput = g('inv-cicilan');
-    if (!cicilanInput) return;
+  // Set default dates
+  const todayStr = new Date().toISOString().split('T')[0];
+  if (g('inv-date')) g('inv-date').value = todayStr;
+  if (g('payout-date')) g('payout-date').value = todayStr;
 
-    if (force || !cicilanInput.value || parseFloat(cicilanInput.value) === 0) {
-      if (amount > 0 && tenor > 0) {
-        cicilanInput.value = Math.round(amount / tenor);
-      }
-    }
-  }
+  // Tab switching
+  const tabBtnSesi = g('tab-btn-sesi');
+  const tabBtnPemodal = g('tab-btn-pemodal');
+  const tabContentSesi = g('tab-content-sesi');
+  const tabContentPemodal = g('tab-content-pemodal');
 
-  function renderView() {
-    const container = g('investor-view-container');
-    if (!container) return;
-    const list = store.getInvestors ? store.getInvestors() : [];
-
-    if (!list || list.length === 0) {
-      container.innerHTML = `
-        <div class="p-8 text-center glass-card glass-sheen rounded-2xl text-on-surface-variant flex flex-col items-center gap-2 shadow-xs">
-          <span class="material-symbols-outlined text-4xl opacity-30">account_balance_wallet</span>
-          <p class="text-sm font-bold text-on-surface">Belum ada data investor</p>
-          <p class="text-xs">Klik tombol <strong>+ Tambah Investor Baru</strong> di atas untuk mulai mencatat modal investasi.</p>
-        </div>
-      `;
-      return;
-    }
-
-    if (currentViewMode === 'table') {
-      container.innerHTML = `
-        <div class="glass-card glass-sheen rounded-2xl overflow-hidden">
-          <div class="overflow-x-auto">
-            <table class="w-full text-left border-collapse text-xs">
-              <thead>
-                <tr class="glass-panel border-b border-white/45 text-on-surface-variant font-bold uppercase tracking-wider text-[10px]">
-                  <th class="py-3 px-3 min-w-[90px]">Tanggal</th>
-                  <th class="py-3 px-3 min-w-[130px]">Investor</th>
-                  <th class="py-3 px-3 min-w-[110px] text-right">Total Inves</th>
-                  <th class="py-3 px-3 min-w-[100px]">Jatuh Tempo</th>
-                  <th class="py-3 px-2 min-w-[65px] text-center">Tenor</th>
-                  <th class="py-3 px-3 min-w-[100px] text-right">Cicilan</th>
-                  ${isAdmin ? '<th class="py-3 px-3 min-w-[90px] text-center">Aksi</th>' : ''}
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-surface-container-high/60">
-                ${list.map((inv) => {
-                  const cicilan = inv.cicilan !== undefined ? inv.cicilan : (inv.tenor > 0 ? Math.round(inv.totalAmount / inv.tenor) : 0);
-                  const days = daysUntilDue(inv.dueDate);
-                  let dueBadge = '';
-                  if (days !== null) {
-                    if (days < 0) dueBadge = '<span class="text-[9px] text-rose-600 font-bold block">Lewat tempo</span>';
-                    else if (days === 0) dueBadge = '<span class="text-[9px] text-rose-600 font-bold block">Hari ini</span>';
-                    else if (days <= 30) dueBadge = `<span class="text-[9px] text-amber-600 font-semibold block">${days} hr lg</span>`;
-                  }
-                  const badge = statusBadge(inv.status || 'aktif');
-                  const label = statusLabel(inv.status || 'aktif');
-
-                  return `
-                    <tr class="glass-row transition-colors">
-                      <td class="py-3 px-3 font-medium text-on-surface whitespace-nowrap">
-                        ${formatDate(inv.date)}
-                      </td>
-                      <td class="py-3 px-3">
-                        <div class="font-bold text-on-surface">${inv.investorName}</div>
-                        <span class="inline-block px-1.5 py-0.2 rounded text-[9px] font-bold ${badge} mt-0.5">${label}</span>
-                      </td>
-                      <td class="py-3 px-3 text-right font-bold text-primary font-tabular whitespace-nowrap">
-                        ${formatRupiah(inv.totalAmount, '')}
-                      </td>
-                      <td class="py-3 px-3 whitespace-nowrap">
-                        <span class="text-on-surface font-medium">${formatDate(inv.dueDate)}</span>
-                        ${dueBadge}
-                      </td>
-                      <td class="py-3 px-2 text-center font-bold text-on-surface font-tabular">
-                        ${inv.tenor || '-'}<span class="text-[10px] font-normal text-on-surface-variant block">bln</span>
-                      </td>
-                      <td class="py-3 px-3 text-right font-bold text-rose-700 font-tabular whitespace-nowrap">
-                        ${formatRupiah(cicilan, '')}
-                      </td>
-                      ${isAdmin ? `
-                      <td class="py-3 px-3 text-center whitespace-nowrap">
-                        <div class="inline-flex items-center gap-1">
-                          <button type="button" data-edit-investor="${inv.id}" title="Edit"
-                            class="p-1 rounded-lg glass-chip-btn text-on-surface-variant">
-                            <span class="material-symbols-outlined text-[16px]">edit</span>
-                          </button>
-                          ${(inv.status || 'aktif') !== 'lunas' ? `
-                            <button type="button" data-lunas-investor="${inv.id}" title="Tandai Lunas"
-                              class="p-1 rounded-lg glass-emerald text-emerald-800">
-                              <span class="material-symbols-outlined text-[16px]">check_circle</span>
-                            </button>
-                          ` : ''}
-                          <button type="button" data-delete-investor="${inv.id}" title="Hapus"
-                            class="p-1 rounded-lg glass-rose text-rose-800">
-                              <span class="material-symbols-outlined text-[16px]">delete</span>
-                          </button>
-                        </div>
-                      </td>
-                      ` : ''}
-                    </tr>
-                  `;
-                }).join('')}
-              </tbody>
-            </table>
-          </div>
-          <div class="p-2.5 glass-panel border-t border-white/45 text-[11px] text-on-surface-variant flex items-center justify-between">
-            <span>Geser tabel ke samping untuk melihat kolom penuh</span>
-            <span class="font-bold text-primary font-tabular">${list.length} Investor Terdaftar</span>
-          </div>
-        </div>
-      `;
-    } else {
-      // Cards view
-      container.innerHTML = list.map((inv) => {
-        const cicilan = inv.cicilan !== undefined ? inv.cicilan : (inv.tenor > 0 ? Math.round(inv.totalAmount / inv.tenor) : 0);
-        const days = daysUntilDue(inv.dueDate);
-        let daysLabel = '';
-        let daysClass = 'text-on-surface-variant';
-        if (days !== null) {
-          if (days < 0) { daysLabel = 'Lewat jatuh tempo!'; daysClass = 'text-rose-600 font-bold'; }
-          else if (days === 0) { daysLabel = 'Jatuh tempo hari ini!'; daysClass = 'text-rose-600 font-bold'; }
-          else if (days <= 30) { daysLabel = `${days} hari lagi`; daysClass = 'text-amber-600 font-semibold'; }
-          else { daysLabel = `${days} hari lagi`; }
-        }
-        const badge = statusBadge(inv.status || 'aktif');
-        const label = statusLabel(inv.status || 'aktif');
-
-        return `
-          <div class="glass-card glass-sheen rounded-xl overflow-hidden flex flex-col">
-            <!-- Header -->
-            <div class="flex items-start justify-between gap-2 p-3.5 pb-2">
-              <div class="flex items-start gap-2.5 min-w-0">
-                <div class="w-10 h-10 rounded-xl glass-amber text-amber-800 flex items-center justify-center shrink-0">
-                  <span class="material-symbols-outlined text-[20px]">account_balance_wallet</span>
-                </div>
-                <div class="flex flex-col min-w-0">
-                  <span class="font-bold text-sm text-on-surface truncate">${inv.investorName}</span>
-                  <div class="flex items-center gap-1.5 mt-0.5 flex-wrap">
-                    <span class="px-1.5 py-0.5 rounded text-[10px] font-bold ${badge}">${label}</span>
-                    <span class="text-[10px] text-on-surface-variant">${formatDate(inv.date)}</span>
-                  </div>
-                </div>
-              </div>
-              <div class="flex flex-col items-end shrink-0">
-                <span class="font-bold text-sm text-primary font-tabular">${formatRupiah(inv.totalAmount, '')}</span>
-                <span class="text-[10px] text-on-surface-variant">Total Inves</span>
-              </div>
-            </div>
-
-            <!-- Data Grid -->
-            <div class="grid grid-cols-3 gap-0 divide-x divide-white/50 mx-3.5 mb-2.5 glass-panel rounded-xl overflow-hidden">
-              <div class="flex flex-col items-center py-2 px-1 text-center">
-                <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide mb-0.5">Tenor</span>
-                <span class="font-bold text-sm text-on-surface font-tabular">${inv.tenor || '-'}</span>
-                <span class="text-[10px] text-on-surface-variant">Bulan</span>
-              </div>
-              <div class="flex flex-col items-center py-2 px-1 text-center">
-                <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide mb-0.5">Cicilan</span>
-                <span class="font-bold text-xs text-rose-700 font-tabular">${formatRupiah(cicilan, '')}</span>
-                <span class="text-[10px] text-on-surface-variant">/bulan</span>
-              </div>
-              <div class="flex flex-col items-center py-2 px-1 text-center">
-                <span class="text-[10px] text-on-surface-variant font-semibold uppercase tracking-wide mb-0.5">Jatuh Tempo</span>
-                <span class="font-bold text-xs text-on-surface font-tabular">${formatDate(inv.dueDate)}</span>
-                ${daysLabel ? `<span class="text-[10px] ${daysClass}">${daysLabel}</span>` : ''}
-              </div>
-            </div>
-
-            ${inv.notes ? `
-              <p class="text-[11px] text-on-surface-variant italic px-3.5 pb-2 truncate">${inv.notes}</p>
-            ` : ''}
-
-            <!-- Action Bar -->
-            ${isAdmin ? `
-            <div class="border-t border-white/45 px-3 py-2 flex items-center gap-2">
-              <button type="button" data-edit-investor="${inv.id}"
-                class="flex-1 py-1.5 rounded-xl glass-chip-btn text-on-surface text-xs font-bold flex items-center justify-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">edit_note</span>
-                <span>Edit</span>
-              </button>
-              ${(inv.status || 'aktif') !== 'lunas' ? `
-                <button type="button" data-lunas-investor="${inv.id}"
-                  class="flex-1 py-1.5 rounded-xl glass-emerald text-emerald-900 text-xs font-bold flex items-center justify-center gap-1">
-                  <span class="material-symbols-outlined text-[15px]">check_circle</span>
-                  <span>Tandai Lunas</span>
-                </button>
-              ` : ''}
-              <button type="button" data-delete-investor="${inv.id}"
-                class="px-3 py-1.5 rounded-xl glass-rose text-rose-800 text-xs font-bold flex items-center justify-center">
-                <span class="material-symbols-outlined text-[15px]">delete_outline</span>
-              </button>
-            </div>
-            ` : ''}
-          </div>
-        `;
-      }).join('');
-    }
-
-    bindListActions();
-  }
-
-  function bindListActions() {
-    const container = g('investor-view-container');
-    if (!container) return;
-
-    // Edit button
-    container.querySelectorAll('[data-edit-investor]').forEach((btn) => {
-      btn.addEventListener('click', () => openModal(btn.getAttribute('data-edit-investor')));
+  if (tabBtnSesi && tabBtnPemodal) {
+    tabBtnSesi.addEventListener('click', () => {
+      tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
+      tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+      if (tabContentSesi) tabContentSesi.classList.remove('hidden');
+      if (tabContentPemodal) tabContentPemodal.classList.add('hidden');
     });
 
-    // Lunas button
-    container.querySelectorAll('[data-lunas-investor]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        const id = btn.getAttribute('data-lunas-investor');
-        store.updateInvestor(id, { status: 'lunas' });
-        showToast('Status investasi ditandai Lunas!', 'success', 2500);
-        renderView();
-        refreshSummary();
-      });
-    });
-
-    // Delete button
-    container.querySelectorAll('[data-delete-investor]').forEach((btn) => {
-      btn.addEventListener('click', () => {
-        deletingId = btn.getAttribute('data-delete-investor');
-        const dm = g('investor-delete-modal');
-        if (dm) dm.classList.remove('hidden');
-      });
+    tabBtnPemodal.addEventListener('click', () => {
+      tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
+      tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+      if (tabContentPemodal) tabContentPemodal.classList.remove('hidden');
+      if (tabContentSesi) tabContentSesi.classList.add('hidden');
     });
   }
 
-  function refreshSummary() {
-    const s = store.getInvestorSummary ? store.getInvestorSummary() : {};
-    const kpiEls = document.querySelectorAll('.font-bold.text-lg.font-tabular');
-    if (kpiEls.length >= 4) {
-      kpiEls[0].textContent = formatRupiah(s.totalInvested || 0, '').replace('Rp ', '');
-      kpiEls[1].textContent = formatRupiah(s.totalOutstanding || 0, '').replace('Rp ', '');
-      kpiEls[2].textContent = s.countAktif || 0;
-      kpiEls[3].textContent = formatRupiah(s.totalCicilan || 0, '').replace('Rp ', '');
-    }
-  }
-
-  function openModal(id) {
-    isEditMode = !!id;
-    const inv = id && store.getInvestorById ? store.getInvestorById(id) : null;
-    g('investor-modal-title').textContent = isEditMode ? 'Edit Data Investor' : 'Tambah Investor Baru';
-    g('btn-save-investor-label').textContent = isEditMode ? 'Simpan Perubahan' : 'Simpan & Catat ke Kas';
-    g('investor-edit-id').value = id || '';
-
-    const today = new Date().toISOString().split('T')[0];
-    g('inv-name').value = inv ? inv.investorName : '';
-    g('inv-date').value = inv ? (inv.date || today) : today;
-    g('inv-due-date').value = inv ? (inv.dueDate || '') : '';
-    g('inv-amount').value = inv ? (inv.totalAmount || '') : '';
-    g('inv-tenor').value = inv ? (inv.tenor || '') : '';
-    g('inv-cicilan').value = inv ? (inv.cicilan !== undefined ? inv.cicilan : '') : '';
-    g('inv-notes').value = inv ? (inv.notes || '') : '';
-    g('inv-payment').value = inv ? (inv.paymentMethod || 'Transfer Bank') : 'Transfer Bank';
-
-    if (!inv) {
-      updateCicilanAuto(true);
-    }
-    const modal = g('investor-modal');
-    if (modal) modal.classList.remove('hidden');
-  }
-
-  function closeModal() {
-    const modal = g('investor-modal');
-    if (modal) modal.classList.add('hidden');
+  // Open Modal Tambah Pemodal
+  function openAddModal() {
     isEditMode = false;
+    g('investor-modal-title').textContent = 'Terima Modal Pemodal Baru';
+    g('btn-save-investor-label').textContent = 'Simpan & Tambah ke Kas';
+    g('investor-edit-id').value = '';
+    g('inv-name').value = '';
+    g('inv-date').value = todayStr;
+    g('inv-amount').value = '';
+    g('inv-notes').value = '';
+    document.querySelectorAll('input[name="inv-supply-item"]').forEach((cb) => { cb.checked = false; });
+
+    g('investor-modal').classList.remove('hidden');
   }
 
-  // Bind view switcher
-  const btnTable = g('toggle-view-table');
-  const btnCards = g('toggle-view-cards');
-  if (btnTable && btnCards) {
-    btnTable.addEventListener('click', () => {
-      currentViewMode = 'table';
-      btnTable.className = 'px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary';
-      btnCards.className = 'px-2.5 py-1 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface';
-      renderView();
+  // Open Modal Edit Pemodal
+  function openEditModal(id) {
+    const inv = store.getInvestorById(id);
+    if (!inv) return;
+
+    isEditMode = true;
+    g('investor-modal-title').textContent = 'Edit Data Pemodal';
+    g('btn-save-investor-label').textContent = 'Simpan Perubahan';
+    g('investor-edit-id').value = id;
+    g('inv-name').value = inv.investorName || '';
+    g('inv-date').value = inv.date || todayStr;
+    g('inv-amount').value = inv.totalAmount || 0;
+    g('inv-payment').value = inv.paymentMethod || 'Transfer Bank BCA';
+    g('inv-notes').value = inv.notes || '';
+
+    const selectedInvoices = Array.isArray(inv.sessionInvoices) ? inv.sessionInvoices : [];
+    document.querySelectorAll('input[name="inv-supply-item"]').forEach((cb) => {
+      cb.checked = selectedInvoices.includes(cb.value);
     });
 
-    btnCards.addEventListener('click', () => {
-      currentViewMode = 'cards';
-      btnCards.className = 'px-2.5 py-1 rounded-md font-bold transition-all glass-seg-active text-primary';
-      btnTable.className = 'px-2.5 py-1 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface';
-      renderView();
-    });
+    g('investor-modal').classList.remove('hidden');
   }
 
-  // Bind tambah button
-  const btnTambah = g('btn-tambah-investor');
-  if (btnTambah) {
-    btnTambah.addEventListener('click', () => openModal(null));
+  // Open Modal Payout
+  function openPayoutModal(targetInvestorId = null, suggestAmount = null) {
+    const select = g('payout-investor-id');
+    if (targetInvestorId && select) {
+      select.value = targetInvestorId;
+    }
+    if (suggestAmount && g('payout-amount')) {
+      g('payout-amount').value = suggestAmount;
+    }
+    g('payout-date').value = todayStr;
+    g('payout-notes').value = '';
+    g('payout-modal').classList.remove('hidden');
   }
 
-  // Real-time cicilan computation (auto-fills if empty)
-  ['inv-amount', 'inv-tenor'].forEach((id) => {
-    const el = g(id);
-    if (el) el.addEventListener('input', () => updateCicilanAuto(false));
-  });
-
-  // Explicit auto-calculate button
-  const btnCalc = g('btn-calc-cicilan');
-  if (btnCalc) {
-    btnCalc.addEventListener('click', () => updateCicilanAuto(true));
+  // Bind Buttons
+  if (g('btn-tambah-investor')) {
+    g('btn-tambah-investor').addEventListener('click', openAddModal);
+  }
+  if (g('btn-empty-add-investor')) {
+    g('btn-empty-add-investor').addEventListener('click', openAddModal);
+  }
+  if (g('btn-bayar-payout')) {
+    g('btn-bayar-payout').addEventListener('click', () => openPayoutModal());
   }
 
-  // Modal close and outside clicks
-  document.addEventListener('click', function(e) {
-    const t = e.target;
-    if (!t) return;
+  // Modal Closers
+  if (g('btn-close-investor-modal')) {
+    g('btn-close-investor-modal').addEventListener('click', () => g('investor-modal').classList.add('hidden'));
+  }
+  if (g('investor-modal-backdrop')) {
+    g('investor-modal-backdrop').addEventListener('click', () => g('investor-modal').classList.add('hidden'));
+  }
+  if (g('btn-close-payout-modal')) {
+    g('btn-close-payout-modal').addEventListener('click', () => g('payout-modal').classList.add('hidden'));
+  }
+  if (g('payout-modal-backdrop')) {
+    g('payout-modal-backdrop').addEventListener('click', () => g('payout-modal').classList.add('hidden'));
+  }
+  if (g('btn-cancel-delete-investor')) {
+    g('btn-cancel-delete-investor').addEventListener('click', () => g('investor-delete-modal').classList.add('hidden'));
+  }
+  if (g('investor-delete-backdrop')) {
+    g('investor-delete-backdrop').addEventListener('click', () => g('investor-delete-modal').classList.add('hidden'));
+  }
 
-    if (t.id === 'investor-modal-backdrop' || (t.closest && t.closest('#btn-close-investor-modal'))) {
-      closeModal();
-      return;
-    }
-
-    if (t.id === 'investor-delete-backdrop' || t.id === 'btn-cancel-delete-investor') {
-      const dm = g('investor-delete-modal');
-      if (dm) dm.classList.add('hidden');
-      deletingId = null;
-      return;
-    }
-
-    if (t.id === 'btn-confirm-delete-investor') {
-      if (deletingId) {
-        store.deleteInvestor(deletingId);
-        showToast('Data investor & catatan kas masuk terkait berhasil dihapus.', 'info', 2500);
-        deletingId = null;
-      }
-      const dm = g('investor-delete-modal');
-      if (dm) dm.classList.add('hidden');
-      renderView();
-      refreshSummary();
-      return;
-    }
-
-    if (t.closest && t.closest('#btn-save-investor')) {
-      const name = (g('inv-name') || {}).value?.trim() || '';
-      const date = (g('inv-date') || {}).value || '';
-      const due = (g('inv-due-date') || {}).value || '';
-      const amount = parseFloat((g('inv-amount') || {}).value) || 0;
-      const tenor = parseInt((g('inv-tenor') || {}).value) || 0;
-      const notes = (g('inv-notes') || {}).value?.trim() || '';
-      const payment = (g('inv-payment') || {}).value || 'Transfer Bank';
-      const editId = (g('investor-edit-id') || {}).value || '';
+  // Simpan Modal Pemodal (Tambah / Edit)
+  if (g('btn-save-investor')) {
+    g('btn-save-investor').addEventListener('click', () => {
+      const name = (g('inv-name').value || '').trim();
+      const amount = Number(g('inv-amount').value) || 0;
+      const date = g('inv-date').value || todayStr;
+      const paymentMethod = g('inv-payment').value || 'Transfer Bank BCA';
+      const notes = (g('inv-notes').value || '').trim();
 
       if (!name) {
-        showToast('Nama investor wajib diisi!', 'error');
+        showToast('Nama pemodal wajib diisi!', 'error');
+        g('inv-name').focus();
         return;
       }
       if (amount <= 0) {
-        showToast('Total investasi harus lebih dari Rp 0!', 'error');
-        return;
-      }
-      if (tenor <= 0) {
-        showToast('Tenor harus minimal 1 bulan!', 'error');
+        showToast('Jumlah modal harus lebih dari Rp 0!', 'error');
+        g('inv-amount').focus();
         return;
       }
 
-      let cicilan = parseFloat((g('inv-cicilan') || {}).value);
-      if (isNaN(cicilan) || cicilan <= 0) {
-        cicilan = tenor > 0 ? Math.round(amount / tenor) : 0;
-      }
-      const data = {
-        investorName: name,
-        date,
-        dueDate: due,
-        totalAmount: amount,
-        tenor,
-        cicilan,
-        notes,
-        paymentMethod: payment
-      };
+      // Kumpulkan faktur yang dipilih
+      const sessionInvoices = [];
+      document.querySelectorAll('input[name="inv-supply-item"]:checked').forEach((cb) => {
+        sessionInvoices.push(cb.value);
+      });
 
-      if (editId) {
-        store.updateInvestor(editId, data);
-        showToast('Data investor berhasil diperbarui!', 'success', 2500);
+      const editId = g('investor-edit-id').value;
+      if (isEditMode && editId) {
+        store.updateInvestor(editId, {
+          investorName: name,
+          totalAmount: amount,
+          date,
+          paymentMethod,
+          notes,
+          sessionInvoices
+        });
+        showToast('Data pemodal berhasil diperbarui!', 'success');
       } else {
-        store.addInvestor(data);
-        showToast(`Dana investor Rp ${formatRupiah(amount, '')} berhasil dicatat ke Kas!`, 'success', 3500);
+        store.addInvestor({
+          investorName: name,
+          totalAmount: amount,
+          date,
+          paymentMethod,
+          notes,
+          sessionInvoices
+        });
+        showToast('Modal pemodal berhasil ditambahkan & saldo kas bertambah!', 'success');
       }
-      closeModal();
-      renderView();
-      refreshSummary();
+
+      g('investor-modal').classList.add('hidden');
+      router.render();
+    });
+  }
+
+  // Submit Payout (Bagi Hasil / Pokok)
+  if (g('btn-submit-payout')) {
+    g('btn-submit-payout').addEventListener('click', () => {
+      const investorId = g('payout-investor-id').value;
+      const amount = Number(g('payout-amount').value) || 0;
+      const date = g('payout-date').value || todayStr;
+      const paymentMethod = g('payout-payment-method').value || 'Transfer Bank BCA';
+      const notes = (g('payout-notes').value || '').trim();
+
+      const typeRadio = document.querySelector('input[name="payout-type"]:checked');
+      const type = typeRadio ? typeRadio.value : 'bagi_hasil';
+
+      if (!investorId) {
+        showToast('Pilih investor terlebih dahulu!', 'error');
+        return;
+      }
+      if (amount <= 0) {
+        showToast('Nominal pembayaran harus lebih dari Rp 0!', 'error');
+        g('payout-amount').focus();
+        return;
+      }
+
+      store.addInvestorPayout(investorId, {
+        amount,
+        type,
+        date,
+        paymentMethod,
+        notes
+      });
+
+      showToast(`Pembayaran ${type === 'pokok' ? 'Pokok' : 'Bagi Hasil'} berhasil! Saldo kas toko telah dipotong.`, 'success', 3500);
+      g('payout-modal').classList.add('hidden');
+      router.render();
+    });
+  }
+
+  // Delegasi Event untuk Tombol di List: Edit, Delete, Toggle Payouts, Salin WA
+  document.addEventListener('click', (e) => {
+    // Quick Pay
+    const quickPayBtn = e.target.closest('[data-quick-pay]');
+    if (quickPayBtn) {
+      const invId = quickPayBtn.getAttribute('data-quick-pay');
+      const suggest = quickPayBtn.getAttribute('data-suggest-amount');
+      openPayoutModal(invId, suggest);
+      return;
+    }
+
+    // Toggle Payouts History
+    const togglePayoutBtn = e.target.closest('[data-toggle-payouts]');
+    if (togglePayoutBtn) {
+      const invId = togglePayoutBtn.getAttribute('data-toggle-payouts');
+      const el = g(`payouts-container-${invId}`);
+      if (el) el.classList.toggle('hidden');
+      return;
+    }
+
+    // Salin Format WA
+    const copyWaBtn = e.target.closest('[data-copy-wa]');
+    if (copyWaBtn) {
+      const invId = copyWaBtn.getAttribute('data-copy-wa');
+      const reports = store.getInvestmentSessionReport(invId);
+      if (reports && reports.length > 0) {
+        const r = reports[0];
+        const text = `*LAPORAN INVESTASI & BAGI HASIL*\n*Kas Juara Sepatu*\n-----------------------------------\n👤 *Pemodal:* ${r.investorName}\n📅 *Tanggal Modal:* ${formatDate(r.date)}\n💰 *Modal Disetor:* ${formatRupiah(r.totalModal)}\n\n📦 *PROGRES SESI PEMBELANJAAN:*\n• Faktur Sesi: ${r.sessionInvoices.length > 0 ? r.sessionInvoices.join(', ') : 'Semua Belanja'}\n• Total Pasang Beli: ${r.totalBeliPasang} psg\n• Sepatu Laku: ${r.totalTerjualPasang} psg (${r.persentaseTerjual}%)\n• Status Syarat: ${r.isEligible50 ? '✅ SUDAH TERJUAL ≥ 50% (SIAP BAGI HASIL)' : '⏳ Belum 50% (Masih Berjalan)'}\n\n📊 *PERHITUNGAN KEUNTUNGAN BERSIH:*\n• Omzet Penjualan Sesi: ${formatRupiah(r.omzetPenjualan)}\n• HPP Barang Terjual: -${formatRupiah(r.hppTerjual)}\n• Biaya Operasional Sesi: -${formatRupiah(r.biayaOpsSesi)}\n• *Laba Bersih Sesi:* *${formatRupiah(r.labaBersih)}*\n\n🤝 *BAGI HASIL (60% Investor : 40% Pengelola):*\n• *Hak Investor (60%):* *${r.isEligible50 ? formatRupiah(r.hakInvestor60) : 'Rp 0'}*\n• Sudah Dibayarkan: ${formatRupiah(r.bagiHasilDibayar)}\n• *Sisa Hak Bagi Hasil:* *${formatRupiah(r.sisaBagiHasil)}*\n-----------------------------------\n_Terima kasih atas kepercayaan dan kerjasamanya._`;
+        
+        navigator.clipboard.writeText(text).then(() => {
+          showToast('Laporan WA berhasil disalin ke clipboard ✓', 'success');
+        }).catch(() => {
+          showToast('Gagal menyalin, browser tidak mengizinkan.', 'error');
+        });
+      }
+      return;
+    }
+
+    // Edit Investor
+    const editBtn = e.target.closest('[data-edit-investor]');
+    if (editBtn) {
+      const invId = editBtn.getAttribute('data-edit-investor');
+      openEditModal(invId);
+      return;
+    }
+
+    // Delete Investor
+    const delBtn = e.target.closest('[data-delete-investor]');
+    if (delBtn) {
+      deletingId = delBtn.getAttribute('data-delete-investor');
+      g('investor-delete-modal').classList.remove('hidden');
+      return;
+    }
+
+    // Delete Single Payout
+    const delPayoutBtn = e.target.closest('[data-delete-payout]');
+    if (delPayoutBtn) {
+      const pId = delPayoutBtn.getAttribute('data-delete-payout');
+      const invId = delPayoutBtn.getAttribute('data-investor-id');
+      if (confirm('Hapus catatan pembayaran ini? Saldo kas toko yang sebelumnya terpotong akan dikembalikan.')) {
+        store.deleteInvestorPayout(invId, pId);
+        showToast('Pembayaran dihapus & saldo kas dikembalikan.', 'info');
+        router.render();
+      }
+      return;
     }
   });
 
-  // Ensure modals are inside phone frame for correct backdrop sizing
-  ['investor-modal', 'investor-delete-modal'].forEach((mid) => {
-    const el = g(mid);
-    if (el && el.parentElement !== phoneFrame) {
-      phoneFrame.appendChild(el);
-    }
-  });
-
-  renderView();
+  // Konfirmasi Hapus Pemodal
+  if (g('btn-confirm-delete-investor')) {
+    g('btn-confirm-delete-investor').addEventListener('click', () => {
+      if (deletingId) {
+        store.deleteInvestor(deletingId);
+        showToast('Data pemodal & seluruh mutasi terkait berhasil dihapus.', 'info');
+        deletingId = null;
+        g('investor-delete-modal').classList.add('hidden');
+        router.render();
+      }
+    });
+  }
 }
