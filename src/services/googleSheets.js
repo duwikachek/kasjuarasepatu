@@ -863,6 +863,108 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       }
     }
 
+    // 19. Styling untuk Section [9] LAPORAN INVESTASI & BAGI HASIL
+    if (meta.invHeaderRowIndex !== undefined) {
+      const secRow = meta.invHeaderRowIndex;
+      const colHeaderRow = secRow + 1;
+      const dataStart = secRow + 2;
+      const summaryRowCount = 6; // 6 baris ringkasan (Total Dana, BH Investor, BH Pengelola, Pengembalian, Total BH, spacer)
+      const listHeaderRow = meta.invListHeaderRowIndex;
+      const listDataStart = listHeaderRow + 1;
+      const listCount = meta.invRowCount || 1;
+
+      // Section Header (Dark Gold Accent - membedakan dari seksi stok)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: secRow, endRowIndex: secRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.12, green: 0.09, blue: 0.01 },
+              textFormat: { foregroundColor: { red: 1.0, green: 0.85, blue: 0.20 }, fontSize: 10, bold: true },
+              borders: { left: { style: 'SOLID', width: 3, color: { red: 0.98, green: 0.75, blue: 0.10 } } }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+
+      // Column Header row ringkasan
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: colHeaderRow, endRowIndex: colHeaderRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.18, green: 0.14, blue: 0.03 },
+              textFormat: { foregroundColor: { red: 1.0, green: 0.90, blue: 0.50 }, fontSize: 9, bold: true },
+              horizontalAlignment: 'LEFT'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+        }
+      });
+
+      // Currency formatting for Col B (Nominal) in summary rows
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + summaryRowCount, startColumnIndex: 1, endColumnIndex: 2 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Text color for Col C (Jumlah) in summary rows - gold
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: dataStart, endRowIndex: dataStart + summaryRowCount, startColumnIndex: 2, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { textFormat: { foregroundColor: { red: 0.98, green: 0.82, blue: 0.40 } } } },
+          fields: 'userEnteredFormat.textFormat'
+        }
+      });
+
+      // Daftar Pemodal List Header Row (amber table header)
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: listHeaderRow, endRowIndex: listHeaderRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.22, green: 0.17, blue: 0.03 },
+              textFormat: { foregroundColor: { red: 1.0, green: 0.92, blue: 0.60 }, fontSize: 9, bold: true },
+              horizontalAlignment: 'LEFT'
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,horizontalAlignment)'
+        }
+      });
+
+      // Currency format Col B & C for investor list rows
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: listDataStart, endRowIndex: listDataStart + listCount + 1, startColumnIndex: 1, endColumnIndex: 3 },
+          cell: { userEnteredFormat: { numberFormat: { type: 'CURRENCY', pattern: '"Rp "#,##0' }, horizontalAlignment: 'RIGHT' } },
+          fields: 'userEnteredFormat(numberFormat,horizontalAlignment)'
+        }
+      });
+
+      // Total Row highlight (last row of list)
+      const invTotalRow = listDataStart + listCount;
+      requests.push({
+        repeatCell: {
+          range: { sheetId: dashSheetId, startRowIndex: invTotalRow, endRowIndex: invTotalRow + 1, startColumnIndex: 0, endColumnIndex: 4 },
+          cell: {
+            userEnteredFormat: {
+              backgroundColor: { red: 0.18, green: 0.14, blue: 0.02 },
+              textFormat: { foregroundColor: { red: 1.0, green: 0.88, blue: 0.30 }, bold: true },
+              borders: {
+                top: { style: 'SOLID', width: 1, color: { red: 0.98, green: 0.75, blue: 0.10 } },
+                bottom: { style: 'DOUBLE', width: 3, color: { red: 0.98, green: 0.75, blue: 0.10 } }
+              }
+            }
+          },
+          fields: 'userEnteredFormat(backgroundColor,textFormat,borders)'
+        }
+      });
+    }
+
     // Send batchUpdate
     const formatRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}:batchUpdate`, {
       method: 'POST',
@@ -937,6 +1039,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     const shipSummary = store.getShipmentSummary ? store.getShipmentSummary() : {};
     const shop = store.getShop ? store.getShop() : { name: 'Kas Juara' };
     const balanceSummary = store.getBalanceSummary ? store.getBalanceSummary() : {};
+    const investors = (store.getInvestors ? store.getInvestors() : []) || [];
 
     // Modal / Saldo Kas Awal dari Pengaturan Toko
     const initialLaci = Number(shop.initialBalanceLaci || 0);
@@ -1369,6 +1472,87 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     }
     dashboardRows.push(['', '', '', '']);
 
+    // ─── SEKSI [9] LAPORAN INVESTASI & BAGI HASIL ───────────────────────────
+    // Ringkasan data dari investors store
+    const totalDanaInvestor = investors.reduce((sum, inv) => sum + (Number(inv.totalInvestment) || Number(inv.amount) || 0), 0);
+    const totalBagiHasilInvestor = investors.reduce((sum, inv) => {
+      if (!Array.isArray(inv.payouts)) return sum;
+      return sum + inv.payouts.filter((p) => p.recipient === 'investor' || p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    }, 0);
+    const totalBagiHasilPengelola = investors.reduce((sum, inv) => {
+      if (!Array.isArray(inv.payouts)) return sum;
+      return sum + inv.payouts.filter((p) => p.recipient === 'pengelola').reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    }, 0);
+    const totalPengembalianModal = investors.reduce((sum, inv) => {
+      if (!Array.isArray(inv.payouts)) return sum;
+      return sum + inv.payouts.filter((p) => p.type === 'pengembalian').reduce((s, p) => s + (Number(p.amount) || 0), 0);
+    }, 0);
+    const totalBagiHasilSemua = totalBagiHasilInvestor + totalBagiHasilPengelola;
+    const jumlahPemodalAktif = investors.length;
+
+    const invHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['[9] LAPORAN INVESTASI & BAGI HASIL (60% Investor : 40% Pengelola)', '', '', '']);
+    dashboardRows.push(['KETERANGAN', 'NOMINAL (RP)', 'JUMLAH', 'CATATAN']);
+    dashboardRows.push([
+      'Total Dana Masuk dari Investor',
+      totalDanaInvestor,
+      `${jumlahPemodalAktif} Pemodal`,
+      'Dana modal investor yang telah masuk ke kas toko'
+    ]);
+    dashboardRows.push([
+      'Total Bagi Hasil Dibayar (Investor 60%)',
+      totalBagiHasilInvestor,
+      investors.reduce((sum, inv) => sum + (Array.isArray(inv.payouts) ? inv.payouts.filter((p) => p.recipient === 'investor' || p.type === 'bagi_hasil').length : 0), 0) + ' Kali',
+      'Kas Keluar: Pembayaran hak 60% ke investor'
+    ]);
+    dashboardRows.push([
+      'Total Bagi Hasil Dibayar (Pengelola 40%)',
+      totalBagiHasilPengelola,
+      investors.reduce((sum, inv) => sum + (Array.isArray(inv.payouts) ? inv.payouts.filter((p) => p.recipient === 'pengelola').length : 0), 0) + ' Kali',
+      'Kas Keluar: Pembayaran hak 40% ke pengelola'
+    ]);
+    dashboardRows.push([
+      'Total Pengembalian Modal Investor',
+      totalPengembalianModal,
+      '-',
+      'Kas Keluar: Pengembalian pokok modal ke investor'
+    ]);
+    dashboardRows.push([
+      'Total Bagi Hasil (Investor + Pengelola)',
+      totalBagiHasilSemua,
+      '-',
+      'Akumulasi total bagi hasil yang sudah dibayarkan'
+    ]);
+    dashboardRows.push(['', '', '', '']);
+
+    // Daftar Pemodal Aktif
+    const invListHeaderRowIndex = dashboardRows.length;
+    dashboardRows.push(['DAFTAR PEMODAL AKTIF', 'TOTAL MODAL (RP)', 'BAGI HASIL DITERIMA (RP)', 'STATUS & METODE']);
+    if (investors.length > 0) {
+      investors.forEach((inv) => {
+        const modalAmt = Number(inv.totalInvestment) || Number(inv.amount) || 0;
+        const payoutTotal = Array.isArray(inv.payouts)
+          ? inv.payouts.filter((p) => p.recipient === 'investor' || p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0)
+          : 0;
+        const payCount = Array.isArray(inv.payouts) ? inv.payouts.length : 0;
+        dashboardRows.push([
+          inv.investorName || inv.name || 'Pemodal',
+          modalAmt,
+          payoutTotal,
+          `${inv.paymentMethod || 'Transfer Bank'} • ${payCount} kali bagi hasil`
+        ]);
+      });
+      dashboardRows.push([
+        `TOTAL (${investors.length} Pemodal)`,
+        totalDanaInvestor,
+        totalBagiHasilInvestor,
+        `Pengelola: Rp ${totalBagiHasilPengelola.toLocaleString('id-ID')} (40%)`
+      ]);
+    } else {
+      dashboardRows.push(['Belum ada data pemodal', 0, 0, '-']);
+    }
+    dashboardRows.push(['', '', '', '']);
+
     const dashboardMeta = {
       uniqueDates,
       catStartRowIndex,
@@ -1380,7 +1564,10 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       minusHeaderRowIndex,
       minusDataStartRowIndex,
       minusRowCount: minusItems.length > 0 ? minusItems.length : 1,
-      hasMinus: minusItems.length > 0
+      hasMinus: minusItems.length > 0,
+      invHeaderRowIndex,
+      invListHeaderRowIndex,
+      invRowCount: investors.length > 0 ? investors.length : 1
     };
 
     // 1. Data Sheet: Ringkasan Usaha

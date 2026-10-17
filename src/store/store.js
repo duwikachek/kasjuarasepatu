@@ -671,6 +671,10 @@ class Store {
     return this.state.transactions || [];
   }
 
+  getInvestors() {
+    return this.state.investors || [];
+  }
+
   addTransaction(trx) {
     const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
     const newTrx = {
