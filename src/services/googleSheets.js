@@ -636,13 +636,14 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
       }}
     });
 
-    // 15. Chart 2: Komposisi Stok (Donut - Top Right)
+    // 15. Chart 2: Komposisi Stok (Donut - Top Right) — gunakan meta.komposisiStartRowIndex
+    const komposisiStart = meta.komposisiStartRowIndex || 35;
     requests.push({
       addChart: { chart: {
         spec: { title: 'Komposisi Stok Sepatu', pieChart: {
           legendPosition: 'RIGHT_LEGEND', pieHole: 0.5,
-          domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 35, endRowIndex: 37, startColumnIndex: 0, endColumnIndex: 1 }] } },
-          series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: 35, endRowIndex: 37, startColumnIndex: 1, endColumnIndex: 2 }] } }
+          domain: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: komposisiStart, endRowIndex: komposisiStart + 2, startColumnIndex: 0, endColumnIndex: 1 }] } },
+          series: { sourceRange: { sources: [{ sheetId: dashSheetId, startRowIndex: komposisiStart, endRowIndex: komposisiStart + 2, startColumnIndex: 1, endColumnIndex: 2 }] } }
         }},
         position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 6, columnIndex: 11 }, widthPixels: 380, heightPixels: 250 } }
       }}
@@ -661,9 +662,63 @@ async function applyDashboardDesignAndCharts(token, spreadsheetId, meta = {}) {
         }}
       });
     }
+    // 17. Chart 4: Statistik Penjualan Harian (Line Chart — referensi sheet 'Statistik Harian')
+    try {
+      const statMetaRes = await fetch(`https://sheets.googleapis.com/v4/spreadsheets/${spreadsheetId}`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (statMetaRes.ok) {
+        const statMeta = await statMetaRes.json();
+        const statSheet = statMeta.sheets?.find((s) => s.properties?.title === 'Statistik Harian');
+        if (statSheet) {
+          const statSheetId = statSheet.properties.sheetId;
+          const dataRowCount = meta.statistikHarianRowCount || 7;
+          requests.push({
+            addChart: { chart: {
+              spec: {
+                title: '📈 Statistik Penjualan Harian',
+                titleTextFormat: { bold: true, fontSize: 11 },
+                basicChart: {
+                  chartType: 'LINE',
+                  legendPosition: 'BOTTOM_LEGEND',
+                  domains: [{ domain: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 1, endColumnIndex: 2 }] } } }],
+                  series: [
+                    {
+                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 2, endColumnIndex: 3 }] } },
+                      targetAxis: 'LEFT_AXIS',
+                      lineStyle: { width: 2 },
+                      color: { red: 0.06, green: 0.72, blue: 0.50 }
+                    },
+                    {
+                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 4, endColumnIndex: 5 }] } },
+                      targetAxis: 'LEFT_AXIS',
+                      lineStyle: { width: 2 },
+                      color: { red: 0.88, green: 0.20, blue: 0.25 }
+                    },
+                    {
+                      series: { sourceRange: { sources: [{ sheetId: statSheetId, startRowIndex: 1, endRowIndex: 1 + dataRowCount, startColumnIndex: 5, endColumnIndex: 6 }] } },
+                      targetAxis: 'RIGHT_AXIS',
+                      lineStyle: { width: 1, dashType: 'DOT' },
+                      color: { red: 0.98, green: 0.75, blue: 0.20 }
+                    }
+                  ],
+                  axis: [
+                    { position: 'BOTTOM_AXIS', title: 'Tanggal' },
+                    { position: 'LEFT_AXIS', title: 'Nominal (Rp)' },
+                    { position: 'RIGHT_AXIS', title: 'Sepatu Laku (Psg)' }
+                  ]
+                }
+              },
+              position: { overlayPosition: { anchorCell: { sheetId: dashSheetId, rowIndex: 33, columnIndex: 5 }, widthPixels: 820, heightPixels: 300 } }
+            }}
+          });
+        }
+      }
+    } catch (chartErr) {
+      console.warn('[GoogleSheets] Non-fatal: Chart harian gagal ditambah:', chartErr.message);
+    }
 
 
-    // 17. Styling untuk Section [7] RINCIAN SISA STOK KONDISI BAGUS
     if (meta.bagusHeaderRowIndex) {
       const secRow = meta.bagusHeaderRowIndex;
       const colHeaderRow = secRow + 1;
@@ -1009,7 +1064,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
     const token = await getAccessToken(store);
 
-    const sheetNames = ['Dashboard', 'Ringkasan Usaha', 'Kas Masuk', 'Kas Keluar', 'Barang Masuk (Belanja)', 'Pengiriman', 'Investasi & Bagi Hasil'];
+    const sheetNames = ['Dashboard', 'Ringkasan Usaha', 'Kas Masuk', 'Kas Keluar', 'Barang Masuk (Belanja)', 'Pengiriman', 'Investasi & Bagi Hasil', 'Statistik Harian'];
     const { locale = 'in_ID' } = (await ensureSheetsExist(token, spreadsheetId, sheetNames)) || {};
 
     // Locale-aware formula separator (';' untuk regional Indonesia in_ID / id_ID, ',' untuk en_US)
@@ -1045,6 +1100,54 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
     const initialLaci = Number(shop.initialBalanceLaci || 0);
     const initialBank = Number(shop.initialBalanceBank || 0);
     const totalModalAwal = initialLaci + initialBank;
+
+    // ─── Statistik Penjualan Harian (per tanggal) ────────────────────────────
+    const dailyStatsMap = {};
+    transactions.forEach((t) => {
+      const d = cleanDateString(t.date);
+      if (!d) return;
+      if (!dailyStatsMap[d]) dailyStatsMap[d] = { masukPenjualan: 0, masukTotal: 0, keluar: 0, pasang: 0 };
+      const amt = Number(t.amount) || 0;
+      const isInvestor = t.category === 'Dana Investor' || t.category === 'Investasi Modal' ||
+        t.category === 'Bagi Hasil Investor' || t.category === 'Bagi Hasil Pengelola' ||
+        t.category === 'Pengembalian Modal Investor';
+      if (t.type === 'masuk') {
+        dailyStatsMap[d].masukTotal += amt;
+        if (!isInvestor) {
+          dailyStatsMap[d].masukPenjualan += amt;
+          if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+            dailyStatsMap[d].pasang += t.items.length;
+          } else {
+            dailyStatsMap[d].pasang += Number(t.itemCount) || 1;
+          }
+        }
+      } else {
+        dailyStatsMap[d].keluar += amt;
+      }
+    });
+
+    const dailyDates = Object.keys(dailyStatsMap).sort(); // urutan lama ke baru untuk chart
+    const statistikHarianRows = [
+      ['No', 'Tanggal', 'Omset Penjualan (Rp)', 'Kas Masuk Total (Rp)', 'Kas Keluar (Rp)', 'Sepatu Laku (Psg)', 'Net Cash Flow (Rp)']
+    ];
+    let grandOmset = 0, grandKeluar = 0, grandPasang = 0;
+    dailyDates.forEach((d, idx) => {
+      const s = dailyStatsMap[d];
+      grandOmset += s.masukPenjualan;
+      grandKeluar += s.keluar;
+      grandPasang += s.pasang;
+      statistikHarianRows.push([
+        idx + 1,
+        d,
+        s.masukPenjualan,
+        s.masukTotal,
+        s.keluar,
+        s.pasang,
+        s.masukTotal - s.keluar
+      ]);
+    });
+    statistikHarianRows.push(['TOTAL', `${dailyDates.length} Hari`, grandOmset, grandOmset, grandKeluar, grandPasang, grandOmset - grandKeluar]);
+    // ─────────────────────────────────────────────────────────────────────────
 
     // Pisahkan transaksi kas masuk dan kas keluar
     const trxMasukList = transactions.filter((t) => t.type === 'masuk');
@@ -1370,12 +1473,16 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['', '', '', ''],
 
       ['[5] DATA KOMPOSISI STOK (SUMBER GRAFIK STOK)', 'JUMLAH (PSG)', 'PERSENTASE', 'KETERANGAN'],
-      ['Sepatu Terjual (Laku)', f('=B17'), f('=IF((B36+B37)>0, TEXT(B36/(B36+B37), "0.0%"), "0%")'), 'Realisasi pasang terjual'],
-      ['Sisa Belum Terjual', f('=B23'), f('=IF((B36+B37)>0, TEXT(B37/(B36+B37), "0.0%"), "0%")'), 'Stok fisik tersisa saat ini'],
-      ['', '', '', ''],
-
-      ['[6] LAPORAN PENGELUARAN KAS PER KATEGORI', 'TOTAL BIAYA (RP)', 'TRANSAKSI', 'PERSENTASE']
     ];
+
+    // Track posisi baris DATA KOMPOSISI untuk chart 2
+    const komposisiStartRowIndex = dashboardRows.length;
+    dashboardRows.push(['Sepatu Terjual (Laku)', f('=B17'), f(`=IF((B${komposisiStartRowIndex + 1}+B${komposisiStartRowIndex + 2})>0, TEXT(B${komposisiStartRowIndex + 1}/(B${komposisiStartRowIndex + 1}+B${komposisiStartRowIndex + 2}), "0.0%"), "0%")`), 'Realisasi pasang terjual']);
+    dashboardRows.push(['Sisa Belum Terjual', f('=B23'), f(`=IF((B${komposisiStartRowIndex + 1}+B${komposisiStartRowIndex + 2})>0, TEXT(B${komposisiStartRowIndex + 2}/(B${komposisiStartRowIndex + 1}+B${komposisiStartRowIndex + 2}), "0.0%"), "0%")`), 'Stok fisik tersisa saat ini']);
+    dashboardRows.push(['', '', '', '']);
+
+    dashboardRows.push(['[6] LAPORAN PENGELUARAN KAS PER KATEGORI', 'TOTAL BIAYA (RP)', 'TRANSAKSI', 'PERSENTASE']);
+
 
     const catStartRowIndex = dashboardRows.length; // 39
     sortedCategories.forEach((c, idx) => {
@@ -1557,6 +1664,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       uniqueDates,
       catStartRowIndex,
       catRowCount: sortedCategories.length,
+      komposisiStartRowIndex,
       bagusHeaderRowIndex,
       bagusDataStartRowIndex,
       bagusRowCount: bagusItems.length > 0 ? bagusItems.length : 1,
@@ -1567,7 +1675,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       hasMinus: minusItems.length > 0,
       invHeaderRowIndex,
       invListHeaderRowIndex,
-      invRowCount: investors.length > 0 ? investors.length : 1
+      invRowCount: investors.length > 0 ? investors.length : 1,
+      statistikHarianRowCount: Math.max(1, dailyDates.length)
     };
 
     // 1. Data Sheet: Ringkasan Usaha
@@ -2123,7 +2232,8 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
           "'Kas Keluar'!A1:Z2000",
           "'Barang Masuk (Belanja)'!A1:Z2000",
           "'Pengiriman'!A1:Z2000",
-          "'Investasi & Bagi Hasil'!A1:Z1000"
+          "'Investasi & Bagi Hasil'!A1:Z1000",
+          "'Statistik Harian'!A1:Z2000"
         ]
       })
     });
@@ -2174,6 +2284,11 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
               range: "'Investasi & Bagi Hasil'!A1",
               majorDimension: 'ROWS',
               values: investorSheetRows
+            },
+            {
+              range: "'Statistik Harian'!A1",
+              majorDimension: 'ROWS',
+              values: statistikHarianRows
             }
           ]
         })
