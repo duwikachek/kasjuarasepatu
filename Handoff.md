@@ -21,7 +21,10 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Jika penjualan sesi belum mencapai 50%, hak bagi hasil berstatus *Menunggu Target 50% Terjual* dan belum dapat dicairkan.
 2. **Integrasi Arus Kas Otomatis:**
    - **Modal Masuk:** Setiap kali modal baru disetor pemodal, otomatis dicatat sebagai **Kas Masuk** (kategori: *"Dana Investor"*) dan menambah saldo kas toko.
-   - **Pembayaran Bagi Hasil / Pengembalian Pokok:** Setiap kali toko membayarkan bagi hasil atau mencicil modal pokok, otomatis dicatat sebagai **Kas Keluar** (kategori: *"Bagi Hasil Investor"* / *"Pengembalian Modal Investor"*) dan memotong saldo kas toko.
+   - **Pembayaran Bagi Hasil Investor (60%):** Dicatat sebagai **Kas Keluar** kategori *"Bagi Hasil Investor"* dan memotong saldo kas toko.
+   - **Pencairan Bagi Hasil Pengelola (40%):** Pengelola dapat mencairkan bagian haknya (40%) kapan saja ke rekening pribadi atau tunai, dicatat sebagai **Kas Keluar** kategori *"Bagi Hasil Pengelola"* dan memotong saldo kas toko.
+   - **Bagi Hasil Serentak:** Admin dapat membagi keuntungan investor (60%) dan mencairkan hak pengelola (40%) sekaligus dalam 1 kali proses.
+   - **Pengembalian Pokok Modal:** Dicatat sebagai **Kas Keluar** kategori *"Pengembalian Modal Investor"*.
 3. **Navigasi Bawah (Bottom Navigation Bar):**
    - Ditambahkan tab **Investasi** (`route: 'investor'`, ikon `handshake`) di navigasi bawah sehingga mudah diakses kapan saja.
 4. **Hak Akses Pemodal / Atasan:**

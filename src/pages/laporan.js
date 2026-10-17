@@ -407,7 +407,7 @@ export function renderLaporanPage(store, period = 'bulan') {
               <div class="flex items-baseline gap-1 mt-0.5">
                 <span class="text-sm font-extrabold text-amber-300 font-tabular">${formatRupiah(invSummary.totalHakInvestor60 || 0)}</span>
               </div>
-              <span class="text-[9px] text-neutral-400 mt-0.5">Sisa Belum Bayar: ${formatRupiah(invSummary.totalSisaBagiHasil || 0, '')}</span>
+              <span class="text-[9px] text-neutral-400 mt-0.5">Sisa Investor: ${formatRupiah(invSummary.totalSisaBagiHasil || 0, '')}</span>
             </div>
 
             <div class="glass-panel rounded-lg p-1.5 flex flex-col justify-between border border-neutral-700/60">
@@ -415,7 +415,7 @@ export function renderLaporanPage(store, period = 'bulan') {
               <div class="mt-0.5">
                 <span class="text-sm font-extrabold text-blue-300 font-tabular truncate block">${formatRupiah(invSummary.totalHakPengelola40 || 0)}</span>
               </div>
-              <span class="text-[9px] text-neutral-400 mt-0.5">${invSummary.countEligible50 || 0} dari ${invReports.length} Sesi Siap Bagi</span>
+              <span class="text-[9px] text-neutral-400 mt-0.5">Ditarik: ${formatRupiah(invSummary.totalPengelolaDibayar || 0, '')} • Sisa: ${formatRupiah(invSummary.totalSisaHakPengelola || 0, '')}</span>
             </div>
           </div>
 
@@ -433,7 +433,7 @@ export function renderLaporanPage(store, period = 'bulan') {
                   <span class="text-[10px] font-bold ${r.isEligible50 ? 'text-emerald-400' : 'text-amber-400'}">
                     ${r.isEligible50 ? 'Laba Bersih ' + formatRupiah(r.labaBersih) : 'Target < 50%'}
                   </span>
-                  <span class="text-[9px] text-neutral-400">Hak 60%: ${formatRupiah(r.hakInvestor60)}</span>
+                  <span class="text-[9px] text-neutral-400">Inv 60%: ${formatRupiah(r.hakInvestor60)} • Peng 40%: ${formatRupiah(r.hakPengelola40)}</span>
                 </div>
               </div>
             `).join('')}

@@ -1620,15 +1620,25 @@ class Store {
 
     const amount = Number(payoutData.amount) || 0;
     const type = payoutData.type || 'bagi_hasil'; // 'bagi_hasil' atau 'pokok'
+    const recipient = payoutData.recipient || 'investor'; // 'investor' atau 'pengelola'
     const date = payoutData.date || new Date().toISOString().split('T')[0];
     const paymentMethod = payoutData.paymentMethod || 'Transfer Bank';
     const notes = (payoutData.notes || '').trim();
 
     // Catat ke Buku Kas Toko sebagai Kas Keluar
-    const category = type === 'pokok' ? 'Pengembalian Modal Investor' : 'Bagi Hasil Investor';
-    const title = type === 'pokok'
-      ? `Pengembalian Modal: ${inv.investorName}`
-      : `Bagi Hasil (60%): ${inv.investorName}`;
+    let category = 'Bagi Hasil Investor';
+    let title = `Bagi Hasil (60%): ${inv.investorName}`;
+    let sourceType = 'investor_payout';
+
+    if (recipient === 'pengelola') {
+      category = 'Bagi Hasil Pengelola';
+      title = `Bagi Hasil (40%) Pengelola: ${inv.investorName}`;
+      sourceType = 'manager_payout';
+    } else if (type === 'pokok') {
+      category = 'Pengembalian Modal Investor';
+      title = `Pengembalian Modal: ${inv.investorName}`;
+      sourceType = 'investor_payout';
+    }
 
     const trx = this.addTransaction({
       type: 'keluar',
@@ -1639,7 +1649,7 @@ class Store {
       date,
       nota: `#PAY-INV-${Math.floor(1000 + Math.random() * 9000)}`,
       investorId,
-      sourceType: 'investor_payout',
+      sourceType,
       notes
     });
 
@@ -1647,6 +1657,7 @@ class Store {
       id: `PAY-${Date.now()}`,
       amount,
       type,
+      recipient,
       date,
       paymentMethod,
       notes,
@@ -1701,7 +1712,7 @@ class Store {
           } else if (inv.trxId && t.id === inv.trxId) {
             linkedTrxIds.add(t.id);
           } else if (
-            (t.category === 'Dana Investor' || t.category === 'Bagi Hasil Investor' || t.category === 'Pengembalian Modal Investor') &&
+            (t.category === 'Dana Investor' || t.category === 'Bagi Hasil Investor' || t.category === 'Bagi Hasil Pengelola' || t.category === 'Pengembalian Modal Investor') &&
             invName &&
             t.title &&
             t.title.toLowerCase().includes(invName)
@@ -1830,7 +1841,7 @@ class Store {
       transactions.forEach((t) => {
         if (t.type === 'keluar') {
           const cat = (t.category || '').toLowerCase();
-          if (!cat.includes('belanja') && !cat.includes('investor') && !cat.includes('pasok')) {
+          if (!cat.includes('belanja') && !cat.includes('investor') && !cat.includes('pengelola') && !cat.includes('pasok')) {
             totalBiayaOperasionalToko += Number(t.amount) || 0;
           }
         }
@@ -1853,10 +1864,22 @@ class Store {
 
       // 7. Riwayat Payouts
       const payouts = Array.isArray(inv.payouts) ? inv.payouts : [];
-      const bagiHasilDibayar = payouts.filter((p) => p.type === 'bagi_hasil').reduce((s, p) => s + (Number(p.amount) || 0), 0);
-      const pokokDikembalikan = payouts.filter((p) => p.type === 'pokok').reduce((s, p) => s + (Number(p.amount) || 0), 0);
-
+      // Bagi Hasil Investor (60%)
+      const bagiHasilDibayar = payouts
+        .filter((p) => (p.recipient === 'investor' || !p.recipient) && p.type === 'bagi_hasil')
+        .reduce((s, p) => s + (Number(p.amount) || 0), 0);
       const sisaBagiHasil = Math.max(0, hakInvestor60 - bagiHasilDibayar);
+
+      // Bagi Hasil Pengelola (40%)
+      const pengelolaDibayar = payouts
+        .filter((p) => p.recipient === 'pengelola' && p.type === 'bagi_hasil')
+        .reduce((s, p) => s + (Number(p.amount) || 0), 0);
+      const sisaHakPengelola = Math.max(0, hakPengelola40 - pengelolaDibayar);
+
+      // Pengembalian Pokok Modal
+      const pokokDikembalikan = payouts
+        .filter((p) => (p.recipient === 'investor' || !p.recipient) && p.type === 'pokok')
+        .reduce((s, p) => s + (Number(p.amount) || 0), 0);
       const sisaPokok = Math.max(0, (Number(inv.totalAmount) || 0) - pokokDikembalikan);
 
       return {
@@ -1881,6 +1904,8 @@ class Store {
         hakPengelola40,
         bagiHasilDibayar,
         sisaBagiHasil,
+        pengelolaDibayar,
+        sisaHakPengelola,
         pokokDikembalikan,
         sisaPokok,
         payouts
@@ -1897,11 +1922,12 @@ class Store {
     const totalInvested = list.reduce((sum, i) => sum + (Number(i.totalAmount) || 0), 0);
     const aktifList = list.filter((i) => (i.status || 'aktif') === 'aktif');
     
-    let totalBagiHasilSiap = 0;
     let totalHakInvestor60 = 0;
     let totalHakPengelola40 = 0;
     let totalBagiHasilDibayar = 0;
     let totalSisaBagiHasil = 0;
+    let totalPengelolaDibayar = 0;
+    let totalSisaHakPengelola = 0;
     let totalPokokDikembalikan = 0;
     let countEligible50 = 0;
 
@@ -1911,6 +1937,8 @@ class Store {
       totalHakPengelola40 += r.hakPengelola40;
       totalBagiHasilDibayar += r.bagiHasilDibayar;
       totalSisaBagiHasil += r.sisaBagiHasil;
+      totalPengelolaDibayar += r.pengelolaDibayar;
+      totalSisaHakPengelola += r.sisaHakPengelola;
       totalPokokDikembalikan += r.pokokDikembalikan;
     });
 
@@ -1925,6 +1953,8 @@ class Store {
       totalHakPengelola40,
       totalBagiHasilDibayar,
       totalSisaBagiHasil,
+      totalPengelolaDibayar,
+      totalSisaHakPengelola,
       countEligible50,
       countAktif: aktifList.length,
       countTotal: list.length,

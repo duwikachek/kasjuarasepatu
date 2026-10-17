@@ -46,7 +46,7 @@ export function renderInvestorPage(store, isAdmin = true) {
         </div>
         ` : ''}
 
-        <!-- KPI 4 Cards: Ringkasan Investasi & Bagi Hasil -->
+        <!-- KPI 4 Cards: Ringkasan Investasi & Bagi Hasil (Investor 60% & Pengelola 40%) -->
         <div class="grid grid-cols-2 gap-2">
           <!-- Total Modal Diterima -->
           <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
@@ -60,7 +60,7 @@ export function renderInvestorPage(store, isAdmin = true) {
               <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate">
                 ${formatRupiah(summary.totalInvested || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">${summary.countTotal || 0} Pemodal Tercatat</span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">Sisa Pokok: ${formatRupiah(summary.totalPokokSisa || 0, '')}</span>
             </div>
           </div>
 
@@ -69,14 +69,14 @@ export function renderInvestorPage(store, isAdmin = true) {
             <div class="flex items-center justify-between text-neutral-400">
               <span class="font-bold text-[10px] uppercase tracking-wider text-blue-400 flex items-center gap-1">
                 <span class="material-symbols-outlined text-[15px]">savings</span>
-                Sisa Pokok
+                Pokok Dikembalikan
               </span>
             </div>
             <div class="mt-1.5">
               <span class="font-bold text-base sm:text-lg text-blue-300 font-tabular block truncate">
-                ${formatRupiah(summary.totalPokokSisa || 0)}
+                ${formatRupiah(summary.totalPokokDikembalikan || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">Dikembalikan: ${formatRupiah(summary.totalPokokDikembalikan || 0, '')}</span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">${summary.countTotal || 0} Pemodal Terdaftar</span>
             </div>
           </div>
 
@@ -92,26 +92,26 @@ export function renderInvestorPage(store, isAdmin = true) {
               <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate">
                 ${formatRupiah(summary.totalHakInvestor60 || 0)}
               </span>
-              <span class="text-[10px] text-amber-400/90 block mt-0.5">
-                Pengelola 40%: ${formatRupiah(summary.totalHakPengelola40 || 0, '')}
+              <span class="text-[10px] text-rose-400 block mt-0.5">
+                Sisa Bayar: ${formatRupiah(summary.totalSisaBagiHasil || 0, '')}
               </span>
             </div>
           </div>
 
-          <!-- Sisa Bagi Hasil Belum Terbayar -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-rose-500">
+          <!-- Hak Pengelola 40% -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-cyan-500">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-rose-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">payments</span>
-                Sisa Bagi Hasil
+              <span class="font-bold text-[10px] uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">store</span>
+                Hak Pengelola (40%)
               </span>
             </div>
             <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-rose-300 font-tabular block truncate">
-                ${formatRupiah(summary.totalSisaBagiHasil || 0)}
+              <span class="font-bold text-base sm:text-lg text-cyan-300 font-tabular block truncate">
+                ${formatRupiah(summary.totalHakPengelola40 || 0)}
               </span>
-              <span class="text-[10px] text-emerald-400 block mt-0.5">
-                Terbayar: ${formatRupiah(summary.totalBagiHasilDibayar || 0, '')}
+              <span class="text-[10px] text-cyan-400/90 block mt-0.5">
+                Sisa Belum Ditarik: ${formatRupiah(summary.totalSisaHakPengelola || 0, '')}
               </span>
             </div>
           </div>
@@ -129,7 +129,7 @@ export function renderInvestorPage(store, isAdmin = true) {
           <button type="button" id="btn-bayar-payout"
             class="glass-emerald glass-btn glass-sheen h-11 py-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
             <span class="material-symbols-outlined text-[18px]">payments</span>
-            <span>Bayar Bagi Hasil / Pokok</span>
+            <span>Bayar / Cairkan Bagi Hasil</span>
           </button>
         </div>
         ` : ''}
@@ -141,7 +141,7 @@ export function renderInvestorPage(store, isAdmin = true) {
             <span>Ketentuan Skema Kerjasama Sesi:</span>
           </div>
           <p class="text-[11px] text-neutral-300 leading-relaxed">
-            Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah <strong>laku terjual ≥ 50%</strong>, maka <strong>keuntungan bersih</strong> (setelah dipotong modal HPP & biaya operasional) dibagi: <strong>60% untuk Investor</strong> dan <strong>40% untuk Pengelola</strong>.
+            Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah <strong>laku terjual ≥ 50%</strong>, maka <strong>keuntungan bersih</strong> (setelah dipotong modal HPP & biaya operasional) dibagi: <strong>60% untuk Investor</strong> dan <strong>40% untuk Pengelola</strong>. Hak keduanya langsung dapat dicairkan dan memotong kas toko.
           </p>
         </div>
 
@@ -265,88 +265,123 @@ export function renderInvestorPage(store, isAdmin = true) {
                 </div>
 
                 <!-- Skema Pembagian Laba 60% : 40% -->
-                <div class="glass-sheet rounded-xl p-2.5 flex flex-col gap-2 border border-white/10">
+                <div class="glass-sheet rounded-xl p-2.5 flex flex-col gap-2.5 border border-white/10">
                   <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Pembagian Hasil (60 : 40)</span>
                   
                   <div class="grid grid-cols-2 gap-2">
-                    <div class="bg-amber-950/30 border border-amber-500/30 p-2 rounded-lg flex flex-col">
-                      <span class="text-[10px] text-amber-300 font-bold flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[13px]">person</span> Hak Investor (60%)
-                      </span>
-                      <span class="text-sm font-extrabold text-amber-300 font-tabular mt-0.5">
-                        ${isEligible ? formatRupiah(r.hakInvestor60) : 'Rp 0'}
-                      </span>
-                      ${!isEligible ? '<span class="text-[9px] text-amber-400/80 mt-0.5">Menunggu terjual 50%</span>' : ''}
+                    <!-- Kolom Hak Investor 60% -->
+                    <div class="bg-amber-950/30 border border-amber-500/30 p-2 rounded-lg flex flex-col justify-between">
+                      <div>
+                        <span class="text-[10px] text-amber-300 font-bold flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[13px]">person</span> Hak Investor (60%)
+                        </span>
+                        <span class="text-sm font-extrabold text-amber-300 font-tabular mt-0.5 block">
+                          ${isEligible ? formatRupiah(r.hakInvestor60) : 'Rp 0'}
+                        </span>
+                        ${!isEligible ? '<span class="text-[9px] text-amber-400/80 mt-0.5 block">Menunggu 50%</span>' : ''}
+                      </div>
+                      
+                      <div class="pt-1.5 mt-1 border-t border-amber-500/20 text-[10px] flex flex-col gap-0.5">
+                        <span class="text-neutral-400">Dibayar: <strong class="text-emerald-400 font-tabular">${formatRupiah(r.bagiHasilDibayar)}</strong></span>
+                        <span class="text-neutral-400">Sisa Hak: <strong class="${r.sisaBagiHasil > 0 ? 'text-rose-400' : 'text-neutral-300'} font-tabular">${formatRupiah(r.sisaBagiHasil)}</strong></span>
+                      </div>
                     </div>
 
-                    <div class="bg-blue-950/30 border border-blue-500/30 p-2 rounded-lg flex flex-col">
-                      <span class="text-[10px] text-blue-300 font-bold flex items-center gap-1">
-                        <span class="material-symbols-outlined text-[13px]">store</span> Hak Pengelola (40%)
-                      </span>
-                      <span class="text-sm font-extrabold text-blue-300 font-tabular mt-0.5">
-                        ${isEligible ? formatRupiah(r.hakPengelola40) : 'Rp 0'}
-                      </span>
-                      ${!isEligible ? '<span class="text-[9px] text-blue-400/80 mt-0.5">Menunggu terjual 50%</span>' : ''}
-                    </div>
-                  </div>
+                    <!-- Kolom Hak Pengelola 40% -->
+                    <div class="bg-blue-950/30 border border-blue-500/30 p-2 rounded-lg flex flex-col justify-between">
+                      <div>
+                        <span class="text-[10px] text-blue-300 font-bold flex items-center gap-1">
+                          <span class="material-symbols-outlined text-[13px]">store</span> Hak Pengelola (40%)
+                        </span>
+                        <span class="text-sm font-extrabold text-blue-300 font-tabular mt-0.5 block">
+                          ${isEligible ? formatRupiah(r.hakPengelola40) : 'Rp 0'}
+                        </span>
+                        ${!isEligible ? '<span class="text-[9px] text-blue-400/80 mt-0.5 block">Menunggu 50%</span>' : ''}
+                      </div>
 
-                  <!-- Status Pembayaran Hak Investor -->
-                  <div class="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-800">
-                    <span class="text-neutral-400">Bagi Hasil Dibayar: <strong class="text-emerald-400">${formatRupiah(r.bagiHasilDibayar)}</strong></span>
-                    <span class="text-neutral-400">Sisa Hak: <strong class="${r.sisaBagiHasil > 0 ? 'text-rose-400' : 'text-neutral-300'}">${formatRupiah(r.sisaBagiHasil)}</strong></span>
+                      <div class="pt-1.5 mt-1 border-t border-blue-500/20 text-[10px] flex flex-col gap-0.5">
+                        <span class="text-neutral-400">Ditarik: <strong class="text-cyan-300 font-tabular">${formatRupiah(r.pengelolaDibayar)}</strong></span>
+                        <span class="text-neutral-400">Sisa: <strong class="${r.sisaHakPengelola > 0 ? 'text-amber-400' : 'text-neutral-300'} font-tabular">${formatRupiah(r.sisaHakPengelola)}</strong></span>
+                      </div>
+                    </div>
                   </div>
                 </div>
 
                 <!-- Tombol Aksi & Salin Laporan -->
-                <div class="flex items-center gap-2 pt-1">
+                <div class="flex items-center gap-1.5 pt-1">
                   <button type="button" data-copy-wa="${r.investorId}"
-                    class="glass-chip-btn flex-1 h-9 rounded-xl text-emerald-400 font-bold text-xs flex items-center justify-center gap-1.5 active:scale-95">
+                    class="glass-chip-btn flex-1 h-9 rounded-xl text-emerald-400 font-bold text-xs flex items-center justify-center gap-1 active:scale-95" title="Salin laporan format WhatsApp">
                     <span class="material-symbols-outlined text-[16px]">share</span>
-                    <span>Salin Format WA</span>
+                    <span class="truncate">Salin WA</span>
                   </button>
 
                   ${isAdmin && isEligible && r.sisaBagiHasil > 0 ? `
-                  <button type="button" data-quick-pay="${r.investorId}" data-suggest-amount="${r.sisaBagiHasil}"
-                    class="glass-emerald glass-btn flex-1 h-9 rounded-xl text-emerald-950 font-bold text-xs flex items-center justify-center gap-1 active:scale-95">
-                    <span class="material-symbols-outlined text-[16px]">payments</span>
-                    <span>Bayar Bagi Hasil</span>
+                  <button type="button" data-quick-pay-investor="${r.investorId}" data-suggest-amount="${r.sisaBagiHasil}"
+                    class="glass-amber glass-btn flex-1 h-9 rounded-xl text-amber-950 font-bold text-xs flex items-center justify-center gap-1 active:scale-95" title="Bayar bagi hasil ke investor">
+                    <span class="material-symbols-outlined text-[15px]">person</span>
+                    <span class="truncate">Bayar 60%</span>
+                  </button>
+                  ` : ''}
+
+                  ${isAdmin && isEligible && r.sisaHakPengelola > 0 ? `
+                  <button type="button" data-quick-pay-pengelola="${r.investorId}" data-suggest-amount="${r.sisaHakPengelola}"
+                    class="glass-blue glass-btn flex-1 h-9 rounded-xl text-blue-950 font-bold text-xs flex items-center justify-center gap-1 active:scale-95" title="Cairkan hak bagi hasil pengelola">
+                    <span class="material-symbols-outlined text-[15px]">store</span>
+                    <span class="truncate">Cairkan 40%</span>
                   </button>
                   ` : ''}
 
                   <button type="button" data-toggle-payouts="${r.investorId}"
-                    class="p-2 rounded-xl glass-chip-btn text-neutral-400 hover:text-white" title="Riwayat Pembayaran">
+                    class="p-2 rounded-xl glass-chip-btn text-neutral-400 hover:text-white shrink-0" title="Riwayat Pembayaran">
                     <span class="material-symbols-outlined text-[18px]">history</span>
                   </button>
                 </div>
 
                 <!-- Riwayat Pembayaran Collapsible -->
                 <div id="payouts-container-${r.investorId}" class="hidden flex flex-col gap-2 pt-2 border-t border-neutral-800">
-                  <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Riwayat Pembayaran ke Investor</span>
+                  <span class="text-[10px] font-bold uppercase tracking-wider text-neutral-400">Riwayat Pembayaran Kas Keluar (Investor & Pengelola)</span>
                   ${r.payouts.length === 0 ? `
                     <span class="text-xs text-neutral-500 italic py-1">Belum ada pembayaran dicatat.</span>
                   ` : `
                     <div class="flex flex-col gap-1.5">
-                      ${r.payouts.map((p) => `
-                        <div class="glass-sheet rounded-lg p-2 flex items-center justify-between text-xs">
-                          <div class="flex flex-col">
-                            <span class="font-bold text-white flex items-center gap-1">
-                              <span class="w-1.5 h-1.5 rounded-full ${p.type === 'pokok' ? 'bg-blue-400' : 'bg-emerald-400'}"></span>
-                              ${p.type === 'pokok' ? 'Kembali Modal Pokok' : 'Bagi Hasil (60%)'}
-                            </span>
-                            <span class="text-[10px] text-neutral-400">${formatDate(p.date)} • ${p.paymentMethod}</span>
-                            ${p.notes ? `<span class="text-[10px] text-neutral-500 italic">"${p.notes}"</span>` : ''}
+                      ${r.payouts.map((p) => {
+                        const isPengelola = p.recipient === 'pengelola';
+                        const isPokok = p.type === 'pokok';
+                        let badgeColor = 'bg-emerald-500/20 text-emerald-300 border-emerald-500/30';
+                        let label = 'BAGI HASIL INVESTOR (60%)';
+                        if (isPengelola) {
+                          badgeColor = 'bg-blue-500/20 text-blue-300 border-blue-500/30';
+                          label = 'BAGI HASIL PENGELOLA (40%)';
+                        } else if (isPokok) {
+                          badgeColor = 'bg-purple-500/20 text-purple-300 border-purple-500/30';
+                          label = 'PENGEMBALIAN POKOK MODAL';
+                        }
+
+                        return `
+                          <div class="glass-sheet rounded-lg p-2.5 flex items-center justify-between text-xs border border-white/5">
+                            <div class="flex flex-col min-w-0 pr-2">
+                              <div class="flex items-center gap-1.5">
+                                <span class="px-1.5 py-0.2 rounded text-[9px] font-bold border ${badgeColor}">
+                                  ${label}
+                                </span>
+                              </div>
+                              <span class="text-[10px] text-neutral-400 mt-1">${formatDate(p.date)} • ${p.paymentMethod}</span>
+                              ${p.notes ? `<span class="text-[10px] text-neutral-400 italic mt-0.5 truncate">"${p.notes}"</span>` : ''}
+                            </div>
+                            <div class="flex items-center gap-2 shrink-0">
+                              <span class="font-bold text-sm ${isPengelola ? 'text-blue-300' : 'text-emerald-400'} font-tabular">
+                                -${formatRupiah(p.amount)}
+                              </span>
+                              ${isAdmin ? `
+                              <button type="button" data-delete-payout="${p.id}" data-investor-id="${r.investorId}"
+                                class="text-neutral-500 hover:text-rose-400 p-1 rounded" title="Hapus Pembayaran">
+                                <span class="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                              ` : ''}
+                            </div>
                           </div>
-                          <div class="flex items-center gap-2">
-                            <span class="font-bold text-emerald-400 font-tabular">${formatRupiah(p.amount)}</span>
-                            ${isAdmin ? `
-                            <button type="button" data-delete-payout="${p.id}" data-investor-id="${r.investorId}"
-                              class="text-neutral-500 hover:text-rose-400 p-1 rounded" title="Hapus Pembayaran">
-                              <span class="material-symbols-outlined text-[16px]">delete</span>
-                            </button>
-                            ` : ''}
-                          </div>
-                        </div>
-                      `).join('')}
+                        `;
+                      }).join('')}
                     </div>
                   `}
                 </div>
@@ -529,7 +564,7 @@ export function renderInvestorPage(store, isAdmin = true) {
                 <span class="material-symbols-outlined text-[18px]">payments</span>
               </div>
               <div>
-                <h3 class="font-bold text-sm text-white">Bayar Bagi Hasil / Pokok</h3>
+                <h3 class="font-bold text-sm text-white" id="payout-modal-title">Bayar / Cairkan Bagi Hasil</h3>
                 <p class="text-[11px] text-rose-300">Otomatis memotong Saldo Kas Keluar toko</p>
               </div>
             </div>
@@ -539,57 +574,103 @@ export function renderInvestorPage(store, isAdmin = true) {
           </div>
 
           <div class="flex flex-col gap-3 text-xs">
-            <!-- Pilih Investor -->
+            <!-- Pilih Sesi / Investor -->
             <div class="flex flex-col gap-1">
               <label class="font-bold text-white flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">person</span> Pilih Pemodal / Investor
+                <span class="material-symbols-outlined text-primary text-[14px]">person</span> Pilih Sesi / Pemodal
               </label>
               <select id="payout-investor-id"
                 class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
                 ${reports.map((r) => `
                   <option value="${r.investorId}">
-                    ${r.investorName} (Hak Sisa: ${formatRupiah(r.sisaBagiHasil)})
+                    ${r.investorName} (Sisa Investor: ${formatRupiah(r.sisaBagiHasil)} • Sisa Pengelola: ${formatRupiah(r.sisaHakPengelola)})
                   </option>
                 `).join('')}
               </select>
             </div>
 
-            <!-- Jenis Pembayaran -->
+            <!-- Pilih Penerima Bagi Hasil -->
             <div class="flex flex-col gap-1">
               <label class="font-bold text-white flex items-center gap-1">
-                <span class="material-symbols-outlined text-primary text-[14px]">category</span> Jenis Pembayaran
+                <span class="material-symbols-outlined text-amber-400 text-[14px]">group</span> Penerima Pembayaran
+              </label>
+              <div class="grid grid-cols-3 gap-1.5" id="payout-recipient-group">
+                <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-panel border border-neutral-700 cursor-pointer text-center recipient-opt">
+                  <input type="radio" name="payout-recipient" value="investor" checked class="text-amber-500 focus:ring-0 mb-1" />
+                  <span class="font-bold text-amber-300 text-[11px] leading-tight">Investor (60%)</span>
+                </label>
+                <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-panel border border-neutral-700 cursor-pointer text-center recipient-opt">
+                  <input type="radio" name="payout-recipient" value="pengelola" class="text-blue-500 focus:ring-0 mb-1" />
+                  <span class="font-bold text-blue-300 text-[11px] leading-tight">Pengelola (40%)</span>
+                </label>
+                <label class="flex flex-col items-center justify-center p-2 rounded-xl glass-panel border border-neutral-700 cursor-pointer text-center recipient-opt">
+                  <input type="radio" name="payout-recipient" value="serentak" class="text-emerald-500 focus:ring-0 mb-1" />
+                  <span class="font-bold text-emerald-300 text-[11px] leading-tight">Serentak (Keduanya)</span>
+                </label>
+              </div>
+            </div>
+
+            <!-- Jenis Pembayaran (Khusus jika pilih Investor) -->
+            <div class="flex flex-col gap-1" id="payout-type-container">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">category</span> Jenis Dana
               </label>
               <div class="grid grid-cols-2 gap-2">
-                <label class="flex items-center gap-2 p-2.5 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
+                <label class="flex items-center gap-2 p-2 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
                   <input type="radio" name="payout-type" value="bagi_hasil" checked class="text-emerald-500 focus:ring-0" />
-                  <span class="font-bold text-emerald-300 text-xs">Bagi Hasil (60%)</span>
+                  <span class="font-bold text-emerald-300 text-xs">Bagi Hasil Keuntungan</span>
                 </label>
-                <label class="flex items-center gap-2 p-2.5 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
-                  <input type="radio" name="payout-type" value="pokok" class="text-blue-500 focus:ring-0" />
-                  <span class="font-bold text-blue-300 text-xs">Kembali Modal Pokok</span>
+                <label class="flex items-center gap-2 p-2 rounded-xl glass-panel border border-neutral-700 cursor-pointer">
+                  <input type="radio" name="payout-type" value="pokok" class="text-purple-400 focus:ring-0" />
+                  <span class="font-bold text-purple-300 text-xs">Kembali Pokok Modal</span>
                 </label>
               </div>
             </div>
 
-            <!-- Tanggal & Nominal -->
-            <div class="grid grid-cols-2 gap-2">
-              <div class="flex flex-col gap-1">
+            <!-- Tanggal Bayar -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Pembayaran
+              </label>
+              <input type="date" id="payout-date"
+                class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+
+            <!-- Input Nominal Biasa (Single Recipient) -->
+            <div class="flex flex-col gap-1" id="single-amount-container">
+              <div class="flex items-center justify-between">
                 <label class="font-bold text-white flex items-center gap-1">
-                  <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Bayar
+                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Nominal Pembayaran (Rp)
                 </label>
-                <input type="date" id="payout-date"
-                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+                <button type="button" id="btn-fill-suggest-amount" class="text-[10px] text-primary hover:underline font-bold">
+                  Isi Sisa Hak
+                </button>
               </div>
-              <div class="flex flex-col gap-1">
-                <label class="font-bold text-white flex items-center gap-1">
-                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Nominal (Rp)
-                </label>
-                <input type="number" id="payout-amount" placeholder="0" min="0"
-                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+              <input type="number" id="payout-amount" placeholder="0" min="0"
+                class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+            </div>
+
+            <!-- Input Nominal Serentak (Dual Recipient) -->
+            <div class="hidden flex flex-col gap-2 p-2.5 rounded-xl bg-neutral-900/60 border border-neutral-800" id="dual-amount-container">
+              <div class="grid grid-cols-2 gap-2">
+                <div class="flex flex-col gap-1">
+                  <label class="font-bold text-amber-300 text-[11px]">Bagi Hasil Investor (60%)</label>
+                  <input type="number" id="payout-amount-investor" placeholder="0" min="0"
+                    class="w-full px-2.5 py-2 rounded-lg glass-input text-xs text-white font-mono font-bold" />
+                </div>
+                <div class="flex flex-col gap-1">
+                  <label class="font-bold text-blue-300 text-[11px]">Bagi Hasil Pengelola (40%)</label>
+                  <input type="number" id="payout-amount-pengelola" placeholder="0" min="0"
+                    class="w-full px-2.5 py-2 rounded-lg glass-input text-xs text-white font-mono font-bold" />
+                </div>
+              </div>
+              <div class="flex items-center justify-between text-[11px] pt-1 border-t border-neutral-800 text-neutral-300 font-bold">
+                <span>Total Kas Keluar:</span>
+                <span id="payout-total-dual-label" class="text-rose-400 font-mono">Rp 0</span>
               </div>
             </div>
 
-            <!-- Metode Pembayaran Keluar -->
+            <!-- Sumber Pembayaran Kas Toko -->
             <div class="flex flex-col gap-1">
               <label class="font-bold text-white flex items-center gap-1">
                 <span class="material-symbols-outlined text-primary text-[14px]">account_balance</span> Sumber Pembayaran Kas Toko
@@ -730,15 +811,85 @@ export function initInvestorPage(router, store, isAdmin = true) {
     g('investor-modal').classList.remove('hidden');
   }
 
+  // Payout Modal Dynamic Mode (Investor / Pengelola / Serentak)
+  function updatePayoutFormUI() {
+    const rec = document.querySelector('input[name="payout-recipient"]:checked')?.value || 'investor';
+    const singleContainer = g('single-amount-container');
+    const dualContainer = g('dual-amount-container');
+    const typeContainer = g('payout-type-container');
+
+    if (rec === 'serentak') {
+      if (singleContainer) singleContainer.classList.add('hidden');
+      if (dualContainer) dualContainer.classList.remove('hidden');
+      if (typeContainer) typeContainer.classList.add('hidden');
+    } else {
+      if (singleContainer) singleContainer.classList.remove('hidden');
+      if (dualContainer) dualContainer.classList.add('hidden');
+      if (typeContainer) {
+        if (rec === 'investor') typeContainer.classList.remove('hidden');
+        else typeContainer.classList.add('hidden');
+      }
+    }
+  }
+
+  document.querySelectorAll('input[name="payout-recipient"]').forEach((r) => {
+    r.addEventListener('change', updatePayoutFormUI);
+  });
+
+  // Calculate Dual Payout Total
+  function updateDualTotal() {
+    const invAmt = Number(g('payout-amount-investor')?.value) || 0;
+    const mgrAmt = Number(g('payout-amount-pengelola')?.value) || 0;
+    const totalEl = g('payout-total-dual-label');
+    if (totalEl) totalEl.textContent = formatRupiah(invAmt + mgrAmt);
+  }
+  g('payout-amount-investor')?.addEventListener('input', updateDualTotal);
+  g('payout-amount-pengelola')?.addEventListener('input', updateDualTotal);
+
+  // Fill Suggest Amount Button
+  g('btn-fill-suggest-amount')?.addEventListener('click', () => {
+    const invId = g('payout-investor-id')?.value;
+    const rec = document.querySelector('input[name="payout-recipient"]:checked')?.value || 'investor';
+    if (!invId) return;
+
+    const reports = store.getInvestmentSessionReport(invId);
+    if (reports && reports.length > 0) {
+      const r = reports[0];
+      if (rec === 'investor') {
+        const type = document.querySelector('input[name="payout-type"]:checked')?.value || 'bagi_hasil';
+        g('payout-amount').value = type === 'pokok' ? r.sisaPokok : r.sisaBagiHasil;
+      } else if (rec === 'pengelola') {
+        g('payout-amount').value = r.sisaHakPengelola;
+      }
+    }
+  });
+
   // Open Modal Payout
-  function openPayoutModal(targetInvestorId = null, suggestAmount = null) {
+  function openPayoutModal(targetInvestorId = null, targetRecipient = 'investor', suggestAmount = null) {
     const select = g('payout-investor-id');
     if (targetInvestorId && select) {
       select.value = targetInvestorId;
     }
+
+    const recRadio = document.querySelector(`input[name="payout-recipient"][value="${targetRecipient}"]`);
+    if (recRadio) recRadio.checked = true;
+
     if (suggestAmount && g('payout-amount')) {
       g('payout-amount').value = suggestAmount;
     }
+
+    // Auto-fill dual if serentak
+    if (targetInvestorId) {
+      const reports = store.getInvestmentSessionReport(targetInvestorId);
+      if (reports && reports.length > 0) {
+        const r = reports[0];
+        if (g('payout-amount-investor')) g('payout-amount-investor').value = r.sisaBagiHasil;
+        if (g('payout-amount-pengelola')) g('payout-amount-pengelola').value = r.sisaHakPengelola;
+        updateDualTotal();
+      }
+    }
+
+    updatePayoutFormUI();
     g('payout-date').value = todayStr;
     g('payout-notes').value = '';
     g('payout-modal').classList.remove('hidden');
@@ -829,37 +980,76 @@ export function initInvestorPage(router, store, isAdmin = true) {
     });
   }
 
-  // Submit Payout (Bagi Hasil / Pokok)
+  // Submit Payout (Bagi Hasil Investor / Pengelola / Serentak)
   if (g('btn-submit-payout')) {
     g('btn-submit-payout').addEventListener('click', () => {
       const investorId = g('payout-investor-id').value;
-      const amount = Number(g('payout-amount').value) || 0;
       const date = g('payout-date').value || todayStr;
       const paymentMethod = g('payout-payment-method').value || 'Transfer Bank BCA';
       const notes = (g('payout-notes').value || '').trim();
 
-      const typeRadio = document.querySelector('input[name="payout-type"]:checked');
-      const type = typeRadio ? typeRadio.value : 'bagi_hasil';
+      const rec = document.querySelector('input[name="payout-recipient"]:checked')?.value || 'investor';
 
       if (!investorId) {
         showToast('Pilih investor terlebih dahulu!', 'error');
         return;
       }
-      if (amount <= 0) {
-        showToast('Nominal pembayaran harus lebih dari Rp 0!', 'error');
-        g('payout-amount').focus();
-        return;
+
+      if (rec === 'serentak') {
+        const invAmt = Number(g('payout-amount-investor')?.value) || 0;
+        const mgrAmt = Number(g('payout-amount-pengelola')?.value) || 0;
+
+        if (invAmt <= 0 && mgrAmt <= 0) {
+          showToast('Isi minimal salah satu nominal bagi hasil!', 'error');
+          return;
+        }
+
+        if (invAmt > 0) {
+          store.addInvestorPayout(investorId, {
+            amount: invAmt,
+            type: 'bagi_hasil',
+            recipient: 'investor',
+            date,
+            paymentMethod,
+            notes: notes ? `${notes} (Bagian Investor)` : 'Bagi Hasil 60%'
+          });
+        }
+        if (mgrAmt > 0) {
+          store.addInvestorPayout(investorId, {
+            amount: mgrAmt,
+            type: 'bagi_hasil',
+            recipient: 'pengelola',
+            date,
+            paymentMethod,
+            notes: notes ? `${notes} (Bagian Pengelola)` : 'Bagi Hasil 40%'
+          });
+        }
+
+        showToast(`Bagi hasil serentak berhasil dicatat! Saldo kas toko telah dipotong.`, 'success', 3500);
+      } else {
+        const amount = Number(g('payout-amount').value) || 0;
+        const typeRadio = document.querySelector('input[name="payout-type"]:checked');
+        const type = rec === 'pengelola' ? 'bagi_hasil' : (typeRadio ? typeRadio.value : 'bagi_hasil');
+
+        if (amount <= 0) {
+          showToast('Nominal pembayaran harus lebih dari Rp 0!', 'error');
+          g('payout-amount').focus();
+          return;
+        }
+
+        store.addInvestorPayout(investorId, {
+          amount,
+          type,
+          recipient: rec,
+          date,
+          paymentMethod,
+          notes
+        });
+
+        const labelRecipient = rec === 'pengelola' ? 'Hak Pengelola' : (type === 'pokok' ? 'Pokok Investor' : 'Bagi Hasil Investor');
+        showToast(`Pembayaran ${labelRecipient} berhasil! Saldo kas toko telah dipotong.`, 'success', 3500);
       }
 
-      store.addInvestorPayout(investorId, {
-        amount,
-        type,
-        date,
-        paymentMethod,
-        notes
-      });
-
-      showToast(`Pembayaran ${type === 'pokok' ? 'Pokok' : 'Bagi Hasil'} berhasil! Saldo kas toko telah dipotong.`, 'success', 3500);
       g('payout-modal').classList.add('hidden');
       router.render();
     });
@@ -867,12 +1057,21 @@ export function initInvestorPage(router, store, isAdmin = true) {
 
   // Delegasi Event untuk Tombol di List: Edit, Delete, Toggle Payouts, Salin WA
   document.addEventListener('click', (e) => {
-    // Quick Pay
-    const quickPayBtn = e.target.closest('[data-quick-pay]');
-    if (quickPayBtn) {
-      const invId = quickPayBtn.getAttribute('data-quick-pay');
-      const suggest = quickPayBtn.getAttribute('data-suggest-amount');
-      openPayoutModal(invId, suggest);
+    // Quick Pay Investor
+    const quickPayInvBtn = e.target.closest('[data-quick-pay-investor]');
+    if (quickPayInvBtn) {
+      const invId = quickPayInvBtn.getAttribute('data-quick-pay-investor');
+      const suggest = quickPayInvBtn.getAttribute('data-suggest-amount');
+      openPayoutModal(invId, 'investor', suggest);
+      return;
+    }
+
+    // Quick Pay Pengelola
+    const quickPayMgrBtn = e.target.closest('[data-quick-pay-pengelola]');
+    if (quickPayMgrBtn) {
+      const invId = quickPayMgrBtn.getAttribute('data-quick-pay-pengelola');
+      const suggest = quickPayMgrBtn.getAttribute('data-suggest-amount');
+      openPayoutModal(invId, 'pengelola', suggest);
       return;
     }
 
@@ -892,7 +1091,7 @@ export function initInvestorPage(router, store, isAdmin = true) {
       const reports = store.getInvestmentSessionReport(invId);
       if (reports && reports.length > 0) {
         const r = reports[0];
-        const text = `*LAPORAN INVESTASI & BAGI HASIL*\n*Kas Juara Sepatu*\n-----------------------------------\n👤 *Pemodal:* ${r.investorName}\n📅 *Tanggal Modal:* ${formatDate(r.date)}\n💰 *Modal Disetor:* ${formatRupiah(r.totalModal)}\n\n📦 *PROGRES SESI PEMBELANJAAN:*\n• Faktur Sesi: ${r.sessionInvoices.length > 0 ? r.sessionInvoices.join(', ') : 'Semua Belanja'}\n• Total Pasang Beli: ${r.totalBeliPasang} psg\n• Sepatu Laku: ${r.totalTerjualPasang} psg (${r.persentaseTerjual}%)\n• Status Syarat: ${r.isEligible50 ? '✅ SUDAH TERJUAL ≥ 50% (SIAP BAGI HASIL)' : '⏳ Belum 50% (Masih Berjalan)'}\n\n📊 *PERHITUNGAN KEUNTUNGAN BERSIH:*\n• Omzet Penjualan Sesi: ${formatRupiah(r.omzetPenjualan)}\n• HPP Barang Terjual: -${formatRupiah(r.hppTerjual)}\n• Biaya Operasional Sesi: -${formatRupiah(r.biayaOpsSesi)}\n• *Laba Bersih Sesi:* *${formatRupiah(r.labaBersih)}*\n\n🤝 *BAGI HASIL (60% Investor : 40% Pengelola):*\n• *Hak Investor (60%):* *${r.isEligible50 ? formatRupiah(r.hakInvestor60) : 'Rp 0'}*\n• Sudah Dibayarkan: ${formatRupiah(r.bagiHasilDibayar)}\n• *Sisa Hak Bagi Hasil:* *${formatRupiah(r.sisaBagiHasil)}*\n-----------------------------------\n_Terima kasih atas kepercayaan dan kerjasamanya._`;
+        const text = `*LAPORAN INVESTASI & BAGI HASIL*\n*Kas Juara Sepatu*\n-----------------------------------\n👤 *Pemodal:* ${r.investorName}\n📅 *Tanggal Modal:* ${formatDate(r.date)}\n💰 *Modal Disetor:* ${formatRupiah(r.totalModal)}\n\n📦 *PROGRES SESI PEMBELANJAAN:*\n• Faktur Sesi: ${r.sessionInvoices.length > 0 ? r.sessionInvoices.join(', ') : 'Semua Belanja'}\n• Total Pasang Beli: ${r.totalBeliPasang} psg\n• Sepatu Laku: ${r.totalTerjualPasang} psg (${r.persentaseTerjual}%)\n• Status Syarat: ${r.isEligible50 ? '✅ SUDAH TERJUAL ≥ 50% (SIAP BAGI HASIL)' : '⏳ Belum 50% (Masih Berjalan)'}\n\n📊 *PERHITUNGAN KEUNTUNGAN BERSIH:*\n• Omzet Penjualan Sesi: ${formatRupiah(r.omzetPenjualan)}\n• HPP Barang Terjual: -${formatRupiah(r.hppTerjual)}\n• Biaya Operasional Sesi: -${formatRupiah(r.biayaOpsSesi)}\n• *Laba Bersih Sesi:* *${formatRupiah(r.labaBersih)}*\n\n🤝 *PEMBAGIAN HASIL (60% Investor : 40% Pengelola):*\n• *Hak Investor (60%):* *${r.isEligible50 ? formatRupiah(r.hakInvestor60) : 'Rp 0'}*\n  - Dibayarkan: ${formatRupiah(r.bagiHasilDibayar)}\n  - Sisa Hak: ${formatRupiah(r.sisaBagiHasil)}\n• *Hak Pengelola (40%):* *${r.isEligible50 ? formatRupiah(r.hakPengelola40) : 'Rp 0'}*\n  - Sudah Ditarik: ${formatRupiah(r.pengelolaDibayar)}\n  - Sisa Hak: ${formatRupiah(r.sisaHakPengelola)}\n-----------------------------------\n_Terima kasih atas transparansi dan kerjasamanya._`;
         
         navigator.clipboard.writeText(text).then(() => {
           showToast('Laporan WA berhasil disalin ke clipboard ✓', 'success');

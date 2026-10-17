@@ -1804,9 +1804,11 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       ['Sisa Modal Pokok', invSummary.totalPokokSisa || 0, 'Sisa modal pokok yang belum dikembalikan'],
       ['Modal Pokok Sudah Dikembalikan', invSummary.totalPokokDikembalikan || 0, 'Realisasi pengembalian modal pokok'],
       ['Total Hak Bagi Hasil Investor (60%)', invSummary.totalHakInvestor60 || 0, 'Bagian keuntungan 60% pemodal (sesi >= 50%)'],
-      ['Total Hak Pengelola (40%)', invSummary.totalHakPengelola40 || 0, 'Bagian keuntungan 40% pengelola toko'],
-      ['Bagi Hasil Sudah Dibayarkan', invSummary.totalBagiHasilDibayar || 0, 'Total bagi hasil yang telah ditransfer ke pemodal'],
-      ['Sisa Hak Bagi Hasil Belum Dibayarkan', invSummary.totalSisaBagiHasil || 0, 'Kewajiban bagi hasil siap bayar'],
+      ['Bagi Hasil Investor Sudah Ditransfer', invSummary.totalBagiHasilDibayar || 0, 'Total bagi hasil yang telah ditransfer ke pemodal'],
+      ['Sisa Hak Bagi Hasil Investor', invSummary.totalSisaBagiHasil || 0, 'Kewajiban bagi hasil investor yang belum ditransfer'],
+      ['Total Hak Pengelola (40%)', invSummary.totalHakPengelola40 || 0, 'Bagian keuntungan 40% pengelola toko (sesi >= 50%)'],
+      ['Hak Pengelola Sudah Ditarik', invSummary.totalPengelolaDibayar || 0, 'Total bagi hasil pengelola yang sudah dicairkan'],
+      ['Sisa Hak Pengelola (Mengendap di Toko)', invSummary.totalSisaHakPengelola || 0, 'Hak pengelola yang belum ditarik / masih mengendap'],
       ['Jumlah Sesi Siap Bagi Hasil', `${invSummary.countEligible50 || 0} dari ${sessionReports.length} Sesi`, 'Sesi yang sudah mencapai penjualan >= 50%'],
       ['', '', ''],
 
@@ -1827,9 +1829,11 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         'Biaya Operasional (Rp)',
         'Laba Bersih Sesi (Rp)',
         'Hak Investor 60% (Rp)',
+        'Investor Dibayar (Rp)',
+        'Sisa Investor (Rp)',
         'Hak Pengelola 40% (Rp)',
-        'Bagi Hasil Dibayar (Rp)',
-        'Sisa Bagi Hasil (Rp)',
+        'Pengelola Ditarik (Rp)',
+        'Sisa Pengelola (Rp)',
         'Sisa Pokok (Rp)'
       ]
     ];
@@ -1852,26 +1856,29 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
         r.biayaOpsSesi,
         r.labaBersih,
         r.hakInvestor60,
-        r.hakPengelola40,
         r.bagiHasilDibayar,
         r.sisaBagiHasil,
+        r.hakPengelola40,
+        r.pengelolaDibayar,
+        r.sisaHakPengelola,
         r.sisaPokok
       ]);
     });
 
-    // Tabel 3: Riwayat Pembayaran Kas Keluar ke Investor
+    // Tabel 3: Riwayat Pembayaran Kas Keluar ke Investor & Pengelola
     investorSheetRows.push(['', '', '']);
-    investorSheetRows.push(['[3] RIWAYAT PEMBAYARAN KAS KELUAR KE INVESTOR', '', '']);
+    investorSheetRows.push(['[3] RIWAYAT PEMBAYARAN KAS KELUAR KE INVESTOR & PENGELOLA', '', '']);
     investorSheetRows.push([
       'No',
       'ID Pembayaran',
       'Tanggal',
-      'Nama Pemodal',
+      'Penerima Dana',
+      'Nama Pemodal / Sesi',
       'Jenis Pembayaran',
       'Nominal Dibayar (Rp)',
-      'Metode Pembayaran Kas',
+      'Sumber Kas Toko',
       'No. Kas Keluar',
-      'Keterangan / Rekening'
+      'Keterangan / Catatan'
     ]);
 
     let payoutRowIdx = 1;
@@ -1880,12 +1887,18 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
       if (Array.isArray(inv.payouts)) {
         inv.payouts.forEach((p) => {
           grandTotalPayout += Number(p.amount) || 0;
+          const isPengelola = p.recipient === 'pengelola';
+          const jenisLabel = isPengelola
+            ? 'Bagi Hasil Pengelola (40%)'
+            : (p.type === 'pokok' ? 'Pengembalian Modal Pokok' : 'Bagi Hasil Investor (60%)');
+
           investorSheetRows.push([
             payoutRowIdx++,
             p.id,
             cleanDateString(p.date) || p.date || '-',
+            isPengelola ? 'Pengelola Toko' : 'Pemodal / Investor',
             inv.investorName,
-            p.type === 'pokok' ? 'Pengembalian Modal Pokok' : 'Bagi Hasil (60%)',
+            jenisLabel,
             Number(p.amount) || 0,
             p.paymentMethod || 'Transfer Bank',
             p.trxId || '-',
@@ -1897,6 +1910,7 @@ export async function syncAllToGoogleSheets(store, explicitSpreadsheetId = null)
 
     investorSheetRows.push([
       'TOTAL PEMBAYARAN',
+      '',
       '',
       '',
       '',
