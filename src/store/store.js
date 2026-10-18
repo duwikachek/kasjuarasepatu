@@ -524,9 +524,15 @@ class Store {
 
     data.transactions.forEach((trx) => {
       // Hanya untuk transaksi masuk (penjualan) dengan metode transfer
-      const isTransfer = trx.type === 'masuk' && 
-                        trx.paymentMethod && 
-                        trx.paymentMethod.toLowerCase().includes('transfer');
+      if (trx.type !== 'masuk' || !trx.paymentMethod) return;
+      
+      const methodLower = trx.paymentMethod.toLowerCase();
+      const isTransfer = methodLower.includes('transfer') ||
+                        methodLower.includes('bca') ||
+                        methodLower.includes('bri') ||
+                        methodLower.includes('bni') ||
+                        methodLower.includes('mandiri') ||
+                        methodLower.includes('bank');
       
       if (isTransfer && !trx.paymentVerification) {
         // Tambahkan field paymentVerification dengan status pending
@@ -537,6 +543,7 @@ class Store {
           notes: ''
         };
         changed = true;
+        console.log('[Migration] Added verification to:', trx.title, '- Method:', trx.paymentMethod);
       }
     });
 
@@ -545,6 +552,8 @@ class Store {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
         console.log('[Migration] Payment verification fields added to existing transfer transactions');
       } catch (e) { /* ignore */ }
+    } else {
+      console.log('[Migration] No transfer transactions found to migrate');
     }
   }
 
@@ -714,7 +723,14 @@ class Store {
 
   addTransaction(trx) {
     const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
-    const isTransfer = trx.paymentMethod && trx.paymentMethod.toLowerCase().includes('transfer');
+    // Deteksi transfer dengan lebih fleksibel
+    const methodLower = trx.paymentMethod ? trx.paymentMethod.toLowerCase() : '';
+    const isTransfer = methodLower.includes('transfer') ||
+                      methodLower.includes('bca') ||
+                      methodLower.includes('bri') ||
+                      methodLower.includes('bni') ||
+                      methodLower.includes('mandiri') ||
+                      methodLower.includes('bank');
     
     const newTrx = {
       id: `TRX-${Date.now()}`,
@@ -843,11 +859,19 @@ class Store {
    */
   getPaymentVerificationStats() {
     const transactions = this.getTransactions();
-    const transferTransactions = transactions.filter((t) => 
-      t.type === 'masuk' && 
-      t.paymentMethod && 
-      t.paymentMethod.toLowerCase().includes('transfer')
-    );
+    // Filter transfer: cek berbagai variasi metode pembayaran
+    const transferTransactions = transactions.filter((t) => {
+      if (t.type !== 'masuk') return false;
+      if (!t.paymentMethod) return false;
+      
+      const methodLower = t.paymentMethod.toLowerCase();
+      return methodLower.includes('transfer') || 
+             methodLower.includes('bca') ||
+             methodLower.includes('bri') ||
+             methodLower.includes('bni') ||
+             methodLower.includes('mandiri') ||
+             methodLower.includes('bank');
+    });
 
     const pending = transferTransactions.filter((t) => 
       t.paymentVerification && t.paymentVerification.status === 'pending'

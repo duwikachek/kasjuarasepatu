@@ -301,7 +301,14 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
   function renderSingleTransaction(trx) {
     const isMasuk = trx.type === 'masuk';
     const isOpen = expandedTrx.has(trx.id);
-    const isTransfer = trx.paymentMethod && trx.paymentMethod.toLowerCase().includes('transfer');
+    // Deteksi transfer dengan lebih fleksibel
+    const methodLower = trx.paymentMethod ? trx.paymentMethod.toLowerCase() : '';
+    const isTransfer = methodLower.includes('transfer') ||
+                      methodLower.includes('bca') ||
+                      methodLower.includes('bri') ||
+                      methodLower.includes('bni') ||
+                      methodLower.includes('mandiri') ||
+                      methodLower.includes('bank');
     const verificationStatus = trx.paymentVerification ? trx.paymentVerification.status : null;
     const showCheckbox = currentFilter === 'pending' && isTransfer && isMasuk && verificationStatus === 'pending';
     
@@ -646,13 +653,19 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
 
     if (currentFilter === 'pending') {
       // Filter hanya transfer yang perlu dicek (status pending)
-      list = list.filter((t) => 
-        t.type === 'masuk' && 
-        t.paymentMethod && 
-        t.paymentMethod.toLowerCase().includes('transfer') &&
-        t.paymentVerification && 
-        t.paymentVerification.status === 'pending'
-      );
+      list = list.filter((t) => {
+        if (t.type !== 'masuk' || !t.paymentMethod) return false;
+        
+        const methodLower = t.paymentMethod.toLowerCase();
+        const isTransfer = methodLower.includes('transfer') ||
+                          methodLower.includes('bca') ||
+                          methodLower.includes('bri') ||
+                          methodLower.includes('bni') ||
+                          methodLower.includes('mandiri') ||
+                          methodLower.includes('bank');
+        
+        return isTransfer && t.paymentVerification && t.paymentVerification.status === 'pending';
+      });
     } else if (currentFilter !== 'all') {
       list = list.filter((t) => t.type === currentFilter);
     }
