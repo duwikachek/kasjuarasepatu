@@ -49,32 +49,6 @@ export function renderDashboardPage(store, isAdmin = true) {
 
   // Payment verification stats
   const paymentStats = store.getPaymentVerificationStats ? store.getPaymentVerificationStats() : null;
-  
-  // DEBUG: Log untuk cek data transaksi
-  if (typeof console !== 'undefined') {
-    const allTransactions = store.getTransactions();
-    const transferTransactions = allTransactions.filter(t => 
-      t.type === 'masuk' && 
-      t.paymentMethod && 
-      (t.paymentMethod.toLowerCase().includes('transfer') || 
-       t.paymentMethod.toLowerCase().includes('bca') ||
-       t.paymentMethod.toLowerCase().includes('bri') ||
-       t.paymentMethod.toLowerCase().includes('mandiri'))
-    );
-    console.log('[DEBUG Payment Verification]');
-    console.log('Total transactions:', allTransactions.length);
-    console.log('Transfer transactions found:', transferTransactions.length);
-    console.log('Transfer transactions:', transferTransactions.map(t => ({
-      id: t.id,
-      title: t.title,
-      paymentMethod: t.paymentMethod,
-      hasVerification: !!t.paymentVerification,
-      verificationStatus: t.paymentVerification?.status
-    })));
-    if (paymentStats) {
-      console.log('Payment stats:', paymentStats);
-    }
-  }
 
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">

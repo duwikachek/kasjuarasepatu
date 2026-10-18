@@ -301,16 +301,13 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
   function renderSingleTransaction(trx) {
     const isMasuk = trx.type === 'masuk';
     const isOpen = expandedTrx.has(trx.id);
-    // Deteksi transfer dengan lebih fleksibel
-    const methodLower = trx.paymentMethod ? trx.paymentMethod.toLowerCase() : '';
-    const isTransfer = methodLower.includes('transfer') ||
-                      methodLower.includes('bca') ||
-                      methodLower.includes('bri') ||
-                      methodLower.includes('bni') ||
-                      methodLower.includes('mandiri') ||
-                      methodLower.includes('bank');
+    // SEMUA transaksi masuk perlu verifikasi (kecuali investor)
+    const isInvestor = ['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || 
+                      trx.sourceType === 'investor' || 
+                      trx.sourceType === 'investor_payout';
+    const needsVerification = isMasuk && !isInvestor;
     const verificationStatus = trx.paymentVerification ? trx.paymentVerification.status : null;
-    const showCheckbox = currentFilter === 'pending' && isTransfer && isMasuk && verificationStatus === 'pending';
+    const showCheckbox = currentFilter === 'pending' && needsVerification && verificationStatus === 'pending';
     
     return `
       <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5 hover:border-white/80 transition-all ${verificationStatus === 'problematic' ? 'border-l-4 border-rose-500' : (verificationStatus === 'verified' ? 'border-l-4 border-emerald-500' : '')}">
@@ -342,7 +339,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                 ` : ''}
 
                 ${trx.paymentMethod ? `
-                  <span class="px-1 py-0.2 rounded glass-chip font-bold text-[9px] ${isTransfer ? 'text-blue-800' : 'text-emerald-800'}">
+                  <span class="px-1 py-0.2 rounded glass-chip font-bold text-[9px] text-blue-800">
                     ${trx.paymentMethod}
                   </span>
                 ` : ''}
@@ -412,7 +409,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                   <span>Menu Investasi</span>
                 </span>
               ` : `
-                ${isTransfer && isMasuk && isAdmin ? `
+                ${needsVerification && isAdmin ? `
                   ${verificationStatus === 'pending' || !verificationStatus ? `
                     <button
                       type="button"
@@ -652,19 +649,17 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
     let list = store.getTransactions();
 
     if (currentFilter === 'pending') {
-      // Filter hanya transfer yang perlu dicek (status pending)
+      // Filter hanya kas masuk yang perlu dicek (status pending)
       list = list.filter((t) => {
-        if (t.type !== 'masuk' || !t.paymentMethod) return false;
+        if (t.type !== 'masuk') return false;
         
-        const methodLower = t.paymentMethod.toLowerCase();
-        const isTransfer = methodLower.includes('transfer') ||
-                          methodLower.includes('bca') ||
-                          methodLower.includes('bri') ||
-                          methodLower.includes('bni') ||
-                          methodLower.includes('mandiri') ||
-                          methodLower.includes('bank');
+        // Skip investor
+        const isInvestor = t.category === 'Dana Investor' || 
+                          t.category === 'Investasi Modal' ||
+                          t.sourceType === 'investor';
+        if (isInvestor) return false;
         
-        return isTransfer && t.paymentVerification && t.paymentVerification.status === 'pending';
+        return t.paymentVerification && t.paymentVerification.status === 'pending';
       });
     } else if (currentFilter !== 'all') {
       list = list.filter((t) => t.type === currentFilter);

@@ -515,26 +515,24 @@ class Store {
   }
 
   /**
-   * Migration: Tambahkan field paymentVerification ke transaksi transfer yang belum punya
-   * Ini untuk backward compatibility dengan data transaksi lama
+   * Migration: Tambahkan field paymentVerification ke SEMUA transaksi masuk
+   * Semua penjualan adalah transfer yang perlu verifikasi
    */
   _migrateAddPaymentVerification(data) {
     if (!data || !Array.isArray(data.transactions)) return;
     let changed = false;
 
     data.transactions.forEach((trx) => {
-      // Hanya untuk transaksi masuk (penjualan) dengan metode transfer
-      if (trx.type !== 'masuk' || !trx.paymentMethod) return;
+      // Hanya untuk transaksi masuk (penjualan), kecuali investor
+      if (trx.type !== 'masuk') return;
       
-      const methodLower = trx.paymentMethod.toLowerCase();
-      const isTransfer = methodLower.includes('transfer') ||
-                        methodLower.includes('bca') ||
-                        methodLower.includes('bri') ||
-                        methodLower.includes('bni') ||
-                        methodLower.includes('mandiri') ||
-                        methodLower.includes('bank');
+      const isInvestor = trx.category === 'Dana Investor' || 
+                        trx.category === 'Investasi Modal' ||
+                        trx.sourceType === 'investor';
       
-      if (isTransfer && !trx.paymentVerification) {
+      if (isInvestor) return; // Skip investor
+      
+      if (!trx.paymentVerification) {
         // Tambahkan field paymentVerification dengan status pending
         trx.paymentVerification = {
           status: 'pending',
@@ -543,17 +541,17 @@ class Store {
           notes: ''
         };
         changed = true;
-        console.log('[Migration] Added verification to:', trx.title, '- Method:', trx.paymentMethod);
+        console.log('[Migration] Added verification to:', trx.title);
       }
     });
 
     if (changed) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
-        console.log('[Migration] Payment verification fields added to existing transfer transactions');
+        console.log('[Migration] Payment verification fields added to all kas masuk transactions');
       } catch (e) { /* ignore */ }
     } else {
-      console.log('[Migration] No transfer transactions found to migrate');
+      console.log('[Migration] All kas masuk transactions already have verification field');
     }
   }
 
@@ -723,14 +721,6 @@ class Store {
 
   addTransaction(trx) {
     const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
-    // Deteksi transfer dengan lebih fleksibel
-    const methodLower = trx.paymentMethod ? trx.paymentMethod.toLowerCase() : '';
-    const isTransfer = methodLower.includes('transfer') ||
-                      methodLower.includes('bca') ||
-                      methodLower.includes('bri') ||
-                      methodLower.includes('bni') ||
-                      methodLower.includes('mandiri') ||
-                      methodLower.includes('bank');
     
     const newTrx = {
       id: `TRX-${Date.now()}`,
@@ -741,8 +731,8 @@ class Store {
       shippingCourier: trx.shippingCourier || null,
       shippingResi: trx.shippingResi || null,
       shippingNote: trx.shippingNote || null,
-      // Payment verification - hanya untuk transfer
-      paymentVerification: trx.paymentVerification || (isTransfer && trx.type === 'masuk' ? {
+      // Payment verification - SEMUA transaksi masuk perlu verifikasi
+      paymentVerification: trx.paymentVerification || (trx.type === 'masuk' && !isInvestor ? {
         status: 'pending',      // pending | verified | problematic
         verifiedAt: null,
         verifiedBy: null,
@@ -859,18 +849,14 @@ class Store {
    */
   getPaymentVerificationStats() {
     const transactions = this.getTransactions();
-    // Filter transfer: cek berbagai variasi metode pembayaran
+    // SEMUA transaksi masuk (kecuali investor) perlu verifikasi
     const transferTransactions = transactions.filter((t) => {
       if (t.type !== 'masuk') return false;
-      if (!t.paymentMethod) return false;
-      
-      const methodLower = t.paymentMethod.toLowerCase();
-      return methodLower.includes('transfer') || 
-             methodLower.includes('bca') ||
-             methodLower.includes('bri') ||
-             methodLower.includes('bni') ||
-             methodLower.includes('mandiri') ||
-             methodLower.includes('bank');
+      // Skip transaksi investor
+      const isInvestor = t.category === 'Dana Investor' || 
+                        t.category === 'Investasi Modal' ||
+                        t.sourceType === 'investor';
+      return !isInvestor;
     });
 
     const pending = transferTransactions.filter((t) => 
