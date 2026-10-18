@@ -82,7 +82,8 @@ class Store {
             this.listeners.forEach((fn) => {
               try { fn(this.state); } catch (err) { console.error(err); }
             });
-            showToast('Data diperbarui dari perangkat lain ✓', 'info', 2500);
+            // Toast dinonaktifkan untuk silent sync di background
+            // showToast('Data diperbarui dari perangkat lain ✓', 'info', 2500);
           }
         },
         () => this._lastPushTimestamp

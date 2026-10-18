@@ -92,10 +92,9 @@ export function subscribeToStateChanges(onUpdate, getLocalUpdatedAt) {
         const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
         // Skip jika update ini adalah milik kita sendiri (timestamp sama)
         if (localTs && remoteTs && localTs === remoteTs) {
-          console.log('[Supabase] Realtime: skip echo dari diri sendiri (ts match)');
-          return;
+          return; // Silent skip echo
         }
-        console.log('[Supabase] Realtime update diterima ✓ event:', payload.eventType);
+        // Silent realtime update tanpa console log
         // Teruskan remoteTs ke callback agar store bisa verifikasi lebih lanjut
         if (record.data) onUpdate(record.data, remoteTs);
       }
@@ -122,7 +121,7 @@ export function subscribeToStateChanges(onUpdate, getLocalUpdatedAt) {
         if (!result) return;
         const localTs = typeof getLocalUpdatedAt === 'function' ? getLocalUpdatedAt() : null;
         if (!localTs || (result.updatedAt && result.updatedAt > localTs)) {
-          console.log('[Supabase] Polling: ada update baru dari server ✓');
+          // Silent sync di background tanpa console log
           onUpdate(result.data, result.updatedAt);
         }
       } catch (e) { /* abaikan error polling */ }
