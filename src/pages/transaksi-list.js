@@ -310,9 +310,10 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
     const showCheckbox = currentFilter === 'pending' && needsVerification && verificationStatus === 'pending';
     
     return `
-      <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5 hover:border-white/80 transition-all ${verificationStatus === 'problematic' ? 'border-l-4 border-rose-500' : (verificationStatus === 'verified' ? 'border-l-4 border-emerald-500' : '')}">
+      <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-2 hover:border-white/80 transition-all ${verificationStatus === 'problematic' ? 'border-l-4 border-rose-500' : (verificationStatus === 'verified' ? 'border-l-4 border-emerald-500' : '')}">
+        <!-- Header: Icon + Title + Amount -->
         <div class="flex items-start justify-between gap-2">
-          <div class="flex items-start gap-2 min-w-0">
+          <div class="flex items-start gap-2 min-w-0 flex-1">
             ${showCheckbox ? `
               <input 
                 type="checkbox" 
@@ -321,164 +322,169 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
               />
             ` : ''}
             ${trx.photo ? `
-              <img src="${trx.photo}" alt="Foto Sepatu" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" />
+              <img src="${trx.photo}" alt="Foto" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" />
             ` : `
               <div class="w-8 h-8 rounded-lg ${isMasuk ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'} flex items-center justify-center shrink-0">
                 <span class="material-symbols-outlined text-[16px]">${isMasuk ? 'arrow_downward' : 'arrow_upward'}</span>
               </div>
             `}
-            <div class="flex flex-col min-w-0">
+            <div class="flex flex-col min-w-0 flex-1">
               <span class="font-title-ledger text-xs font-bold text-on-surface truncate">${trx.title}</span>
-              
-              <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5 flex-wrap">
-                ${trx.buyer ? `
-                  <span class="px-1 py-0.2 rounded glass-chip text-on-secondary-fixed font-bold text-[9px] flex items-center gap-0.5">
-                    <span class="material-symbols-outlined text-[10px]">person</span>
-                    <span>${trx.buyer}</span>
-                  </span>
-                ` : ''}
-
-                ${trx.paymentMethod ? `
-                  <span class="px-1 py-0.2 rounded glass-chip font-bold text-[9px] text-blue-800">
-                    ${trx.paymentMethod}
-                  </span>
-                ` : ''}
-
-                ${verificationStatus ? `
-                  <span class="px-1.5 py-0.2 rounded font-bold text-[9px] flex items-center gap-0.5 ${
-                    verificationStatus === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 
-                    verificationStatus === 'problematic' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 
-                    'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
-                  }">
-                    <span class="material-symbols-outlined text-[10px]">${
-                      verificationStatus === 'verified' ? 'check_circle' : 
-                      verificationStatus === 'problematic' ? 'error' : 
-                      'schedule'
-                    }</span>
-                    <span>${
-                      verificationStatus === 'verified' ? 'Terverifikasi' : 
-                      verificationStatus === 'problematic' ? 'Ada Kendala' : 
-                      'Perlu Cek'
-                    }</span>
-                  </span>
-                ` : ''}
-
-                ${trx.ongkir ? `
-                  <span class="px-1 py-0.2 rounded font-bold text-[9px] glass-chip ${trx.ongkir === 'FO' ? 'text-emerald-900' : (trx.ongkir === 'COD' ? 'text-amber-900' : 'text-orange-900')}">
-                    ${trx.ongkir}
-                  </span>
-                ` : ''}
-
-                ${trx.kondisi ? `
-                  <span class="px-1 py-0.2 rounded font-bold text-[9px] glass-chip ${trx.kondisi === 'Minus' ? 'text-amber-800' : 'text-emerald-800'}">
-                    ${trx.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
-                  </span>
-                ` : ''}
-
-                ${!isMasuk && trx.category ? `
-                  <span class="px-1 py-0.2 rounded glass-chip text-rose-900 font-bold text-[9px]">
-                    ${trx.category}
-                  </span>
-                ` : ''}
-
-                <span class="text-on-surface-variant/70 text-[9px]">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' \u2022 '; } catch(e) { return trx.date + ' \u2022 '; } })() : ''}${trx.time}</span>
-              </div>
-
-              ${trx.paymentVerification && trx.paymentVerification.notes ? `
-                <span class="text-[9px] text-rose-700 italic mt-0.5 block">
-                  Catatan: ${trx.paymentVerification.notes}
-                </span>
-              ` : ''}
-
-              ${trx.note ? `
-                <span class="text-[9px] text-on-surface-variant italic mt-0.5 block truncate">
-                  Note: ${trx.note}
-                </span>
-              ` : ''}
+              <span class="text-[9px] text-on-surface-variant/70">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' • '; } catch(e) { return trx.date + ' • '; } })() : ''}${trx.time}</span>
             </div>
           </div>
 
-          <div class="flex flex-col items-end shrink-0 pl-1">
+          <div class="flex flex-col items-end shrink-0">
             <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
               ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
             </span>
-            <div class="flex items-center gap-1 mt-1 flex-wrap justify-end">
-              ${(['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || trx.sourceType === 'investor' || trx.sourceType === 'investor_payout') ? `
-                <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-100/80 text-amber-800 text-[9px] font-semibold border border-amber-300/60">
-                  <span class="material-symbols-outlined text-[11px]">handshake</span>
-                  <span>Menu Investasi</span>
-                </span>
-              ` : `
-                ${needsVerification && isAdmin ? `
-                  ${verificationStatus === 'pending' || !verificationStatus ? `
-                    <button
-                      type="button"
-                      data-verify-trx="${trx.id}"
-                      data-action="verified"
-                      class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
-                      title="Tandai sudah ada di mutasi bank"
-                    >
-                      <span class="material-symbols-outlined text-[12px]">check_circle</span>
-                      <span>Sudah di Mutasi</span>
-                    </button>
-                    <button
-                      type="button"
-                      data-verify-trx="${trx.id}"
-                      data-action="problematic"
-                      class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
-                      title="Tandai ada kendala/belum masuk"
-                    >
-                      <span class="material-symbols-outlined text-[12px]">error</span>
-                      <span>Ada Kendala</span>
-                    </button>
-                  ` : `
-                    <button
-                      type="button"
-                      data-reset-verify="${trx.id}"
-                      class="glass-amber glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-amber-700 text-[10px] font-semibold"
-                      title="Reset status verifikasi"
-                    >
-                      <span class="material-symbols-outlined text-[12px]">refresh</span>
-                      <span>Reset</span>
-                    </button>
-                  `}
-                ` : ''}
-                ${isMasuk && isAdmin ? `
-                  <button
-                    type="button"
-                    data-add-item-trx="${trx.id}"
-                    class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
-                    title="Tambah Barang ke Transaksi Ini"
-                  >
-                    <span class="material-symbols-outlined text-[12px]">add_shopping_cart</span>
-                    <span>+ Barang</span>
-                  </button>
-                ` : ''}
-                ${isAdmin ? `
-                  <button 
-                    type="button" 
-                    data-edit-trx="${trx.id}"
-                    data-type="${trx.type}"
-                    class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
-                    title="Edit Transaksi"
-                  >
-                    <span class="material-symbols-outlined text-[12px]">edit</span>
-                    <span>Edit</span>
-                  </button>
-                  <button 
-                    type="button" 
-                    data-delete-trx="${trx.id}"
-                    class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
-                    title="Hapus Transaksi"
-                  >
-                    <span class="material-symbols-outlined text-[12px]">delete</span>
-                    <span>Hapus</span>
-                  </button>
-                ` : ''}
-              `}
-            </div>
           </div>
         </div>
+
+        <!-- Badge Row: Status, Buyer, Ongkir, Kondisi, Category -->
+        <div class="flex items-center gap-1 flex-wrap">
+          ${verificationStatus ? `
+            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md font-bold text-[9px] ${
+              verificationStatus === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 
+              verificationStatus === 'problematic' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 
+              'bg-amber-100 text-amber-800 border border-amber-300'
+            }">
+              <span class="material-symbols-outlined text-[10px]">${
+                verificationStatus === 'verified' ? 'check_circle' : 
+                verificationStatus === 'problematic' ? 'error' : 
+                'schedule'
+              }</span>
+              <span>${
+                verificationStatus === 'verified' ? 'Terverifikasi' : 
+                verificationStatus === 'problematic' ? 'Kendala' : 
+                'Perlu Cek'
+              }</span>
+            </span>
+          ` : ''}
+          
+          ${trx.buyer ? `
+            <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md glass-chip text-on-secondary-fixed font-bold text-[9px]">
+              <span class="material-symbols-outlined text-[10px]">person</span>
+              <span>${trx.buyer}</span>
+            </span>
+          ` : ''}
+
+          ${trx.ongkir ? `
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md font-bold text-[9px] glass-chip ${trx.ongkir === 'FO' ? 'text-emerald-900' : (trx.ongkir === 'COD' ? 'text-amber-900' : 'text-orange-900')}">
+              ${trx.ongkir}
+            </span>
+          ` : ''}
+
+          ${trx.kondisi ? `
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md font-bold text-[9px] glass-chip ${trx.kondisi === 'Minus' ? 'text-amber-800' : 'text-emerald-800'}">
+              ${trx.kondisi === 'Minus' ? '⚠ Minus' : '✓ Bagus'}
+            </span>
+          ` : ''}
+
+          ${!isMasuk && trx.category ? `
+            <span class="inline-flex items-center px-1.5 py-0.5 rounded-md glass-chip text-rose-900 font-bold text-[9px]">
+              ${trx.category}
+            </span>
+          ` : ''}
+        </div>
+
+        <!-- Notes Section -->
+        ${trx.paymentVerification && trx.paymentVerification.notes ? `
+          <div class="text-[9px] text-rose-700 italic px-2 py-1 bg-rose-50/50 rounded">
+            💬 ${trx.paymentVerification.notes}
+          </div>
+        ` : ''}
+
+        ${trx.note ? `
+          <div class="text-[9px] text-on-surface-variant italic px-2 py-1 bg-surface-container/30 rounded">
+            📝 ${trx.note}
+          </div>
+        ` : ''}
+
+        <!-- Action Buttons Row -->
+        ${(['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || trx.sourceType === 'investor' || trx.sourceType === 'investor_payout') ? `
+          <div class="flex items-center justify-center gap-1 pt-1.5 border-t border-white/30">
+            <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md bg-amber-100/80 text-amber-800 text-[10px] font-semibold border border-amber-300/60">
+              <span class="material-symbols-outlined text-[12px]">handshake</span>
+              <span>🔒 Dikelola di Menu Investor</span>
+            </span>
+          </div>
+        ` : isAdmin ? `
+          <div class="flex flex-col gap-1.5 pt-1.5 border-t border-white/30">
+            ${needsVerification ? `
+              <!-- Verification Buttons -->
+              <div class="flex items-center gap-1">
+                ${verificationStatus === 'pending' || !verificationStatus ? `
+                  <button
+                    type="button"
+                    data-verify-trx="${trx.id}"
+                    data-action="verified"
+                    class="glass-emerald glass-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-emerald-700 text-[10px] font-semibold"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                    <span>Sudah di Mutasi</span>
+                  </button>
+                  <button
+                    type="button"
+                    data-verify-trx="${trx.id}"
+                    data-action="problematic"
+                    class="glass-rose glass-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-rose-700 text-[10px] font-semibold"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">error</span>
+                    <span>Ada Kendala</span>
+                  </button>
+                ` : `
+                  <button
+                    type="button"
+                    data-reset-verify="${trx.id}"
+                    class="glass-amber glass-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-amber-700 text-[10px] font-semibold"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">refresh</span>
+                    <span>Reset Verifikasi</span>
+                  </button>
+                `}
+              </div>
+            ` : ''}
+            
+            <!-- Standard Action Buttons -->
+            <div class="flex items-center gap-1">
+              ${isMasuk ? `
+                <button
+                  type="button"
+                  data-add-item-trx="${trx.id}"
+                  class="glass-emerald glass-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-emerald-700 text-[10px] font-semibold"
+                >
+                  <span class="material-symbols-outlined text-[12px]">add_shopping_cart</span>
+                  <span>+ Barang</span>
+                </button>
+              ` : ''}
+              <button 
+                type="button" 
+                data-edit-trx="${trx.id}"
+                data-type="${trx.type}"
+                class="glass-chip-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-primary text-[10px] font-semibold"
+              >
+                <span class="material-symbols-outlined text-[12px]">edit</span>
+                <span>Edit</span>
+              </button>
+              <button 
+                type="button" 
+                data-delete-trx="${trx.id}"
+                class="glass-rose glass-btn flex-1 inline-flex items-center justify-center gap-0.5 px-2 py-1 rounded-md text-rose-700 text-[10px] font-semibold"
+              >
+                <span class="material-symbols-outlined text-[12px]">delete</span>
+                <span>Hapus</span>
+              </button>
+            </div>
+          </div>
+        ` : `
+          <div class="flex items-center justify-center gap-1 pt-1.5 border-t border-white/30">
+            <span class="inline-flex items-center gap-0.5 px-2 py-1 rounded-md text-on-surface-variant text-[9px]">
+              <span class="material-symbols-outlined text-[10px]">lock</span>
+              <span>Mode Lihat Saja (Read-only)</span>
+            </span>
+          </div>
+        `}
 
         ${trx.items && trx.items.length > 0 ? `
           <button
