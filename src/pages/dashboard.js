@@ -315,6 +315,14 @@ export function renderDashboardPage(store, isAdmin = true) {
               if (itemCount === 1) {
                 // Single transaction - render directly
                 const trx = group.transactions[0];
+                // Calculate total qty for this transaction
+                let totalQty = 0;
+                if (trx.items && Array.isArray(trx.items) && trx.items.length > 0) {
+                  totalQty = trx.items.reduce((sum, it) => sum + (Number(it.qty) || 1), 0);
+                } else {
+                  totalQty = Number(trx.itemCount) || 1;
+                }
+                
                 return `
                   <div class="glass-row flex items-center justify-between p-2.5 transition-colors">
                     <div class="flex items-center gap-2 min-w-0">
@@ -325,6 +333,7 @@ export function renderDashboardPage(store, isAdmin = true) {
                         <span class="font-title-ledger text-xs font-semibold text-on-surface truncate">${trx.title}</span>
                         <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
                           <span class="truncate">${trx.category}</span>
+                          ${isMasuk ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
                           <span>•</span>
                           <span class="shrink-0">${trx.time}</span>
                         </div>
@@ -342,6 +351,16 @@ export function renderDashboardPage(store, isAdmin = true) {
               } else {
                 // Multiple transactions - render as group
                 const totalAmount = group.transactions.reduce((sum, t) => sum + t.amount, 0);
+                // Calculate total qty for all transactions in group
+                let totalQty = 0;
+                group.transactions.forEach(t => {
+                  if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+                    totalQty += t.items.reduce((sum, it) => sum + (Number(it.qty) || 1), 0);
+                  } else {
+                    totalQty += Number(t.itemCount) || 1;
+                  }
+                });
+                
                 return `
                   <div class="glass-row flex flex-col p-2.5 transition-colors">
                     <div class="flex items-center justify-between">
@@ -353,6 +372,7 @@ export function renderDashboardPage(store, isAdmin = true) {
                           <span class="font-title-ledger text-xs font-semibold text-on-surface">${group.nota}</span>
                           <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
                             <span class="shrink-0">${itemCount} barang</span>
+                            ${isMasuk ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
                             <span>•</span>
                             <span class="shrink-0">${firstTrx.time}</span>
                           </div>
