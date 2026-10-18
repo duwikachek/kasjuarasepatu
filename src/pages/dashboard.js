@@ -47,6 +47,9 @@ export function renderDashboardPage(store, isAdmin = true) {
     year: 'numeric'
   });
 
+  // Payment verification stats
+  const paymentStats = store.getPaymentVerificationStats ? store.getPaymentVerificationStats() : null;
+
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
       ${renderHeader({
@@ -264,6 +267,50 @@ export function renderDashboardPage(store, isAdmin = true) {
 
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
         <section class="flex flex-col gap-1.5">
+          ${paymentStats && paymentStats.oldPending.count > 0 ? `
+            <div class="glass-rose glass-sheen relative overflow-hidden rounded-lg p-2.5 flex items-start gap-2">
+              <span class="material-symbols-outlined text-rose-700 text-[18px] shrink-0 mt-0.5 animate-pulse">notification_important</span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-md text-[11px] font-bold text-rose-900">Perlu Cek Mutasi Rekening!</span>
+                  <span class="font-label-sm text-[9px] bg-white/55 border border-white/60 text-rose-900 px-1 py-0.5 rounded font-bold">${paymentStats.oldPending.count} Transfer</span>
+                </div>
+                <p class="font-body-sm text-[11px] text-rose-800 mt-0.5">
+                  ${paymentStats.oldPending.count} transfer belum dicek sejak kemarin (Total: ${formatRupiah(paymentStats.oldPending.amount)}). Segera verifikasi di mutasi bank!
+                </p>
+                <button 
+                  type="button" 
+                  data-nav-verify="pending"
+                  class="mt-1.5 text-[10px] font-bold text-rose-700 hover:text-rose-900 underline"
+                >
+                  Buka Daftar Transfer →
+                </button>
+              </div>
+            </div>
+          ` : ''}
+
+          ${paymentStats && paymentStats.pending.count > 0 && paymentStats.oldPending.count === 0 ? `
+            <div class="glass-amber glass-sheen relative overflow-hidden rounded-lg p-2.5 flex items-start gap-2">
+              <span class="material-symbols-outlined text-amber-700 text-[18px] shrink-0 mt-0.5">info</span>
+              <div class="flex-1 min-w-0">
+                <div class="flex items-center justify-between">
+                  <span class="font-label-md text-[11px] font-bold text-amber-900">Transfer Perlu Verifikasi</span>
+                  <span class="font-label-sm text-[9px] bg-white/55 border border-white/60 text-amber-900 px-1 py-0.5 rounded font-bold">${paymentStats.pending.count} Transfer</span>
+                </div>
+                <p class="font-body-sm text-[11px] text-amber-800 mt-0.5">
+                  Ada ${paymentStats.pending.count} transfer hari ini belum dicek di mutasi (${formatRupiah(paymentStats.pending.amount)}).
+                </p>
+                <button 
+                  type="button" 
+                  data-nav-verify="pending"
+                  class="mt-1 text-[10px] font-bold text-amber-700 hover:text-amber-900 underline"
+                >
+                  Cek Sekarang →
+                </button>
+              </div>
+            </div>
+          ` : ''}
+
           ${lowStockItems.length > 0 ? `
             <div class="glass-amber glass-sheen relative overflow-hidden rounded-lg p-2.5 flex items-start gap-2">
               <span class="material-symbols-outlined text-amber-700 text-[18px] shrink-0 mt-0.5">warning</span>
@@ -458,6 +505,15 @@ export function initDashboardPage(router, store, isAdmin = true) {
   if (btnOpname) {
     btnOpname.addEventListener('click', () => router.navigate('stock-opname'));
   }
+
+  // Navigate to verification page
+  const btnNavVerify = document.querySelectorAll('[data-nav-verify]');
+  btnNavVerify.forEach((btn) => {
+    btn.addEventListener('click', () => {
+      const filter = btn.getAttribute('data-nav-verify');
+      router.navigate('transaksi', { filter: filter });
+    });
+  });
 
   // Toggle Balance Visibility
   const toggleBtn = document.getElementById('toggle-balance-btn');

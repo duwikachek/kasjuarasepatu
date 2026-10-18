@@ -5,6 +5,7 @@ import { showToast } from '../components/toast.js';
 export function renderTransaksiListPage(store, filterType = 'all', isAdmin = true) {
   const summary = store.getBalanceSummary();
   const transactions = store.getTransactions();
+  const paymentStats = store.getPaymentVerificationStats ? store.getPaymentVerificationStats() : null;
 
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
@@ -74,12 +75,12 @@ export function renderTransaksiListPage(store, filterType = 'all', isAdmin = tru
           />
         </div>
 
-        <!-- Segmented Type Tabs (Semua / Masuk / Keluar) -->
-        <div class="glass-track p-1 rounded-xl flex items-center gap-1">
+        <!-- Segmented Type Tabs (Semua / Masuk / Keluar / Perlu Cek) -->
+        <div class="glass-track p-1 rounded-xl flex items-center gap-1 overflow-x-auto">
           <button 
             type="button" 
             data-tab="all" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-none py-1.5 px-2.5 rounded-lg ${filterType === 'all' ? 'glass-seg-active text-on-surface font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap"
           >
             <span>Semua</span>
             <span class="px-1.5 py-0.2 rounded-full glass-chip text-on-surface text-[10px] font-bold">${transactions.length}</span>
@@ -87,7 +88,7 @@ export function renderTransaksiListPage(store, filterType = 'all', isAdmin = tru
           <button 
             type="button" 
             data-tab="masuk" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'masuk' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-none py-1.5 px-2.5 rounded-lg ${filterType === 'masuk' ? 'glass-seg-active text-emerald-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap"
           >
             <span>Kas Masuk</span>
             <span class="px-1.5 py-0.2 rounded-full glass-chip text-emerald-800 text-[10px] font-bold">${summary.countMasuk}</span>
@@ -95,11 +96,56 @@ export function renderTransaksiListPage(store, filterType = 'all', isAdmin = tru
           <button 
             type="button" 
             data-tab="keluar" 
-            class="tab-btn flex-1 py-1.5 px-2 rounded-lg ${filterType === 'keluar' ? 'glass-seg-active text-rose-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5"
+            class="tab-btn flex-none py-1.5 px-2.5 rounded-lg ${filterType === 'keluar' ? 'glass-seg-active text-rose-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap"
           >
             <span>Kas Keluar</span>
             <span class="px-1.5 py-0.2 rounded-full glass-chip text-rose-800 text-[10px] font-bold">${summary.countKeluar}</span>
           </button>
+          ${paymentStats && paymentStats.pending.count > 0 ? `
+          <button 
+            type="button" 
+            data-tab="pending" 
+            class="tab-btn flex-none py-1.5 px-2.5 rounded-lg ${filterType === 'pending' ? 'glass-seg-active text-amber-800 font-bold' : 'text-on-surface-variant'} font-label-md text-xs transition-all text-center flex items-center justify-center gap-1.5 whitespace-nowrap"
+          >
+            <span class="material-symbols-outlined text-[14px]">warning</span>
+            <span>Perlu Cek</span>
+            <span class="px-1.5 py-0.2 rounded-full bg-amber-500/30 text-amber-900 text-[10px] font-bold animate-pulse">${paymentStats.pending.count}</span>
+          </button>
+          ` : ''}
+        </div>
+
+        <!-- Bulk Verification Bar (hanya muncul di tab pending) -->
+        <div id="bulk-verification-bar" class="${filterType === 'pending' ? '' : 'hidden'} glass-amber glass-sheen rounded-xl p-2.5 flex items-center justify-between">
+          <div class="flex items-center gap-2">
+            <input 
+              type="checkbox" 
+              id="select-all-checkbox"
+              class="w-4 h-4 rounded border-2 border-amber-700 text-amber-700 focus:ring-amber-500 cursor-pointer"
+            />
+            <label for="select-all-checkbox" class="text-xs font-bold text-amber-900 cursor-pointer">
+              Pilih Semua (<span id="selected-count">0</span>)
+            </label>
+          </div>
+          <div class="flex items-center gap-1.5">
+            <button 
+              type="button" 
+              id="bulk-verify-btn"
+              class="glass-emerald glass-btn px-2.5 py-1 rounded-lg text-emerald-800 text-[11px] font-bold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              <span class="material-symbols-outlined text-[14px]">check_circle</span>
+              <span>Tandai Terverifikasi</span>
+            </button>
+            <button 
+              type="button" 
+              id="bulk-problematic-btn"
+              class="glass-rose glass-btn px-2.5 py-1 rounded-lg text-rose-800 text-[11px] font-bold flex items-center gap-1 disabled:opacity-50 disabled:cursor-not-allowed"
+              disabled
+            >
+              <span class="material-symbols-outlined text-[14px]">error</span>
+              <span>Ada Kendala</span>
+            </button>
+          </div>
         </div>
 
         <!-- Transaction List Stream -->
@@ -255,10 +301,21 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
   function renderSingleTransaction(trx) {
     const isMasuk = trx.type === 'masuk';
     const isOpen = expandedTrx.has(trx.id);
+    const isTransfer = trx.paymentMethod && trx.paymentMethod.toLowerCase().includes('transfer');
+    const verificationStatus = trx.paymentVerification ? trx.paymentVerification.status : null;
+    const showCheckbox = currentFilter === 'pending' && isTransfer && isMasuk && verificationStatus === 'pending';
+    
     return `
-      <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5 hover:border-white/80 transition-all">
+      <div class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5 hover:border-white/80 transition-all ${verificationStatus === 'problematic' ? 'border-l-4 border-rose-500' : (verificationStatus === 'verified' ? 'border-l-4 border-emerald-500' : '')}">
         <div class="flex items-start justify-between gap-2">
           <div class="flex items-start gap-2 min-w-0">
+            ${showCheckbox ? `
+              <input 
+                type="checkbox" 
+                class="verify-checkbox w-4 h-4 rounded border-2 border-amber-700 text-amber-700 focus:ring-amber-500 cursor-pointer mt-0.5 shrink-0"
+                data-trx-id="${trx.id}"
+              />
+            ` : ''}
             ${trx.photo ? `
               <img src="${trx.photo}" alt="Foto Sepatu" class="w-8 h-8 rounded-lg object-cover shrink-0 border border-surface-container-high shadow-xs" />
             ` : `
@@ -274,6 +331,31 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                   <span class="px-1 py-0.2 rounded glass-chip text-on-secondary-fixed font-bold text-[9px] flex items-center gap-0.5">
                     <span class="material-symbols-outlined text-[10px]">person</span>
                     <span>${trx.buyer}</span>
+                  </span>
+                ` : ''}
+
+                ${trx.paymentMethod ? `
+                  <span class="px-1 py-0.2 rounded glass-chip font-bold text-[9px] ${isTransfer ? 'text-blue-800' : 'text-emerald-800'}">
+                    ${trx.paymentMethod}
+                  </span>
+                ` : ''}
+
+                ${verificationStatus ? `
+                  <span class="px-1.5 py-0.2 rounded font-bold text-[9px] flex items-center gap-0.5 ${
+                    verificationStatus === 'verified' ? 'bg-emerald-100 text-emerald-800 border border-emerald-300' : 
+                    verificationStatus === 'problematic' ? 'bg-rose-100 text-rose-800 border border-rose-300' : 
+                    'bg-amber-100 text-amber-800 border border-amber-300 animate-pulse'
+                  }">
+                    <span class="material-symbols-outlined text-[10px]">${
+                      verificationStatus === 'verified' ? 'check_circle' : 
+                      verificationStatus === 'problematic' ? 'error' : 
+                      'schedule'
+                    }</span>
+                    <span>${
+                      verificationStatus === 'verified' ? 'Terverifikasi' : 
+                      verificationStatus === 'problematic' ? 'Ada Kendala' : 
+                      'Perlu Cek'
+                    }</span>
                   </span>
                 ` : ''}
 
@@ -298,6 +380,12 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                 <span class="text-on-surface-variant/70 text-[9px]">${trx.date ? (() => { try { const d = new Date(trx.date + 'T00:00:00'); return d.toLocaleDateString('id-ID', { day: 'numeric', month: 'short' }) + ' \u2022 '; } catch(e) { return trx.date + ' \u2022 '; } })() : ''}${trx.time}</span>
               </div>
 
+              ${trx.paymentVerification && trx.paymentVerification.notes ? `
+                <span class="text-[9px] text-rose-700 italic mt-0.5 block">
+                  Catatan: ${trx.paymentVerification.notes}
+                </span>
+              ` : ''}
+
               ${trx.note ? `
                 <span class="text-[9px] text-on-surface-variant italic mt-0.5 block truncate">
                   Note: ${trx.note}
@@ -310,14 +398,48 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
             <span class="font-currency-item text-xs font-bold ${isMasuk ? 'text-emerald-700' : 'text-rose-700'} font-tabular">
               ${isMasuk ? '+' : '-'}${formatRupiah(trx.amount, '')}
             </span>
-            <div class="flex items-center gap-1 mt-1">
+            <div class="flex items-center gap-1 mt-1 flex-wrap justify-end">
               ${(['Dana Investor', 'Bagi Hasil Investor', 'Bagi Hasil Pengelola', 'Pengembalian Modal Investor'].includes(trx.category) || trx.sourceType === 'investor' || trx.sourceType === 'investor_payout') ? `
                 <span class="inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md bg-amber-100/80 text-amber-800 text-[9px] font-semibold border border-amber-300/60">
                   <span class="material-symbols-outlined text-[11px]">handshake</span>
                   <span>Menu Investasi</span>
                 </span>
               ` : `
-                ${isMasuk ? `
+                ${isTransfer && isMasuk && isAdmin ? `
+                  ${verificationStatus === 'pending' || !verificationStatus ? `
+                    <button
+                      type="button"
+                      data-verify-trx="${trx.id}"
+                      data-action="verified"
+                      class="glass-emerald glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-emerald-700 text-[10px] font-semibold"
+                      title="Tandai sudah ada di mutasi bank"
+                    >
+                      <span class="material-symbols-outlined text-[12px]">check_circle</span>
+                      <span>Sudah di Mutasi</span>
+                    </button>
+                    <button
+                      type="button"
+                      data-verify-trx="${trx.id}"
+                      data-action="problematic"
+                      class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
+                      title="Tandai ada kendala/belum masuk"
+                    >
+                      <span class="material-symbols-outlined text-[12px]">error</span>
+                      <span>Ada Kendala</span>
+                    </button>
+                  ` : `
+                    <button
+                      type="button"
+                      data-reset-verify="${trx.id}"
+                      class="glass-amber glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-amber-700 text-[10px] font-semibold"
+                      title="Reset status verifikasi"
+                    >
+                      <span class="material-symbols-outlined text-[12px]">refresh</span>
+                      <span>Reset</span>
+                    </button>
+                  `}
+                ` : ''}
+                ${isMasuk && isAdmin ? `
                   <button
                     type="button"
                     data-add-item-trx="${trx.id}"
@@ -328,25 +450,27 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                     <span>+ Barang</span>
                   </button>
                 ` : ''}
-                <button 
-                  type="button" 
-                  data-edit-trx="${trx.id}"
-                  data-type="${trx.type}"
-                  class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
-                  title="Edit Transaksi"
-                >
-                  <span class="material-symbols-outlined text-[12px]">edit</span>
-                  <span>Edit</span>
-                </button>
-                <button 
-                  type="button" 
-                  data-delete-trx="${trx.id}"
-                  class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
-                  title="Hapus Transaksi"
-                >
-                  <span class="material-symbols-outlined text-[12px]">delete</span>
-                  <span>Hapus</span>
-                </button>
+                ${isAdmin ? `
+                  <button 
+                    type="button" 
+                    data-edit-trx="${trx.id}"
+                    data-type="${trx.type}"
+                    class="glass-chip-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-primary text-[10px] font-semibold"
+                    title="Edit Transaksi"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">edit</span>
+                    <span>Edit</span>
+                  </button>
+                  <button 
+                    type="button" 
+                    data-delete-trx="${trx.id}"
+                    class="glass-rose glass-btn inline-flex items-center gap-0.5 px-1.5 py-0.5 rounded-md text-rose-700 text-[10px] font-semibold"
+                    title="Hapus Transaksi"
+                  >
+                    <span class="material-symbols-outlined text-[12px]">delete</span>
+                    <span>Hapus</span>
+                  </button>
+                ` : ''}
               `}
             </div>
           </div>
@@ -515,12 +639,27 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
 
   function renderItems() {
     const container = document.getElementById('trx-stream-container');
+    const bulkBar = document.getElementById('bulk-verification-bar');
     if (!container) return;
 
     let list = store.getTransactions();
 
-    if (currentFilter !== 'all') {
+    if (currentFilter === 'pending') {
+      // Filter hanya transfer yang perlu dicek (status pending)
+      list = list.filter((t) => 
+        t.type === 'masuk' && 
+        t.paymentMethod && 
+        t.paymentMethod.toLowerCase().includes('transfer') &&
+        t.paymentVerification && 
+        t.paymentVerification.status === 'pending'
+      );
+    } else if (currentFilter !== 'all') {
       list = list.filter((t) => t.type === currentFilter);
+    }
+
+    // Show/hide bulk verification bar
+    if (bulkBar) {
+      bulkBar.classList.toggle('hidden', currentFilter !== 'pending');
     }
 
     if (searchQuery) {
@@ -666,6 +805,108 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
         }
       });
     });
+
+    // Bind Payment Verification buttons
+    container.querySelectorAll('[data-verify-trx]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-verify-trx');
+        const action = btn.getAttribute('data-action');
+        
+        if (action === 'verified') {
+          const adminName = store.getShop ? store.getShop().owner || 'Admin' : 'Admin';
+          store.verifyPayment(id, 'verified', '', adminName);
+          showToast('✓ Transfer berhasil ditandai terverifikasi di mutasi!', 'success');
+        } else if (action === 'problematic') {
+          const notes = prompt('Catatan kendala (opsional):\nContoh: Belum masuk, jumlah tidak sesuai, dll.');
+          if (notes !== null) {
+            const adminName = store.getShop ? store.getShop().owner || 'Admin' : 'Admin';
+            store.verifyPayment(id, 'problematic', notes || 'Ada kendala pembayaran', adminName);
+            showToast('⚠️ Transfer ditandai bermasalah!', 'info');
+          }
+        }
+        
+        updateKpiDisplay();
+        renderItems();
+      });
+    });
+
+    // Bind Reset Verification buttons
+    container.querySelectorAll('[data-reset-verify]').forEach((btn) => {
+      btn.addEventListener('click', (e) => {
+        e.stopPropagation();
+        const id = btn.getAttribute('data-reset-verify');
+        if (confirm('Reset status verifikasi kembali ke "Perlu Cek"?')) {
+          store.resetPaymentVerification(id);
+          showToast('Status verifikasi direset!', 'info');
+          updateKpiDisplay();
+          renderItems();
+        }
+      });
+    });
+
+    // Bind Checkboxes for bulk selection
+    const checkboxes = container.querySelectorAll('.verify-checkbox');
+    const selectAllCheckbox = document.getElementById('select-all-checkbox');
+    const selectedCountEl = document.getElementById('selected-count');
+    const bulkVerifyBtn = document.getElementById('bulk-verify-btn');
+    const bulkProblematicBtn = document.getElementById('bulk-problematic-btn');
+
+    function updateBulkSelection() {
+      const selected = Array.from(checkboxes).filter(cb => cb.checked);
+      const selectedIds = selected.map(cb => cb.getAttribute('data-trx-id'));
+      
+      if (selectedCountEl) selectedCountEl.textContent = selected.length;
+      if (bulkVerifyBtn) bulkVerifyBtn.disabled = selected.length === 0;
+      if (bulkProblematicBtn) bulkProblematicBtn.disabled = selected.length === 0;
+      if (selectAllCheckbox) selectAllCheckbox.checked = checkboxes.length > 0 && selected.length === checkboxes.length;
+      
+      return selectedIds;
+    }
+
+    checkboxes.forEach(cb => {
+      cb.addEventListener('change', updateBulkSelection);
+    });
+
+    if (selectAllCheckbox) {
+      selectAllCheckbox.addEventListener('change', (e) => {
+        checkboxes.forEach(cb => cb.checked = e.target.checked);
+        updateBulkSelection();
+      });
+    }
+
+    if (bulkVerifyBtn) {
+      bulkVerifyBtn.addEventListener('click', () => {
+        const selectedIds = updateBulkSelection();
+        if (selectedIds.length === 0) return;
+        
+        if (confirm(`Tandai ${selectedIds.length} transfer sebagai terverifikasi di mutasi?`)) {
+          const adminName = store.getShop ? store.getShop().owner || 'Admin' : 'Admin';
+          const count = store.bulkVerifyPayments(selectedIds, 'verified', adminName);
+          showToast(`✓ ${count} transfer berhasil diverifikasi!`, 'success');
+          updateKpiDisplay();
+          renderItems();
+        }
+      });
+    }
+
+    if (bulkProblematicBtn) {
+      bulkProblematicBtn.addEventListener('click', () => {
+        const selectedIds = updateBulkSelection();
+        if (selectedIds.length === 0) return;
+        
+        const notes = prompt(`Tandai ${selectedIds.length} transfer sebagai bermasalah.\n\nCatatan kendala (opsional):`);
+        if (notes !== null) {
+          const adminName = store.getShop ? store.getShop().owner || 'Admin' : 'Admin';
+          selectedIds.forEach(id => {
+            store.verifyPayment(id, 'problematic', notes || 'Ada kendala pembayaran', adminName);
+          });
+          showToast(`⚠️ ${selectedIds.length} transfer ditandai bermasalah!`, 'info');
+          updateKpiDisplay();
+          renderItems();
+        }
+      });
+    }
   }
 
   function updateKpiDisplay() {

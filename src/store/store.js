@@ -678,6 +678,8 @@ class Store {
 
   addTransaction(trx) {
     const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
+    const isTransfer = trx.paymentMethod && trx.paymentMethod.toLowerCase().includes('transfer');
+    
     const newTrx = {
       id: `TRX-${Date.now()}`,
       date: trx.date || getLocalDateString(),
@@ -687,6 +689,13 @@ class Store {
       shippingCourier: trx.shippingCourier || null,
       shippingResi: trx.shippingResi || null,
       shippingNote: trx.shippingNote || null,
+      // Payment verification - hanya untuk transfer
+      paymentVerification: trx.paymentVerification || (isTransfer && trx.type === 'masuk' ? {
+        status: 'pending',      // pending | verified | problematic
+        verifiedAt: null,
+        verifiedBy: null,
+        notes: ''
+      } : null),
       ...trx
     };
     this.state.transactions.unshift(newTrx);
@@ -734,6 +743,116 @@ class Store {
         console.warn('[Store] Failed to push deleteTransaction to Supabase:', e.message);
       }
     }, 500);
+  }
+
+  /**
+   * Verifikasi pembayaran transfer (tandai sudah dicek di mutasi rekening)
+   * @param {string} id - Transaction ID
+   * @param {string} status - 'verified' atau 'problematic'
+   * @param {string} notes - Catatan opsional (untuk problematic)
+   * @param {string} adminName - Nama admin yang verifikasi
+   */
+  verifyPayment(id, status = 'verified', notes = '', adminName = 'Admin') {
+    const idx = this.state.transactions.findIndex((t) => t.id === id);
+    if (idx !== -1) {
+      const trx = this.state.transactions[idx];
+      if (!trx.paymentVerification) {
+        trx.paymentVerification = {};
+      }
+      trx.paymentVerification.status = status;
+      trx.paymentVerification.verifiedAt = new Date().toISOString();
+      trx.paymentVerification.verifiedBy = adminName;
+      trx.paymentVerification.notes = notes || '';
+      
+      this.notify();
+      return trx;
+    }
+    return null;
+  }
+
+  /**
+   * Bulk verifikasi pembayaran (untuk multiple transaksi sekaligus)
+   * @param {string[]} ids - Array of transaction IDs
+   * @param {string} status - 'verified' atau 'problematic'
+   * @param {string} adminName - Nama admin yang verifikasi
+   */
+  bulkVerifyPayments(ids, status = 'verified', adminName = 'Admin') {
+    let count = 0;
+    ids.forEach((id) => {
+      const result = this.verifyPayment(id, status, '', adminName);
+      if (result) count++;
+    });
+    return count;
+  }
+
+  /**
+   * Reset status verifikasi (kembali ke pending)
+   * @param {string} id - Transaction ID
+   */
+  resetPaymentVerification(id) {
+    const idx = this.state.transactions.findIndex((t) => t.id === id);
+    if (idx !== -1 && this.state.transactions[idx].paymentVerification) {
+      this.state.transactions[idx].paymentVerification.status = 'pending';
+      this.state.transactions[idx].paymentVerification.verifiedAt = null;
+      this.state.transactions[idx].paymentVerification.verifiedBy = null;
+      this.state.transactions[idx].paymentVerification.notes = '';
+      this.notify();
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Dapatkan statistik verifikasi pembayaran
+   */
+  getPaymentVerificationStats() {
+    const transactions = this.getTransactions();
+    const transferTransactions = transactions.filter((t) => 
+      t.type === 'masuk' && 
+      t.paymentMethod && 
+      t.paymentMethod.toLowerCase().includes('transfer')
+    );
+
+    const pending = transferTransactions.filter((t) => 
+      t.paymentVerification && t.paymentVerification.status === 'pending'
+    );
+    
+    const verified = transferTransactions.filter((t) => 
+      t.paymentVerification && t.paymentVerification.status === 'verified'
+    );
+    
+    const problematic = transferTransactions.filter((t) => 
+      t.paymentVerification && t.paymentVerification.status === 'problematic'
+    );
+
+    // Cek transaksi pending dari kemarin atau lebih lama
+    const today = getLocalDateString();
+    const oldPending = pending.filter((t) => t.date && t.date < today);
+
+    return {
+      total: transferTransactions.length,
+      totalAmount: transferTransactions.reduce((sum, t) => sum + (t.amount || 0), 0),
+      pending: {
+        count: pending.length,
+        amount: pending.reduce((sum, t) => sum + (t.amount || 0), 0),
+        transactions: pending
+      },
+      verified: {
+        count: verified.length,
+        amount: verified.reduce((sum, t) => sum + (t.amount || 0), 0),
+        transactions: verified
+      },
+      problematic: {
+        count: problematic.length,
+        amount: problematic.reduce((sum, t) => sum + (t.amount || 0), 0),
+        transactions: problematic
+      },
+      oldPending: {
+        count: oldPending.length,
+        amount: oldPending.reduce((sum, t) => sum + (t.amount || 0), 0),
+        transactions: oldPending
+      }
+    };
   }
 
   // Supplies (Barang Masuk)
