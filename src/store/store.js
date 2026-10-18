@@ -160,6 +160,8 @@ class Store {
         this._migrateReconcileInvestorsAndTransactions(parsed);
         // Migrate: pastikan seluruh faktur belanja lunas memiliki transaksi kas keluar yang lengkap
         this._migrateReconcileSupplyTransactions(parsed);
+        // Migrate: tambahkan paymentVerification ke transaksi transfer yang sudah ada
+        this._migrateAddPaymentVerification(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -508,6 +510,40 @@ class Store {
     if (changed || data.transactions.length !== initialTrxCount) {
       try {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      } catch (e) { /* ignore */ }
+    }
+  }
+
+  /**
+   * Migration: Tambahkan field paymentVerification ke transaksi transfer yang belum punya
+   * Ini untuk backward compatibility dengan data transaksi lama
+   */
+  _migrateAddPaymentVerification(data) {
+    if (!data || !Array.isArray(data.transactions)) return;
+    let changed = false;
+
+    data.transactions.forEach((trx) => {
+      // Hanya untuk transaksi masuk (penjualan) dengan metode transfer
+      const isTransfer = trx.type === 'masuk' && 
+                        trx.paymentMethod && 
+                        trx.paymentMethod.toLowerCase().includes('transfer');
+      
+      if (isTransfer && !trx.paymentVerification) {
+        // Tambahkan field paymentVerification dengan status pending
+        trx.paymentVerification = {
+          status: 'pending',
+          verifiedAt: null,
+          verifiedBy: null,
+          notes: ''
+        };
+        changed = true;
+      }
+    });
+
+    if (changed) {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        console.log('[Migration] Payment verification fields added to existing transfer transactions');
       } catch (e) { /* ignore */ }
     }
   }
