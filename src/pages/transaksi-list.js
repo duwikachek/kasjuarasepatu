@@ -1,6 +1,13 @@
 import { formatRupiah, parseRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
+import { Html5Qrcode } from 'html5-qrcode';
+import {
+  buildScannerConfig1D,
+  enhanceVideoElement,
+  describeCameraError,
+  playBeep
+} from '../utils/barcode-scanner-config.js';
 
 export function renderTransaksiListPage(store, filterType = 'all', isAdmin = true) {
   const summary = store.getBalanceSummary();
@@ -226,6 +233,14 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
                   <span class="material-symbols-outlined text-[20px] pointer-events-none">arrow_drop_down</span>
                 </button>
               </div>
+              <button 
+                type="button" 
+                id="btn-modal-scan-barcode"
+                class="glass-primary glass-btn glass-sheen w-12 h-10 rounded-xl flex items-center justify-center shrink-0 text-primary-btn active:scale-95 transition-all"
+                title="Scan Barcode dengan Kamera"
+              >
+                <span class="material-symbols-outlined text-[20px]">qr_code_scanner</span>
+              </button>
             </div>
 
             <!-- DROPDOWN POPUP LIST SEPATU DI STOK -->
@@ -289,6 +304,364 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
       </div>
     `;
     phoneFrame.appendChild(modal);
+  }
+
+  // ====== BARCODE SCANNER MODAL (untuk tambah barang) ======
+  let scannerModal = document.getElementById('add-item-scanner-modal');
+  if (scannerModal && scannerModal.parentElement !== phoneFrame) {
+    scannerModal.remove();
+    scannerModal = null;
+  }
+
+  if (!scannerModal) {
+    scannerModal = document.createElement('div');
+    scannerModal.id = 'add-item-scanner-modal';
+    scannerModal.className = 'hidden fixed inset-0 z-50 bg-black/95 backdrop-blur-md flex flex-col items-center justify-start p-3 pt-safe';
+    scannerModal.innerHTML = `
+      <!-- Top Bar -->
+      <div class="w-full max-w-[400px] flex items-center justify-between text-white pt-3 px-2 shrink-0">
+        <button type="button" id="btn-close-modal-scanner" class="p-2 rounded-full hover:bg-white/10 transition-all active:scale-95">
+          <span class="material-symbols-outlined text-[24px]">close</span>
+        </button>
+        <h3 class="font-headline-sm text-base font-bold">Scan Barcode Sepatu</h3>
+        <div class="w-10"></div>
+      </div>
+
+      <div class="flex-1 w-full max-w-[400px] flex flex-col items-center justify-center gap-4 py-4">
+        <div class="w-full flex flex-col gap-3">
+          <!-- Container Camera Preview -->
+          <div class="relative isolate w-full h-56 sm:h-64 rounded-3xl overflow-hidden border-3 border-emerald-400 shadow-2xl bg-black" style="box-shadow: 0 0 30px rgba(52, 211, 153, 0.3);">
+            <div id="modal-qr-reader" class="w-full h-full"></div>
+            
+            <!-- Overlay: Sudut bidik + Garis panduan -->
+            <svg class="absolute inset-0 w-full h-full pointer-events-none z-10" viewBox="0 0 100 100" preserveAspectRatio="none">
+              <defs>
+                <linearGradient id="cornerGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" style="stop-color:rgba(52,211,153,0.9);stop-opacity:1" />
+                  <stop offset="100%" style="stop-color:rgba(52,211,153,0.4);stop-opacity:1" />
+                </linearGradient>
+              </defs>
+              <!-- Sudut Kiri Atas -->
+              <path d="M 20,20 L 20,30 M 20,20 L 30,20" stroke="url(#cornerGrad)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+              <!-- Sudut Kanan Atas -->
+              <path d="M 80,20 L 80,30 M 80,20 L 70,20" stroke="url(#cornerGrad)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+              <!-- Sudut Kiri Bawah -->
+              <path d="M 20,80 L 20,70 M 20,80 L 30,80" stroke="url(#cornerGrad)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+              <!-- Sudut Kanan Bawah -->
+              <path d="M 80,80 L 80,70 M 80,80 L 70,80" stroke="url(#cornerGrad)" stroke-width="1.2" fill="none" stroke-linecap="round"/>
+              <!-- Garis horizontal tengah -->
+              <line x1="25" y1="50" x2="75" y2="50" stroke="rgba(52,211,153,0.5)" stroke-width="0.8" stroke-dasharray="2,2">
+                <animate attributeName="opacity" values="0.3;1;0.3" dur="2s" repeatCount="indefinite"/>
+              </line>
+            </svg>
+          </div>
+
+          <!-- Status message -->
+          <div id="modal-scanner-status" class="glass-sheet rounded-2xl p-3 flex items-start gap-2.5 text-white">
+            <span class="material-symbols-outlined text-emerald-400 text-[20px] shrink-0 mt-0.5">info</span>
+            <span id="modal-scanner-status-text" class="text-sm leading-snug">Geser barcode ke dalam kotak sampai terkunci</span>
+          </div>
+
+          <!-- Last scanned (hidden initially) -->
+          <div id="modal-scanner-last-read" class="hidden glass-emerald rounded-2xl p-3 flex items-center gap-2.5">
+            <span class="material-symbols-outlined text-emerald-800 text-[20px] shrink-0">check_circle</span>
+            <div class="flex-1 min-w-0">
+              <span class="text-[10px] font-semibold text-emerald-800 uppercase tracking-wide block">Terdeteksi</span>
+              <span id="modal-scanner-last-code" class="text-sm font-mono font-bold text-emerald-950 truncate block">-</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Scanner Controls -->
+        <div class="w-full flex items-center justify-center gap-3 px-4">
+          <button type="button" id="btn-modal-scanner-torch" class="p-3 rounded-full glass-chip hover:glass-sheen transition-all active:scale-95 text-white" title="Nyalakan/Matikan Flash">
+            <span class="material-symbols-outlined text-[24px]">flashlight_off</span>
+          </button>
+          <button type="button" id="btn-modal-scanner-zoom" class="p-3 rounded-full glass-chip hover:glass-sheen transition-all active:scale-95 text-white" title="Zoom Kamera">
+            <span class="material-symbols-outlined text-[24px]">zoom_in</span>
+          </button>
+          <button type="button" id="btn-modal-scanner-switch-cam" class="p-3 rounded-full glass-chip hover:glass-sheen transition-all active:scale-95 text-white" title="Ganti Kamera">
+            <span class="material-symbols-outlined text-[24px]">flip_camera_android</span>
+          </button>
+        </div>
+
+        <!-- Retry button (initially hidden) -->
+        <button type="button" id="btn-modal-scanner-retry" class="hidden glass-amber glass-btn glass-sheen px-6 py-3 rounded-xl text-amber-900 font-bold text-sm flex items-center gap-2 active:scale-95 transition-all">
+          <span class="material-symbols-outlined text-[20px]">refresh</span>
+          <span>Coba Lagi</span>
+        </button>
+
+        <!-- Cancel button -->
+        <button type="button" id="btn-cancel-modal-scanner" class="text-white/70 hover:text-white text-sm font-semibold py-2 px-4 rounded-lg hover:bg-white/10 transition-all active:scale-95">
+          Batal
+        </button>
+      </div>
+    `;
+    phoneFrame.appendChild(scannerModal);
+  }
+
+  // ====== SCANNER LOGIC FOR ADD-ITEM MODAL ======
+  let modalHtml5Scanner = null;
+  let modalScannerStarted = false;
+  let modalTorchOn = false;
+  let modalScannerZoom = 1;
+  let modalUseFrontCamera = false;
+  let isProcessingModalScan = false;
+
+  function setModalScannerStatus(message, type = 'info') {
+    const statusEl = document.getElementById('modal-scanner-status');
+    const textEl = document.getElementById('modal-scanner-status-text');
+    if (!statusEl || !textEl) return;
+
+    statusEl.className = 'glass-sheet rounded-2xl p-3 flex items-start gap-2.5 text-white';
+    const iconEl = statusEl.querySelector('.material-symbols-outlined');
+    
+    if (type === 'error') {
+      statusEl.classList.add('!bg-rose-500/20', 'border', 'border-rose-500/50');
+      if (iconEl) {
+        iconEl.textContent = 'error';
+        iconEl.className = 'material-symbols-outlined text-rose-400 text-[20px] shrink-0 mt-0.5';
+      }
+    } else if (type === 'success') {
+      statusEl.classList.add('!bg-emerald-500/20', 'border', 'border-emerald-500/50');
+      if (iconEl) {
+        iconEl.textContent = 'check_circle';
+        iconEl.className = 'material-symbols-outlined text-emerald-400 text-[20px] shrink-0 mt-0.5';
+      }
+    } else {
+      if (iconEl) {
+        iconEl.textContent = 'info';
+        iconEl.className = 'material-symbols-outlined text-emerald-400 text-[20px] shrink-0 mt-0.5';
+      }
+    }
+    
+    textEl.textContent = message;
+  }
+
+  function showModalScannerRetryButton(show) {
+    const btn = document.getElementById('btn-modal-scanner-retry');
+    if (btn) btn.classList.toggle('hidden', !show);
+  }
+
+  async function applyModalTorch(on) {
+    try {
+      const video = document.querySelector('#modal-qr-reader video');
+      if (!video || !video.srcObject) return;
+      const track = video.srcObject.getVideoTracks()[0];
+      const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+      if (capabilities.torch) {
+        await track.applyConstraints({ advanced: [{ torch: on }] });
+        modalTorchOn = on;
+        const btn = document.getElementById('btn-modal-scanner-torch');
+        if (btn) {
+          const icon = btn.querySelector('.material-symbols-outlined');
+          if (icon) icon.textContent = on ? 'flashlight_on' : 'flashlight_off';
+        }
+      }
+    } catch (err) {
+      console.warn('[modal-scanner] torch error:', err);
+    }
+  }
+
+  function cycleModalZoom() {
+    const steps = [1, 1.5, 2, 2.5, 3];
+    const idx = steps.indexOf(modalScannerZoom);
+    modalScannerZoom = steps[(idx + 1) % steps.length];
+    try {
+      const video = document.querySelector('#modal-qr-reader video');
+      if (video && video.srcObject) {
+        const track = video.srcObject.getVideoTracks()[0];
+        const capabilities = track.getCapabilities ? track.getCapabilities() : {};
+        if (capabilities.zoom) {
+          track.applyConstraints({ advanced: [{ zoom: modalScannerZoom }] });
+        }
+      }
+    } catch (err) {
+      console.warn('[modal-scanner] zoom error:', err);
+    }
+  }
+
+  function switchModalCamera() {
+    modalUseFrontCamera = !modalUseFrontCamera;
+    closeModalScanner();
+    setTimeout(() => openModalScanner(), 100);
+  }
+
+  function openModalScanner() {
+    if (!scannerModal) return;
+    scannerModal.classList.remove('hidden');
+    isProcessingModalScan = false;
+    setModalScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+    showModalScannerRetryButton(false);
+    
+    const scanDebouncer = (() => {
+      let lastTime = 0;
+      const cooldown = 1500;
+      return {
+        shouldProcess(code) {
+          const now = Date.now();
+          if (now - lastTime < cooldown) return false;
+          lastTime = now;
+          return true;
+        },
+        lock() { lastTime = Date.now() + 5000; }
+      };
+    })();
+
+    const onSuccess = (decodedText) => {
+      if (isProcessingModalScan) return;
+      if (!scanDebouncer.shouldProcess(decodedText)) return;
+      
+      isProcessingModalScan = true;
+      playBeep();
+      
+      const lastReadEl = document.getElementById('modal-scanner-last-read');
+      const lastCodeEl = document.getElementById('modal-scanner-last-code');
+      if (lastReadEl && lastCodeEl) {
+        lastCodeEl.textContent = decodedText;
+        lastReadEl.classList.remove('hidden');
+      }
+      
+      setModalScannerStatus(`Barcode terdeteksi: ${decodedText}`, 'success');
+      
+      // Set barcode ke input field di modal add-item
+      const barcodeInput = document.getElementById('add-item-barcode');
+      if (barcodeInput) {
+        barcodeInput.value = decodedText;
+        // Trigger input event untuk validasi
+        const event = new Event('input', { bubbles: true });
+        barcodeInput.dispatchEvent(event);
+      }
+      
+      // Close scanner setelah 500ms
+      setTimeout(() => {
+        closeModalScanner();
+        showToast('Barcode berhasil dipindai', 'success');
+      }, 500);
+    };
+
+    const onError = () => {
+      // Silent - scanning errors are normal
+    };
+
+    const afterStart = () => {
+      modalScannerStarted = true;
+      enhanceVideoElement('modal-qr-reader');
+      applyModalTorch(false);
+      setModalScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+      showModalScannerRetryButton(false);
+    };
+
+    const tryStart = (cameraConstraint, config, label) => {
+      if (modalHtml5Scanner) {
+        try { modalHtml5Scanner.clear(); } catch (_) {}
+        modalHtml5Scanner = null;
+      }
+      const scanner = new Html5Qrcode('modal-qr-reader', {
+        verbose: false,
+        experimentalFeatures: { useBarCodeDetectorIfSupported: true }
+      });
+      modalHtml5Scanner = scanner;
+      return scanner.start(cameraConstraint, config, onSuccess, onError)
+        .then(() => { afterStart(); })
+        .catch((err) => {
+          console.warn(`[modal-scanner] gagal start (${label}):`, err);
+          try { scanner.clear(); } catch (_) {}
+          if (modalHtml5Scanner === scanner) modalHtml5Scanner = null;
+          throw err;
+        });
+    };
+
+    const baseConfig = buildScannerConfig1D();
+    const facing = modalUseFrontCamera ? 'user' : 'environment';
+
+    tryStart({ facingMode: { ideal: facing } }, baseConfig, 'facingMode ideal')
+      .catch(() => tryStart({ facingMode: facing }, { ...baseConfig, fps: 15 }, 'facingMode exact'))
+      .catch(() => tryStart({ facingMode: 'environment' }, { ...baseConfig, fps: 10 }, 'environment fallback'))
+      .catch(() => tryStart({ facingMode: 'user' }, { ...baseConfig, fps: 10 }, 'user fallback'))
+      .catch((err) => {
+        console.error('[modal-scanner] kamera tidak dapat dibuka:', err);
+        setModalScannerStatus(describeCameraError(err), 'error');
+        showModalScannerRetryButton(true);
+      });
+  }
+
+  function closeModalScanner() {
+    isProcessingModalScan = true;
+    
+    if (!scannerModal) return;
+    scannerModal.classList.add('hidden');
+    applyModalTorch(false);
+
+    // Stop camera tracks
+    try {
+      const video = document.querySelector('#modal-qr-reader video');
+      if (video && video.srcObject) {
+        const stream = video.srcObject;
+        if (stream && typeof stream.getTracks === 'function') {
+          stream.getTracks().forEach((track) => {
+            try { track.stop(); } catch (_) {}
+          });
+        }
+        video.srcObject = null;
+      }
+    } catch (_) {}
+
+    const oldScanner = modalHtml5Scanner;
+    modalHtml5Scanner = null;
+    if (oldScanner) {
+      try {
+        const isScanning = typeof oldScanner.isScanning === 'boolean'
+          ? oldScanner.isScanning
+          : (oldScanner.getState && oldScanner.getState() === 2);
+
+        if (isScanning) {
+          oldScanner.stop()
+            .then(() => { try { oldScanner.clear(); } catch (_) {} })
+            .catch(() => { try { oldScanner.clear(); } catch (_) {} });
+        } else {
+          try { oldScanner.clear(); } catch (_) {}
+        }
+      } catch (_) {
+        try { oldScanner.clear(); } catch (_) {}
+      }
+    }
+
+    modalScannerStarted = false;
+    showModalScannerRetryButton(false);
+    setModalScannerStatus('Geser barcode ke dalam kotak sampai terkunci', 'info');
+    const lastRead = document.getElementById('modal-scanner-last-read');
+    if (lastRead) lastRead.classList.add('hidden');
+  }
+
+  // Bind scanner modal controls
+  const btnModalScanBarcode = document.getElementById('btn-modal-scan-barcode');
+  const btnCloseModalScanner = document.getElementById('btn-close-modal-scanner');
+  const btnCancelModalScanner = document.getElementById('btn-cancel-modal-scanner');
+  const btnModalScannerTorch = document.getElementById('btn-modal-scanner-torch');
+  const btnModalScannerZoom = document.getElementById('btn-modal-scanner-zoom');
+  const btnModalScannerSwitch = document.getElementById('btn-modal-scanner-switch-cam');
+  const btnModalScannerRetry = document.getElementById('btn-modal-scanner-retry');
+
+  if (btnModalScanBarcode) btnModalScanBarcode.addEventListener('click', openModalScanner);
+  if (btnCloseModalScanner) btnCloseModalScanner.addEventListener('click', closeModalScanner);
+  if (btnCancelModalScanner) btnCancelModalScanner.addEventListener('click', closeModalScanner);
+  if (btnModalScannerTorch) btnModalScannerTorch.addEventListener('click', () => applyModalTorch(!modalTorchOn));
+  if (btnModalScannerZoom) btnModalScannerZoom.addEventListener('click', cycleModalZoom);
+  if (btnModalScannerSwitch) btnModalScannerSwitch.addEventListener('click', switchModalCamera);
+  if (btnModalScannerRetry) {
+    btnModalScannerRetry.addEventListener('click', () => {
+      const old = modalHtml5Scanner;
+      modalHtml5Scanner = null;
+      if (old) {
+        old.stop()
+          .then(() => { try { old.clear(); } catch (_) {} })
+          .catch(() => {})
+          .then(() => openModalScanner());
+      } else {
+        openModalScanner();
+      }
+    });
   }
 
   let currentFilter = initialFilter;
