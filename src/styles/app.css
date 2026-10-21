@@ -546,10 +546,10 @@ header.app-header,
 
 /* Tablet & Desktop view (>= 768px): Mode Layar Lebar & Mode Frame HP */
 @media (min-width: 768px) {
-  /* Mode Desktop Lebar (Default): Lapang, elegan, tanpa notch palsu */
+  /* Mode Desktop Lebar (Default): Optimal untuk mobile-first layout */
   #phone-frame.desktop-wide {
     width: 100% !important;
-    max-width: 1080px !important;
+    max-width: 680px !important;
     height: 94vh !important;
     max-height: 980px !important;
     border-radius: 28px !important;
