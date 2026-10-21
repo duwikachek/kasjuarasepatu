@@ -1036,7 +1036,7 @@ export function initTransaksiListPage(router, store, initialFilter = 'all', isAd
 
   document.addEventListener('click', (e) => {
     if (e.target && e.target.id === 'add-item-modal-backdrop') closeAddItemModal();
-    if (e.target && e.target.id === 'btn-close-add-item-modal') closeAddItemModal();
+    if (e.target && (e.target.id === 'btn-close-add-item-modal' || e.target.closest('#btn-close-add-item-modal'))) closeAddItemModal();
     if (e.target && (e.target.id === 'btn-open-full-edit-from-modal' || e.target.closest('#btn-open-full-edit-from-modal'))) {
       const targetId = addItemTargetTrxId;
       closeAddItemModal();
