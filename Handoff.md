@@ -28,6 +28,10 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
    - Menambahkan `src/utils/pin-crypto.js` yang memanfaatkan native `crypto.subtle.digest('SHA-256')`.
    - Login di `src/pages/pin-login.js` mendukung backward-compatible verification (bisa memverifikasi PIN plaintext lama maupun hash baru) dan otomatis memigrasikan PIN plaintext ke hash saat berhasil login.
    - Perubahan PIN di `src/pages/pengaturan.js` otomatis disimpan dalam bentuk hash SHA-256.
+5. **Mode Tampilan Desktop Adaptif (Layar Lebar & Switcher Mode):**
+   - **Tanpa merusak PWA Mobile:** Pada layar smartphone (`< 768px`), aplikasi 100% berukuran penuh murni ponsel, tanpa notch simulator dan tanpa ada perubahan pada UX jempol tangan.
+   - **Layar Lebar Desktop (≥ 768px):** Container mengembang secara proporsional (`max-w-[1080px]`), notch HP tiruan disembunyikan, layout Dashboard dan Laporan otomatis menjadi grid 2-kolom seimbang, dan bottom-nav melebar secara proporsional.
+   - **Mode Switcher Desktop:** Tombol toggle di pojok kanan atas monitor (`[ 💻 Layar Lebar | 📱 Simulasi HP ]`) dengan persistensi `localStorage['kas_juara_desktop_mode']` memungkinkan admin berganti mode instan kapan saja.
 
 ---
 

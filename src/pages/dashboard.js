@@ -58,7 +58,7 @@ export function renderDashboardPage(store, isAdmin = true) {
         subtitle: shop.subName || 'Buku Kas Utama'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-3 pb-6 gap-3">
+      <div class="flex flex-col w-full px-4 md:px-6 pt-3 pb-6 gap-3 md:gap-4">
         <!-- Greeting & Status -->
         <section class="flex items-center justify-between pt-1">
           <div class="flex flex-col min-w-0">
@@ -83,8 +83,12 @@ export function renderDashboardPage(store, isAdmin = true) {
           </div>
         </section>
 
-        <!-- Main Ledger Card (Glassmorphism + Logo Watermark) -->
-        <section class="glass-dark glass-sheen rounded-xl text-surface-container-lowest p-3 relative overflow-hidden isolate">
+        <!-- Baris 1 Desktop: Saldo Kas (Kiri) & Aksi Cepat / Sinkronisasi (Kanan) -->
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
+          <!-- Kolom Saldo Utama -->
+          <div class="lg:col-span-7 flex flex-col gap-3">
+            <!-- Main Ledger Card (Glassmorphism + Logo Watermark) -->
+            <section class="glass-dark glass-sheen rounded-xl text-surface-container-lowest p-3 relative overflow-hidden isolate">
           <!-- Lapisan sinematik: gradasi + watermark logo penuh (dekoratif, di bawah konten) -->
           <div class="pointer-events-none absolute inset-0 -z-10 bg-gradient-to-tr from-black/45 via-black/15 to-white/10"></div>
           <img
@@ -147,7 +151,10 @@ export function renderDashboardPage(store, isAdmin = true) {
             </div>
           </div>
         </section>
+      </div>
 
+      <!-- Kolom Kanan Baris 1: Aksi Cepat & Google Sheets -->
+      <div class="lg:col-span-5 flex flex-col gap-2.5">
         <!-- Quick Action Buttons -->
         <section class="grid grid-cols-2 gap-2">
           ${isAdmin ? `
@@ -264,7 +271,13 @@ export function renderDashboardPage(store, isAdmin = true) {
             <span id="dash-quick-sync-text">${(store.getGoogleSheetsConfig && store.getGoogleSheetsConfig().spreadsheetId) ? 'Sinkron' : 'Hubungkan'}</span>
           </button>
         </section>
+      </div>
+    </div>
 
+    <!-- Baris 2 Desktop: Transaksi Buku Kas (Kiri) & Peringatan Penting (Kanan) -->
+    <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
+      <!-- Kolom Peringatan & Status Toko (Mobile urutan pertama, Desktop di kanan) -->
+      <div class="lg:col-span-5 flex flex-col gap-2.5 order-1 lg:order-2">
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
         <section class="flex flex-col gap-1.5">
           ${paymentStats && paymentStats.oldPending.count > 0 ? `
@@ -341,7 +354,10 @@ export function renderDashboardPage(store, isAdmin = true) {
             </div>
           ` : ''}
         </section>
+      </div>
 
+      <!-- Kolom Catatan Transaksi Terkini (Mobile urutan kedua, Desktop di kiri) -->
+      <div class="lg:col-span-7 flex flex-col gap-2 order-2 lg:order-1">
         <!-- Riwayat Transaksi Terkini -->
         <section class="flex flex-col gap-1.5">
           <div class="flex items-center justify-between pt-0.5">
@@ -451,7 +467,9 @@ export function renderDashboardPage(store, isAdmin = true) {
         </section>
       </div>
     </div>
-  `;
+  </div>
+</div>
+`;
 }
 
 export function initDashboardPage(router, store, isAdmin = true) {

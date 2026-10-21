@@ -12,7 +12,7 @@ export function renderHeader({
 } = {}) {
   return `
     <header class="app-header sticky top-0 w-full z-40 bg-black shadow-[0_4px_20px_rgba(0,0,0,0.4)] pt-safe border-b border-neutral-800" style="background-color: #000000 !important;">
-      <div class="h-16 px-4 flex items-center justify-between">
+      <div class="h-16 px-4 md:px-6 flex items-center justify-between">
         <div class="flex items-center gap-2 min-w-0">
           ${showBack ? `
             <button 

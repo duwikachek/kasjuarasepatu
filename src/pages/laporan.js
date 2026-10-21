@@ -188,7 +188,7 @@ export function renderLaporanPage(store, period = 'bulan') {
         subtitle: 'Buku Kas & Analisa Usaha'
       })}
 
-      <div class="flex flex-col w-full px-4 pt-2.5 pb-20 gap-2.5">
+      <div class="flex flex-col w-full px-4 md:px-6 pt-2.5 pb-20 gap-2.5 md:gap-3.5">
         <!-- Period Switcher Row 1 -->
         <div class="flex flex-col gap-1.5">
           <div class="glass-track p-1 rounded-lg flex items-center gap-1">
@@ -276,8 +276,10 @@ export function renderLaporanPage(store, period = 'bulan') {
         <!-- Dynamic Financial Overview Section -->
         <div id="laporan-dynamic-hero"></div>
 
-        <!-- FITUR 1: Laporan Total Jumlah Sepatu Laku -->
-        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-sepatu-laku">
+        <!-- Grid 2-Kolom Desktop: Sepatu Laku (Kiri) & Sisa Stok Real Time (Kanan) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
+          <!-- FITUR 1: Laporan Total Jumlah Sepatu Laku -->
+          <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-sepatu-laku">
           <div class="absolute -right-4 -top-4 w-16 h-16 rounded-full bg-emerald-500/10 pointer-events-none"></div>
           
           <div class="flex items-center justify-between">
@@ -397,8 +399,9 @@ export function renderLaporanPage(store, period = 'bulan') {
           <!-- Container Daftar Sisa Stock (Collapsible) -->
           <div id="container-daftar-sisa-stock" class="hidden flex flex-col gap-1.5 pt-1 border-t border-white/45"></div>
         </section>
+      </div>
 
-        <!-- FITUR KHUSUS: Laporan Investasi & Bagi Hasil (60:40) -->
+      <!-- FITUR KHUSUS: Laporan Investasi & Bagi Hasil (60:40) -->
         <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5 relative overflow-hidden" id="section-investasi-laporan">
           <div class="absolute -right-6 -top-6 w-20 h-20 rounded-full bg-amber-500/10 pointer-events-none"></div>
 
@@ -464,123 +467,129 @@ export function renderLaporanPage(store, period = 'bulan') {
           </button>
         </section>
 
-        <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
-        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-kategori-pengeluaran">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1.5">
-              <div class="w-6 h-6 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0">
-                <span class="material-symbols-outlined text-[14px]">category</span>
-              </div>
-              <div>
-                <h3 class="font-bold text-[11px] text-on-surface">Pengeluaran per Kategori</h3>
-                <p class="text-[10px] text-on-surface-variant">Filter & analisa biaya</p>
-              </div>
-            </div>
-            <span class="inline-flex items-center px-1.5 py-0.2 rounded-full glass-rose text-rose-900 text-[9px] font-bold">
-              Kas Keluar
-            </span>
-          </div>
-
-          <!-- Horizontal Filter Kategori Pills -->
-          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar" id="expense-category-filters">
-            <!-- Populated via JS -->
-          </div>
-
-          <!-- Highlight Kategori Terpilih -->
-          <div class="glass-rose rounded-lg p-1.5 flex items-center justify-between" id="expense-category-highlight">
-            <div class="flex flex-col min-w-0 pr-2">
-              <div class="flex items-center gap-1">
-                <span class="w-2 h-2 rounded-full bg-rose-600 shrink-0" id="selected-cat-dot"></span>
-                <span class="font-bold text-[10px] text-rose-950 truncate" id="selected-cat-name">Semua Kategori</span>
-              </div>
-              <span class="text-[9px] text-rose-700 mt-0.5" id="selected-cat-meta">0 transaksi</span>
-            </div>
-            <div class="flex flex-col items-end shrink-0">
-              <span class="text-xs font-extrabold text-rose-800 font-tabular" id="selected-cat-total">-Rp 0</span>
-              <span class="text-[9px] font-semibold text-rose-700" id="selected-cat-percent">100% total</span>
-            </div>
-          </div>
-
-          <!-- Visual Bar Breakdown Proporsi Biaya -->
-          <div class="flex flex-col gap-1 mt-0.5">
-            <div class="h-2 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="expense-progress-bar">
-              <!-- Colored segments populated by JS -->
-            </div>
-            <div class="flex items-center justify-between text-[9px] text-on-surface-variant">
-              <span>Proporsi Beban</span>
-              <span id="expense-total-label" class="font-bold text-rose-800 font-tabular">Total: -Rp 0</span>
-            </div>
-          </div>
-
-          <!-- Daftar Rincian Transaksi Pengeluaran Sesuai Filter -->
-          <div class="flex flex-col gap-1.5 pt-1.5 border-t border-white/45">
+        <!-- Grid 2-Kolom Desktop: Beban Pengeluaran (Kiri) & Tren Arus Kas + Pengadaan (Kanan) -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
+          <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
+          <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5" id="section-kategori-pengeluaran">
             <div class="flex items-center justify-between">
-              <span class="text-[11px] font-bold text-on-surface">Rincian Pengeluaran</span>
-              <span class="text-[9px] text-on-surface-variant" id="expense-list-count">0 catatan</span>
+              <div class="flex items-center gap-1.5">
+                <div class="w-6 h-6 rounded-lg glass-rose text-rose-700 flex items-center justify-center shrink-0">
+                  <span class="material-symbols-outlined text-[14px]">category</span>
+                </div>
+                <div>
+                  <h3 class="font-bold text-[11px] text-on-surface">Pengeluaran per Kategori</h3>
+                  <p class="text-[10px] text-on-surface-variant">Filter & analisa biaya</p>
+                </div>
+              </div>
+              <span class="inline-flex items-center px-1.5 py-0.2 rounded-full glass-rose text-rose-900 text-[9px] font-bold">
+                Kas Keluar
+              </span>
             </div>
-            <div id="expense-transaction-list" class="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-0.5">
+
+            <!-- Horizontal Filter Kategori Pills -->
+            <div class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar" id="expense-category-filters">
               <!-- Populated via JS -->
             </div>
-          </div>
-        </section>
 
-        <!-- SVG Visual Arus Kas 7 Hari -->
-        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <div class="flex items-center gap-1">
-              <span class="material-symbols-outlined text-primary text-[14px]">bar_chart</span>
-              <h3 class="font-title-ledger text-xs font-bold text-on-surface">Tren Arus Kas 7 Hari</h3>
-            </div>
-            <div class="flex items-center gap-2 text-[9px] text-on-surface-variant font-semibold">
-              <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Masuk</span>
-              <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Keluar</span>
-            </div>
-          </div>
-
-          <!-- Interactive Bar Chart Visual -->
-          <div class="h-24 w-full flex items-end justify-between gap-1 pt-1.5 px-1 pb-1">
-            ${[
-              { day: 'Sen', m: 85, k: 30 },
-              { day: 'Sel', m: 60, k: 45 },
-              { day: 'Rab', m: 95, k: 25 },
-              { day: 'Kam', m: 40, k: 70 },
-              { day: 'Jum', m: 110, k: 50 },
-              { day: 'Sab', m: 130, k: 40 },
-              { day: 'Min', m: 100, k: 35 }
-            ]
-              .map(
-                (bar) => `
-              <div class="flex-1 flex flex-col items-center gap-0.5 h-full justify-end">
-                <div class="w-full flex items-end justify-center gap-0.5 h-16">
-                  <div class="w-2 rounded-t-sm bg-emerald-600 hover:opacity-80 transition-all" style="height: ${bar.m * 0.6}px;" title="Masuk"></div>
-                  <div class="w-2 rounded-t-sm bg-rose-500 hover:opacity-80 transition-all" style="height: ${bar.k * 0.6}px;" title="Keluar"></div>
+            <!-- Highlight Kategori Terpilih -->
+            <div class="glass-rose rounded-lg p-1.5 flex items-center justify-between" id="expense-category-highlight">
+              <div class="flex flex-col min-w-0 pr-2">
+                <div class="flex items-center gap-1">
+                  <span class="w-2 h-2 rounded-full bg-rose-600 shrink-0" id="selected-cat-dot"></span>
+                  <span class="font-bold text-[10px] text-rose-950 truncate" id="selected-cat-name">Semua Kategori</span>
                 </div>
-                <span class="font-label-sm text-[9px] text-on-surface-variant font-semibold mt-0.5">${bar.day}</span>
+                <span class="text-[9px] text-rose-700 mt-0.5" id="selected-cat-meta">0 transaksi</span>
               </div>
-            `
-              )
-              .join('')}
-          </div>
-        </section>
-
-        <!-- Rekapitulasi Belanja Stock -->
-        <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
-          <div class="flex items-center justify-between">
-            <h3 class="font-title-ledger text-xs font-bold text-on-surface">Rekap Pengadaan</h3>
-            <span class="font-label-sm text-[9px] px-1.5 py-0.2 rounded-full glass-chip text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
-          </div>
-
-          <div class="grid grid-cols-2 gap-1 mt-0.5">
-            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
-              <span class="text-[9px] text-on-surface-variant">Total Belanja</span>
-              <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${formatRupiah(totalBelanja)}</span>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="text-xs font-extrabold text-rose-800 font-tabular" id="selected-cat-total">-Rp 0</span>
+                <span class="text-[9px] font-semibold text-rose-700" id="selected-cat-percent">100% total</span>
+              </div>
             </div>
-            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
-              <span class="text-[9px] text-on-surface-variant">Total Masuk</span>
-              <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${totalItems} Psg</span>
+
+            <!-- Visual Bar Breakdown Proporsi Biaya -->
+            <div class="flex flex-col gap-1 mt-0.5">
+              <div class="h-2 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="expense-progress-bar">
+                <!-- Colored segments populated by JS -->
+              </div>
+              <div class="flex items-center justify-between text-[9px] text-on-surface-variant">
+                <span>Proporsi Beban</span>
+                <span id="expense-total-label" class="font-bold text-rose-800 font-tabular">Total: -Rp 0</span>
+              </div>
             </div>
+
+            <!-- Daftar Rincian Transaksi Pengeluaran Sesuai Filter -->
+            <div class="flex flex-col gap-1.5 pt-1.5 border-t border-white/45">
+              <div class="flex items-center justify-between">
+                <span class="text-[11px] font-bold text-on-surface">Rincian Pengeluaran</span>
+                <span class="text-[9px] text-on-surface-variant" id="expense-list-count">0 catatan</span>
+              </div>
+              <div id="expense-transaction-list" class="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-0.5">
+                <!-- Populated via JS -->
+              </div>
+            </div>
+          </section>
+
+          <!-- Kolom Kanan: Tren Arus Kas 7 Hari & Rekap Pengadaan -->
+          <div class="flex flex-col gap-2.5">
+            <!-- SVG Visual Arus Kas 7 Hari -->
+            <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">bar_chart</span>
+                  <h3 class="font-title-ledger text-xs font-bold text-on-surface">Tren Arus Kas 7 Hari</h3>
+                </div>
+                <div class="flex items-center gap-2 text-[9px] text-on-surface-variant font-semibold">
+                  <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-emerald-600"></span> Masuk</span>
+                  <span class="flex items-center gap-0.5"><span class="w-1.5 h-1.5 rounded-full bg-rose-500"></span> Keluar</span>
+                </div>
+              </div>
+
+              <!-- Interactive Bar Chart Visual -->
+              <div class="h-24 w-full flex items-end justify-between gap-1 pt-1.5 px-1 pb-1">
+                ${[
+                  { day: 'Sen', m: 85, k: 30 },
+                  { day: 'Sel', m: 60, k: 45 },
+                  { day: 'Rab', m: 95, k: 25 },
+                  { day: 'Kam', m: 40, k: 70 },
+                  { day: 'Jum', m: 110, k: 50 },
+                  { day: 'Sab', m: 130, k: 40 },
+                  { day: 'Min', m: 100, k: 35 }
+                ]
+                  .map(
+                    (bar) => `
+                  <div class="flex-1 flex flex-col items-center gap-0.5 h-full justify-end">
+                    <div class="w-full flex items-end justify-center gap-0.5 h-16">
+                      <div class="w-2 rounded-t-sm bg-emerald-600 hover:opacity-80 transition-all" style="height: ${bar.m * 0.6}px;" title="Masuk"></div>
+                      <div class="w-2 rounded-t-sm bg-rose-500 hover:opacity-80 transition-all" style="height: ${bar.k * 0.6}px;" title="Keluar"></div>
+                    </div>
+                    <span class="font-label-sm text-[9px] text-on-surface-variant font-semibold mt-0.5">${bar.day}</span>
+                  </div>
+                `
+                  )
+                  .join('')}
+              </div>
+            </section>
+
+            <!-- Rekapitulasi Belanja Stock -->
+            <section class="glass-card glass-sheen rounded-lg p-2.5 flex flex-col gap-1.5">
+              <div class="flex items-center justify-between">
+                <h3 class="font-title-ledger text-xs font-bold text-on-surface">Rekap Pengadaan</h3>
+                <span class="font-label-sm text-[9px] px-1.5 py-0.2 rounded-full glass-chip text-on-secondary-fixed font-bold">${supplies.length} Belanja</span>
+              </div>
+
+              <div class="grid grid-cols-2 gap-1 mt-0.5">
+                <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+                  <span class="text-[9px] text-on-surface-variant">Total Belanja</span>
+                  <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${formatRupiah(totalBelanja)}</span>
+                </div>
+                <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+                  <span class="text-[9px] text-on-surface-variant">Total Masuk</span>
+                  <span class="font-bold text-[11px] text-primary font-tabular mt-0.5">${totalItems} Psg</span>
+                </div>
+              </div>
+            </section>
           </div>
-        </section>
+        </div>
 
         <!-- Export & Share Button -->
         <button 

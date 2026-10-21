@@ -526,3 +526,74 @@ header.app-header,
   }
 }
 
+/* ============================================================
+   DESKTOP ADAPTIVE EXPERIENCE & VIEWPORT SWITCHER
+   ============================================================ */
+
+/* Mobile view (< 768px): 100% PWA ASLI (Murni smartphone) */
+@media (max-width: 767.98px) {
+  #phone-frame {
+    width: 100% !important;
+    max-width: 100% !important;
+    height: 100dvh !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+  }
+  #desktop-view-switcher {
+    display: none !important;
+  }
+}
+
+/* Tablet & Desktop view (>= 768px): Mode Layar Lebar & Mode Frame HP */
+@media (min-width: 768px) {
+  /* Mode Desktop Lebar (Default): Lapang, elegan, tanpa notch palsu */
+  #phone-frame.desktop-wide {
+    width: 100% !important;
+    max-width: 1080px !important;
+    height: 94vh !important;
+    max-height: 980px !important;
+    border-radius: 28px !important;
+    box-shadow: 
+      0 25px 70px rgba(0, 0, 0, 0.75),
+      0 0 0 1px rgba(255, 255, 255, 0.15),
+      0 0 45px rgba(13, 31, 22, 0.6) !important;
+  }
+
+  #phone-frame.desktop-wide #mobile-notch-bar {
+    display: none !important;
+  }
+
+  /* Mode Pratinjau Smartphone (Bagi yang ingin simulator HP di laptop) */
+  #phone-frame.desktop-phone {
+    width: 100% !important;
+    max-width: 430px !important;
+    height: 880px !important;
+    max-height: 920px !important;
+    border-radius: 36px !important;
+    box-shadow: 
+      0 25px 60px rgba(0,0,0,0.6),
+      0 0 0 12px #1d3328,
+      0 0 0 14px #2f4a3b !important;
+  }
+
+  #phone-frame.desktop-phone #mobile-notch-bar {
+    display: flex !important;
+  }
+
+  /* Custom subtle scrollbar untuk desktop agar nyaman di-scroll */
+  #app::-webkit-scrollbar {
+    display: block !important;
+    width: 6px !important;
+  }
+  #app::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.25) !important;
+  }
+  #app::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.22) !important;
+    border-radius: 4px !important;
+  }
+  #app::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.4) !important;
+  }
+}
+
