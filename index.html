@@ -143,30 +143,16 @@
   <link rel="stylesheet" href="/src/styles/app.css"/>
 </head>
 <body class="bg-[#0d1f16] text-on-surface font-body-md antialiased selection:bg-[#bfe0a0] selection:text-[#0d1f16] min-h-screen flex items-center justify-center p-0 md:p-4 relative">
-  <!-- Desktop Mode Switcher (Hanya aktif di Layar Lebar / Desktop / Tablet) -->
-  <div id="desktop-view-switcher" class="hidden md:flex fixed top-3 right-4 z-[999] items-center gap-1 p-1 bg-black/85 backdrop-blur-md border border-white/20 rounded-full shadow-2xl text-xs select-none">
-    <button type="button" id="btn-mode-wide" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold transition-all active:scale-95 bg-emerald-800/90 text-emerald-200 border border-emerald-600/50 shadow-sm" title="Mode Layar Lebar (Nyaman untuk Kasir / Monitor Komputer)">
-      <span class="material-symbols-outlined text-[15px]">laptop</span>
-      <span>Layar Lebar</span>
-    </button>
-    <button type="button" id="btn-mode-phone" class="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-neutral-400 hover:text-white font-medium transition-all active:scale-95" title="Simulasi Tampilan Ponsel (430px)">
-      <span class="material-symbols-outlined text-[15px]">smartphone</span>
-      <span>Simulasi HP</span>
-    </button>
+  <!-- Desktop Mode Switcher - REMOVED: Desktop always uses wide mode (680px) -->
+  <!-- Mode switcher hidden - No switching between wide/phone mode -->
+  <div id="desktop-view-switcher" class="hidden">
   </div>
 
   <!-- Mobile & Desktop Adaptive Container / Frame -->
   <div id="phone-frame" class="desktop-wide w-full h-[100dvh] bg-surface relative flex flex-col overflow-hidden transition-all duration-300 ease-in-out" style="background-image:url('./assets/background-sepatu-kulit.jpg');background-size:cover;background-position:center 30%;background-repeat:no-repeat;background-color:#0d1f16;">
     
-    <!-- Top Notch / Status bar for mobile aesthetics (visible on phone simulator mode only) -->
-    <div id="mobile-notch-bar" class="hidden sm:flex items-center justify-between px-6 pt-3 pb-1 text-xs text-neutral-400 z-50 bg-black select-none shrink-0 border-b border-neutral-900">
-      <span id="live-clock" class="font-semibold text-[13px] text-white">09:41</span>
-      <div class="w-20 h-4 bg-neutral-900 border border-neutral-800 rounded-full mx-auto"></div>
-      <div class="flex items-center gap-1.5 text-neutral-400">
-        <span class="material-symbols-outlined text-[14px]">signal_cellular_4_bar</span>
-        <span class="material-symbols-outlined text-[14px]">wifi</span>
-        <span class="material-symbols-outlined text-[16px]">battery_full</span>
-      </div>
+    <!-- Top Notch / Status bar - HIDDEN: No phone simulator mode -->
+    <div id="mobile-notch-bar" class="hidden">
     </div>
 
     <!-- Main Dynamic View Container (Scrollable) -->

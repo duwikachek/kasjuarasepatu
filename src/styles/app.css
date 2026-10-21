@@ -544,9 +544,9 @@ header.app-header,
   }
 }
 
-/* Tablet & Desktop view (>= 768px): Mode Layar Lebar & Mode Frame HP */
+/* Tablet & Desktop view (>= 768px): Fixed Wide Mode Only */
 @media (min-width: 768px) {
-  /* Mode Desktop Lebar (Default): Optimal untuk mobile-first layout */
+  /* Desktop: Always wide mode (680px) - No switching */
   #phone-frame.desktop-wide {
     width: 100% !important;
     max-width: 680px !important;
@@ -559,26 +559,12 @@ header.app-header,
       0 0 45px rgba(13, 31, 22, 0.6) !important;
   }
 
-  #phone-frame.desktop-wide #mobile-notch-bar {
+  /* Notch bar always hidden on desktop */
+  #phone-frame #mobile-notch-bar {
     display: none !important;
   }
 
-  /* Mode Pratinjau Smartphone (Bagi yang ingin simulator HP di laptop) */
-  #phone-frame.desktop-phone {
-    width: 100% !important;
-    max-width: 430px !important;
-    height: 880px !important;
-    max-height: 920px !important;
-    border-radius: 36px !important;
-    box-shadow: 
-      0 25px 60px rgba(0,0,0,0.6),
-      0 0 0 12px #1d3328,
-      0 0 0 14px #2f4a3b !important;
-  }
-
-  #phone-frame.desktop-phone #mobile-notch-bar {
-    display: flex !important;
-  }
+  /* Phone simulator mode REMOVED - Desktop always uses wide mode */
 
   /* Custom subtle scrollbar untuk desktop agar nyaman di-scroll */
   #app::-webkit-scrollbar {

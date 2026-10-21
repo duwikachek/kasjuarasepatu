@@ -19,37 +19,18 @@ function initLiveClock() {
   setInterval(updateClock, 10000);
 }
 
-// Inisialisasi Switcher Mode Desktop (Layar Lebar vs Simulasi HP)
+// Desktop View Mode - SIMPLIFIED: Always use wide mode (no switching)
 function initDesktopViewSwitcher() {
   const frame = document.getElementById('phone-frame');
-  const btnWide = document.getElementById('btn-mode-wide');
-  const btnPhone = document.getElementById('btn-mode-phone');
-  if (!frame || !btnWide || !btnPhone) return;
+  if (!frame) return;
 
-  const STORAGE_KEY = 'kas_juara_desktop_mode';
-  let currentMode = localStorage.getItem(STORAGE_KEY) || 'wide';
-
-  function applyMode(mode) {
-    currentMode = mode;
-    try { localStorage.setItem(STORAGE_KEY, mode); } catch (e) {}
-
-    if (mode === 'wide') {
-      frame.classList.add('desktop-wide');
-      frame.classList.remove('desktop-phone');
-      btnWide.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold transition-all active:scale-95 bg-emerald-800/90 text-emerald-200 border border-emerald-600/50 shadow-sm';
-      btnPhone.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-neutral-400 hover:text-white font-medium transition-all active:scale-95';
-    } else {
-      frame.classList.remove('desktop-wide');
-      frame.classList.add('desktop-phone');
-      btnPhone.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full font-semibold transition-all active:scale-95 bg-emerald-800/90 text-emerald-200 border border-emerald-600/50 shadow-sm';
-      btnWide.className = 'flex items-center gap-1.5 px-3 py-1.5 rounded-full text-neutral-400 hover:text-white font-medium transition-all active:scale-95';
-    }
-  }
-
-  btnWide.addEventListener('click', () => applyMode('wide'));
-  btnPhone.addEventListener('click', () => applyMode('phone'));
-
-  applyMode(currentMode);
+  // Force desktop-wide mode (680px) - no user switching
+  frame.classList.add('desktop-wide');
+  frame.classList.remove('desktop-phone');
+  
+  // No mode switcher buttons, no event listeners needed
+  // Desktop will always display in wide mode (680px)
+  console.log('[Desktop] Mode: Wide (680px) - Fixed');
 }
 
 // Minta penyimpanan persisten agar data tidak dibersihkan browser saat ruang menipis
