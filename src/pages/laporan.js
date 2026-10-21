@@ -1,4 +1,4 @@
-import { formatRupiah, store } from '../store/store.js';
+import { formatRupiah } from '../store/store.js';
 import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 
@@ -78,6 +78,23 @@ function extractSoldShoesList(transactions) {
     }
   });
   return list;
+}
+
+// Helper: Membangun mapping barcode -> invoiceNo dari supplies data store
+function buildBarcodeToInvoiceMap(supplies = []) {
+  const barcodeToInvoice = new Map();
+  supplies.forEach((supply) => {
+    const invoiceNo = supply.invoiceNo;
+    if (supply.items && Array.isArray(supply.items)) {
+      supply.items.forEach((item) => {
+        if (item.barcode) {
+          const bc = item.barcode.toString().trim().toUpperCase();
+          barcodeToInvoice.set(bc, invoiceNo);
+        }
+      });
+    }
+  });
+  return barcodeToInvoice;
 }
 
 // Helper: Filter transaksi berdasarkan periode (Hari, 7 Hari, Bulan Ini, Semua, Tanggal, Pilih Bulan)
@@ -676,29 +693,12 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
     // 2. FITUR 1: Laporan Sepatu Laku
     let soldShoes = extractSoldShoesList(periodTrxs);
+    const supplies = store.getSupplies();
+    const barcodeToInvoice = currentFaktur !== 'all' ? buildBarcodeToInvoiceMap(supplies) : null;
     
     // Filter berdasarkan faktur jika dipilih
-    if (currentFaktur !== 'all') {
-      // Ambil supplies dari localStorage untuk mapping barcode -> invoiceNo
-      const mainData = JSON.parse(localStorage.getItem('kas_juara_sepatu_data_v1') || '{}');
-      const supplies = mainData.supplies || [];
-      const barcodeToInvoice = new Map();
-      
-      // Build mapping dari supplies data
-      supplies.forEach(supply => {
-        const invoiceNo = supply.invoiceNo;
-        if (supply.items && Array.isArray(supply.items)) {
-          supply.items.forEach(item => {
-            if (item.barcode) {
-              const bc = item.barcode.toString().trim().toUpperCase();
-              barcodeToInvoice.set(bc, invoiceNo);
-            }
-          });
-        }
-      });
-      
-      // Filter soldShoes: hanya tampilkan yang barcodenya berasal dari faktur terpilih
-      soldShoes = soldShoes.filter(shoe => {
+    if (barcodeToInvoice) {
+      soldShoes = soldShoes.filter((shoe) => {
         if (!shoe.barcode || shoe.barcode === '-') return false;
         const bc = shoe.barcode.toString().trim().toUpperCase();
         return barcodeToInvoice.get(bc) === currentFaktur;
@@ -771,26 +771,8 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     
     // Filter berdasarkan faktur jika dipilih
     let filteredUnsoldItems = stockReport.unsoldItems;
-    if (currentFaktur !== 'all') {
-      // Gunakan barcode mapping dari supplies untuk filter
-      const mainData = JSON.parse(localStorage.getItem('kas_juara_sepatu_data_v1') || '{}');
-      const supplies = mainData.supplies || [];
-      const barcodeToInvoice = new Map();
-      
-      supplies.forEach(supply => {
-        const invoiceNo = supply.invoiceNo;
-        if (supply.items && Array.isArray(supply.items)) {
-          supply.items.forEach(item => {
-            if (item.barcode) {
-              const bc = item.barcode.toString().trim().toUpperCase();
-              barcodeToInvoice.set(bc, invoiceNo);
-            }
-          });
-        }
-      });
-      
-      // Filter hanya item yang barcodenya berasal dari faktur terpilih
-      filteredUnsoldItems = stockReport.unsoldItems.filter(item => {
+    if (barcodeToInvoice) {
+      filteredUnsoldItems = stockReport.unsoldItems.filter((item) => {
         if (!item.barcode) return false;
         const bc = item.barcode.toString().trim().toUpperCase();
         return barcodeToInvoice.get(bc) === currentFaktur;

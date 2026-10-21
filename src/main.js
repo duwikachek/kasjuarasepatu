@@ -1,5 +1,7 @@
 import { store } from './store/store.js';
 import { Router } from './router.js';
+import { checkStorageHealth } from './utils/storage-monitor.js';
+
 
 // Setup live clock in mock status bar
 function initLiveClock() {
@@ -125,4 +127,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   // Make router and store available for debugging if needed
   window.__APP_ROUTER__ = router;
   window.__APP_STORE__ = store;
+
+  // Cek kondisi storage 5 detik setelah app tampil (tidak block UI)
+  setTimeout(async () => {
+    try {
+      const health = checkStorageHealth();
+      if (health.status === 'critical' || health.status === 'warning') {
+        const { showToast } = await import('./components/toast.js');
+        showToast(health.message, health.status === 'critical' ? 'error' : 'warning', 7000);
+      }
+      if (health.status !== 'ok') {
+        console.warn('[Storage]', health.message, health.detail);
+      }
+    } catch (e) { /* diabaikan */ }
+  }, 5000);
 });
+

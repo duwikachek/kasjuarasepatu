@@ -36,3 +36,8 @@ src/config/service-account.json
 # Gemini / Scratch artifacts
 .agents/
 scratch/
+
+# File backup editor / sementara — jangan pernah di-commit
+*.bak
+*.backup
+*.orig

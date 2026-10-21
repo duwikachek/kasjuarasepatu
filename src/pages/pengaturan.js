@@ -2,12 +2,16 @@ import { renderHeader, bindHeaderEvents } from '../components/header.js';
 import { showToast } from '../components/toast.js';
 import { formatRupiah, parseRupiah } from '../store/store.js';
 import { testSpreadsheetConnection, syncAllToGoogleSheets, extractSpreadsheetId, getCredentials } from '../services/googleSheets.js';
+import { hashPin, isPinHashed } from '../utils/pin-crypto.js';
+import { getStorageUsage, formatBytes, checkStorageHealth, pruneOrphanPhotos } from '../utils/storage-monitor.js';
 
 export function renderPengaturanPage(store, isAdmin = true) {
   const shop = store.getShop();
   const initialLaci = Number(shop.initialBalanceLaci ?? 8450000);
   const initialBank = Number(shop.initialBalanceBank ?? 6400000);
   const initialTotal = initialLaci + initialBank;
+  const storageUsage = getStorageUsage();
+  const storageHealth = checkStorageHealth();
 
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-6">
@@ -168,7 +172,7 @@ export function renderPengaturanPage(store, isAdmin = true) {
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
                 <span class="font-label-md text-xs font-semibold text-on-surface">PIN Admin (Full Akses)</span>
-                <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pin || '123456'}</strong></span>
+                <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${isPinHashed(shop.pin) ? '••••••' : (shop.pin || '123456')}</strong></span>
               </div>
               <button 
                 type="button" 
@@ -182,7 +186,7 @@ export function renderPengaturanPage(store, isAdmin = true) {
             <div class="flex items-center justify-between py-2">
               <div class="flex flex-col">
                 <span class="font-label-md text-xs font-semibold text-on-surface">PIN Atasan (Lihat Saja / Read-Only)</span>
-                <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${shop.pinAtasan || '888888'}</strong></span>
+                <span class="text-[11px] text-on-surface-variant">PIN saat ini: <strong class="text-on-surface">${isPinHashed(shop.pinAtasan) ? '••••••' : (shop.pinAtasan || '888888')}</strong></span>
               </div>
               <button 
                 type="button" 
@@ -483,6 +487,48 @@ export function renderPengaturanPage(store, isAdmin = true) {
           </button>
         </section>
 
+        <!-- Status Penyimpanan Browser (Storage Monitor) -->
+        <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-2" id="section-storage-monitor">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-1.5">
+              <span class="material-symbols-outlined text-primary text-[16px]">pie_chart</span>
+              <h3 class="font-title-ledger text-xs font-bold text-on-surface">Penyimpanan Browser</h3>
+            </div>
+            <span class="font-label-sm text-[9px] px-2 py-0.5 rounded-full ${storageHealth.status === 'critical' ? 'text-rose-700 bg-rose-500/15' : storageHealth.status === 'warning' ? 'text-amber-700 bg-amber-500/15' : 'text-emerald-700 bg-emerald-500/15'} font-bold">
+              ${storageUsage.usagePercent}% Terpakai
+            </span>
+          </div>
+
+          <div class="flex flex-col gap-1">
+            <div class="w-full h-2 rounded-full glass-track overflow-hidden">
+              <div class="h-full ${storageHealth.status === 'critical' ? 'bg-rose-500' : storageHealth.status === 'warning' ? 'bg-amber-500' : 'bg-emerald-500'} transition-all duration-300" style="width: ${Math.min(storageUsage.usagePercent, 100)}%;"></div>
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-on-surface-variant">
+              <span>Terpakai: <strong class="text-on-surface">${formatBytes(storageUsage.totalBytes)}</strong></span>
+              <span>Estimasi Limit: <strong>5.0 MB</strong></span>
+            </div>
+          </div>
+
+          <div class="grid grid-cols-2 gap-1.5 text-[10px] pt-1 border-t border-white/10">
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+              <span class="text-on-surface-variant text-[9px]">Data & Transaksi</span>
+              <span class="font-bold text-on-surface font-tabular">${formatBytes(storageUsage.mainStateBytes)}</span>
+            </div>
+            <div class="glass-panel rounded-lg p-1.5 flex flex-col">
+              <span class="text-on-surface-variant text-[9px]">Media Foto</span>
+              <span class="font-bold text-on-surface font-tabular">${formatBytes(storageUsage.photoBytes)}</span>
+            </div>
+          </div>
+
+          <button 
+            type="button" 
+            id="btn-prune-photos"
+            class="w-full py-2 rounded-lg glass-chip-btn text-on-surface font-label-md text-[11px] font-semibold flex items-center justify-center gap-1.5 active:scale-95 transition-all"
+          >
+            <span class="material-symbols-outlined text-[15px] text-primary">auto_delete</span>
+            <span>Bersihkan Cache Foto Tidak Terpakai</span>
+          </button>
+        </section>
 
         <!-- Tampilan Background App -->
         <section class="glass-card glass-sheen rounded-xl p-2.5 flex flex-col gap-1.5" id="section-background">
@@ -650,11 +696,11 @@ export function initPengaturanPage(router, store, isAdmin = true) {
   // Change PIN Admin
   const btnPin = document.getElementById('btn-change-pin');
   if (btnPin && isAdmin) {
-    btnPin.addEventListener('click', () => {
-      const currentPin = store.getShop().pin || '123456';
-      const newPin = prompt(`Masukkan 6 digit PIN Admin baru (saat ini: ${currentPin}):`, currentPin);
+    btnPin.addEventListener('click', async () => {
+      const newPin = prompt('Masukkan 6 digit PIN Admin baru:');
       if (newPin && newPin.trim().length === 6 && /^\d+$/.test(newPin.trim())) {
-        store.updateShop({ pin: newPin.trim() });
+        const hashed = await hashPin(newPin.trim());
+        store.updateShop({ pin: hashed });
         showToast('PIN Admin berhasil diubah!', 'success');
         router.navigate('pengaturan');
       } else if (newPin !== null) {
@@ -666,11 +712,11 @@ export function initPengaturanPage(router, store, isAdmin = true) {
   // Change PIN Atasan
   const btnPinAtasan = document.getElementById('btn-change-pin-atasan');
   if (btnPinAtasan && isAdmin) {
-    btnPinAtasan.addEventListener('click', () => {
-      const currentPinAtasan = store.getShop().pinAtasan || '888888';
-      const newPin = prompt(`Masukkan 6 digit PIN Atasan baru (saat ini: ${currentPinAtasan}):`, currentPinAtasan);
+    btnPinAtasan.addEventListener('click', async () => {
+      const newPin = prompt('Masukkan 6 digit PIN Atasan baru:');
       if (newPin && newPin.trim().length === 6 && /^\d+$/.test(newPin.trim())) {
-        store.updateShop({ pinAtasan: newPin.trim() });
+        const hashed = await hashPin(newPin.trim());
+        store.updateShop({ pinAtasan: hashed });
         showToast('PIN Atasan berhasil diubah!', 'success');
         router.navigate('pengaturan');
       } else if (newPin !== null) {
@@ -761,6 +807,43 @@ export function initPengaturanPage(router, store, isAdmin = true) {
         await window.forceAppUpdate();
       } else {
         window.location.reload(true);
+      }
+    });
+  }
+
+  // Bersihkan foto tidak terpakai (Prune Orphan Photos)
+  const btnPrunePhotos = document.getElementById('btn-prune-photos');
+  if (btnPrunePhotos) {
+    btnPrunePhotos.addEventListener('click', () => {
+      try {
+        const stockReport = store.getRealtimeStockReport ? store.getRealtimeStockReport() : { allProducts: [] };
+        const trxs = store.getTransactions ? store.getTransactions() : [];
+        const supplies = store.getSupplies ? store.getSupplies() : [];
+        const activeBarcodes = new Set();
+
+        (stockReport.allProducts || []).forEach((p) => { if (p.barcode) activeBarcodes.add(p.barcode); });
+        (trxs || []).forEach((t) => {
+          if (t.barcode) activeBarcodes.add(t.barcode);
+          if (Array.isArray(t.items)) {
+            t.items.forEach((it) => { if (it.barcode) activeBarcodes.add(it.barcode); });
+          }
+        });
+        (supplies || []).forEach((sup) => {
+          if (Array.isArray(sup.items)) {
+            sup.items.forEach((it) => { if (it.barcode) activeBarcodes.add(it.barcode); });
+          }
+        });
+
+        const removedCount = pruneOrphanPhotos(Array.from(activeBarcodes));
+        if (removedCount > 0) {
+          showToast(`Berhasil membersihkan ${removedCount} foto tidak terpakai.`, 'success');
+          router.navigate('pengaturan');
+        } else {
+          showToast('Penyimpanan foto bersih. Tidak ada foto yang tidak terpakai.', 'info');
+        }
+      } catch (err) {
+        console.warn('Gagal membersihkan foto:', err);
+        showToast('Gagal memproses pembersihan foto.', 'error');
       }
     });
   }

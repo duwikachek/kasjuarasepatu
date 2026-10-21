@@ -2,6 +2,16 @@ import { INITIAL_DATA } from '../data/dummy.js';
 import { showToast } from '../components/toast.js';
 import { pushStateToSupabase, pullStateFromSupabase, subscribeToStateChanges } from '../services/supabase.js';
 import { getLocalDateString } from '../utils/date.js';
+import {
+  migrateReconcileSupplyTransactions,
+  migrateKulakan,
+  migrateShopBranch,
+  migrateRemoveDummyInventory,
+  migrateCleanProductStockField,
+  migratePurgeDummyData,
+  migrateReconcileInvestorsAndTransactions,
+  migrateAddPaymentVerification
+} from './store-migrations.js';
 
 const STORAGE_KEY = 'kas_juara_sepatu_data_v1';
 // Salinan darurat bila data tersimpan rusak / gagal diparse
@@ -147,21 +157,21 @@ class Store {
           parsed.opnameRecords = [];
         }
         // Migrate: rename 'Kulakan Barang' -> 'Belanja Barang' in existing data
-        this._migrateKulakan(parsed);
+        migrateKulakan(parsed);
         // Migrate: default branch name 'Cabang Veteran Bandung' -> 'Cengkareng Jakarta Barat'
-        this._migrateShopBranch(parsed);
+        migrateShopBranch(parsed);
         // Migrate: hapus data contoh 'inventory' lama (alert stok kini pakai data nyata)
-        this._migrateRemoveDummyInventory(parsed);
+        migrateRemoveDummyInventory(parsed);
         // Migrate: hapus field 'stock' dari katalog produk (stok kini HANYA dari supplies)
-        this._migrateCleanProductStockField(parsed);
+        migrateCleanProductStockField(parsed);
         // Migrate: hapus data dummy bawaan (supplies, products, transactions contoh)
-        this._migratePurgeDummyData(parsed);
+        migratePurgeDummyData(parsed);
         // Migrate: sinkronisasi investor & kas (hapus transaksi kas orphan bila investor telah dihapus)
-        this._migrateReconcileInvestorsAndTransactions(parsed);
+        migrateReconcileInvestorsAndTransactions(parsed);
         // Migrate: pastikan seluruh faktur belanja lunas memiliki transaksi kas keluar yang lengkap
-        this._migrateReconcileSupplyTransactions(parsed);
+        migrateReconcileSupplyTransactions(parsed);
         // Migrate: tambahkan paymentVerification ke transaksi transfer yang sudah ada
-        this._migrateAddPaymentVerification(parsed);
+        migrateAddPaymentVerification(parsed);
         return parsed;
       } catch (e) {
         // Data rusak: JANGAN langsung buang. Simpan salinan mentahnya ke key backup.
@@ -189,6 +199,12 @@ class Store {
    * memiliki transaksi kas keluar 'Belanja Barang' yang lengkap sejumlah totalAmount faktur.
    * Mencegah ketidaksesuaian laporan pengeluaran kas dengan faktur pengadaan.
    */
+  // ─── Migrasi dipindahkan ke src/store/store-migrations.js ──────────────────
+  // Semua method _migrate*() kini didelegasikan ke modul terpisah.
+  // Referensi di loadState() langsung memanggil fungsi yang diimport.
+  // ─────────────────────────────────────────────────────────────────────────────
+
+  /** @deprecated Dipindahkan ke store-migrations.js. Tetap ada untuk kompatibilitas jika ada kode lama. */
   _migrateReconcileSupplyTransactions(data) {
     if (!data || !Array.isArray(data.supplies) || !Array.isArray(data.transactions)) return false;
     let changed = false;

@@ -1,5 +1,6 @@
 import { showToast } from '../components/toast.js';
 import logoJuara from '../assets/logo-juara.png';
+import { verifyPin as checkPinHash, migratePinsToHash } from '../utils/pin-crypto.js';
 
 export function renderPinLoginPage() {
   return `
@@ -97,24 +98,34 @@ export function initPinLoginPage(router, store) {
     }
   }
 
-  function verifyPin() {
-    let detectedRole = null;
+  async function verifyPin() {
+    const shop = store.getShop();
+    const adminPin = shop.pin || '123456';
+    const atasanPin = shop.pinAtasan || '888888';
 
-    if (pin === adminPin) {
-      detectedRole = 'admin';
-    } else if (atasanPin && pin === atasanPin) {
-      detectedRole = 'atasan';
-    }
+    let detectedRole = null;
+    // Verifikasi async — mendukung plain text (lama) dan SHA-256 hash (baru)
+    const [isAdmin, isAtasan] = await Promise.all([
+      checkPinHash(pin, adminPin),
+      atasanPin ? checkPinHash(pin, atasanPin) : Promise.resolve(false)
+    ]);
+
+    if (isAdmin) detectedRole = 'admin';
+    else if (isAtasan) detectedRole = 'atasan';
 
     if (detectedRole) {
-      // Simpan role ke session
       store.setRole(detectedRole);
+
+      // Migrasi PIN plain text → SHA-256 hash (hanya Admin yang bisa, karena butuh updateShop)
+      if (detectedRole === 'admin') {
+        const shopData = store.getShop();
+        migratePinsToHash(shopData, (updates) => store.updateShop(updates));
+      }
 
       if (errorMsg) errorMsg.textContent = '';
       const greeting = detectedRole === 'admin' ? 'Selamat Datang, Admin!' : 'Selamat Datang, Atasan!';
       showToast(greeting, 'success');
       setTimeout(() => {
-        // Paksa navigate ke dashboard — gunakan router global sbg fallback
         const activeRouter = window.__APP_ROUTER__ || router;
         window.location.hash = '#/dashboard';
         activeRouter.currentRoute = 'dashboard';
@@ -123,7 +134,6 @@ export function initPinLoginPage(router, store) {
           activeRouter.render();
         } catch (e) {
           console.error('[PIN] render gagal:', e);
-          // Fallback terakhir: reload dengan hash dashboard
           window.location.href = window.location.pathname + '#/dashboard';
           window.location.reload();
         }
@@ -132,7 +142,6 @@ export function initPinLoginPage(router, store) {
       if (errorMsg) errorMsg.textContent = 'PIN salah, silakan coba lagi.';
       pin = '';
       updateDots();
-      // Shake effect
       const group = document.getElementById('pin-indicator-group');
       if (group) {
         group.classList.add('animate-bounce');

@@ -9,7 +9,29 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
 - **Storage:** LocalStorage (untuk data lokal & foto produk)
 - **Barcode Scanner:** `html5-qrcode`
 
-## Konteks Terakhir (Update 17 Oktober 2026)
+## Konteks Terakhir (Update 21 Oktober 2026)
+
+### Refactoring, Keamanan PIN, Penyimpanan Browser & Perapian Repositori
+**Waktu:** 21 Oktober 2026  
+**Tujuan:** Menyelesaikan 4 poin optimasi utama: (1) Membersihkan file backup dan ignore aturan file sampah, (2) Modularisasi migrasi `store-migrations.js` dan refactoring `laporan.js` (eliminasi parameter shadowing dan bypass direct localStorage), (3) Monitoring kuota penyimpanan browser (`storage-monitor.js`) dengan fitur pembersihan foto orphan di Pengaturan dan startup alert di `main.js`, (4) Enkripsi/hashing SHA-256 PIN Admin & Atasan via Web Crypto API (`pin-crypto.js`).
+
+**Poin-Poin Perbaikan:**
+1. **Pembersihan File Backup & Gitignore:** Menghapus `src/pages/pengaturan.js.bak` dan `src/pages/transaksi-list.js.backup`, serta mendaftarkan pola `*.bak`, `*.backup`, `*.tmp` ke `.gitignore`.
+2. **Modularisasi Store & Refactor Laporan:**
+   - Mengekstrak 7 fungsi migrasi besar dari `store.js` ke modul `src/store/store-migrations.js`.
+   - Menghapus direct `localStorage.getItem('kas_juara_sepatu_data_v1')` di `src/pages/laporan.js`. Menggantikannya dengan `store.getSupplies()` dan helper reusable `buildBarcodeToInvoiceMap()`, serta mengeliminasi variable shadowing `store`.
+3. **Penyimpanan Browser & Pengelolaan Foto:**
+   - Menambahkan utilitas `src/utils/storage-monitor.js` untuk estimasi bytes localStorage, pemantauan limit 5MB, dan API foto terpisah.
+   - Pengecekan otomatis kondisi storage 5 detik setelah aplikasi terbuka (`src/main.js`).
+   - Widget indikator visual kapasitas penyimpanan & tombol *"Bersihkan Cache Foto Tidak Terpakai"* di `src/pages/pengaturan.js`.
+4. **Keamanan & Hashing PIN SHA-256:**
+   - Menambahkan `src/utils/pin-crypto.js` yang memanfaatkan native `crypto.subtle.digest('SHA-256')`.
+   - Login di `src/pages/pin-login.js` mendukung backward-compatible verification (bisa memverifikasi PIN plaintext lama maupun hash baru) dan otomatis memigrasikan PIN plaintext ke hash saat berhasil login.
+   - Perubahan PIN di `src/pages/pengaturan.js` otomatis disimpan dalam bentuk hash SHA-256.
+
+---
+
+## Konteks Sebelumnya (Update 17 Oktober 2026)
 
 ### Fitur Menu Investasi, Sesi Belanja (Syarat ≥ 50% Terjual) & Bagi Hasil 60:40
 **Waktu:** 17 Oktober 2026  
