@@ -386,6 +386,10 @@ export function renderDashboardPage(store, isAdmin = true) {
                   totalQty = Number(trx.itemCount) || 1;
                 }
                 
+                // Check if this is a sale transaction (not investor)
+                const isInvestor = trx.category && trx.category.toLowerCase().includes('investor');
+                const showQtyLabel = isMasuk && !isInvestor;
+                
                 return `
                   <div class="glass-row flex items-center justify-between p-2.5 transition-colors">
                     <div class="flex items-center gap-2 min-w-0">
@@ -396,7 +400,7 @@ export function renderDashboardPage(store, isAdmin = true) {
                         <span class="font-title-ledger text-xs font-semibold text-on-surface truncate">${trx.title}</span>
                         <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
                           <span class="truncate">${trx.category}</span>
-                          ${isMasuk ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
+                          ${showQtyLabel ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
                           <span>•</span>
                           <span class="shrink-0">${trx.time}</span>
                         </div>
@@ -424,6 +428,10 @@ export function renderDashboardPage(store, isAdmin = true) {
                   }
                 });
                 
+                // Check if any transaction in group is investor
+                const isInvestor = group.transactions.some(t => t.category && t.category.toLowerCase().includes('investor'));
+                const showQtyLabel = isMasuk && !isInvestor;
+                
                 return `
                   <div class="glass-row flex flex-col p-2.5 transition-colors">
                     <div class="flex items-center justify-between">
@@ -435,7 +443,7 @@ export function renderDashboardPage(store, isAdmin = true) {
                           <span class="font-title-ledger text-xs font-semibold text-on-surface">${group.nota}</span>
                           <div class="flex items-center gap-1 text-on-surface-variant text-[10px] mt-0.5">
                             <span class="shrink-0">${itemCount} barang</span>
-                            ${isMasuk ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
+                            ${showQtyLabel ? `<span>•</span><span class="shrink-0 font-semibold text-emerald-600">${totalQty} ${totalQty > 1 ? 'penjualan sepatu' : 'penjualan sepatu'}</span>` : ''}
                             <span>•</span>
                             <span class="shrink-0">${firstTrx.time}</span>
                           </div>
