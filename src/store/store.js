@@ -1554,6 +1554,79 @@ class Store {
     };
   }
 
+  /**
+   * Get sales statistics for the last N days
+   * Returns daily breakdown with date, revenue, shoe count, and transaction count
+   * Excludes investor transactions (only actual sales)
+   */
+  getSalesStatsByDays(days = 7) {
+    const trxs = this.getTransactions();
+    const now = new Date();
+    const stats = [];
+
+    // Create array of dates for last N days
+    for (let i = days - 1; i >= 0; i--) {
+      const date = new Date(now);
+      date.setDate(date.getDate() - i);
+      const dateStr = getLocalDateString(date);
+
+      // Filter sales transactions for this date (exclude investor)
+      const dayTrxs = trxs.filter(t => {
+        if (t.type !== 'masuk') return false;
+        if (!t.date) return false;
+        // Exclude investor transactions
+        const isInvestor = t.category && t.category.toLowerCase().includes('investor');
+        if (isInvestor) return false;
+        return t.date === dateStr;
+      });
+
+      // Calculate stats
+      let revenue = 0;
+      let shoeCount = 0;
+      dayTrxs.forEach(t => {
+        revenue += Number(t.amount) || 0;
+        // Count shoes from items array or itemCount
+        if (t.items && Array.isArray(t.items) && t.items.length > 0) {
+          shoeCount += t.items.reduce((sum, item) => sum + (Number(item.qty) || 1), 0);
+        } else {
+          shoeCount += Number(t.itemCount) || 1;
+        }
+      });
+
+      stats.push({
+        date: dateStr,
+        dayName: date.toLocaleDateString('id-ID', { weekday: 'short' }), // Sen, Sel, Rab...
+        revenue,
+        shoeCount,
+        transactionCount: dayTrxs.length
+      });
+    }
+
+    // Calculate summary
+    const totalRevenue = stats.reduce((sum, d) => sum + d.revenue, 0);
+    const totalShoes = stats.reduce((sum, d) => sum + d.shoeCount, 0);
+    const totalTransactions = stats.reduce((sum, d) => sum + d.transactionCount, 0);
+    const avgRevenue = stats.length > 0 ? totalRevenue / stats.length : 0;
+    const avgShoes = stats.length > 0 ? totalShoes / stats.length : 0;
+
+    // Find best and worst day
+    const bestDay = stats.reduce((max, d) => d.revenue > max.revenue ? d : max, stats[0] || { revenue: 0 });
+    const worstDay = stats.reduce((min, d) => d.revenue < min.revenue && d.revenue > 0 ? d : min, stats[0] || { revenue: 0 });
+
+    return {
+      days: stats,
+      summary: {
+        totalRevenue,
+        totalShoes,
+        totalTransactions,
+        avgRevenue,
+        avgShoes,
+        bestDay,
+        worstDay
+      }
+    };
+  }
+
   // Reset / Bersihkan Data
   /**
    * Hapus HANYA record contoh (dummy) bawaan aplikasi, berdasarkan ID/barcode persis.

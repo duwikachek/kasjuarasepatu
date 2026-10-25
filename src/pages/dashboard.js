@@ -278,6 +278,81 @@ export function renderDashboardPage(store, isAdmin = true) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
       <!-- Kolom Peringatan & Status Toko (Mobile urutan pertama, Desktop di kanan) -->
       <div class="lg:col-span-5 flex flex-col gap-2.5 order-1 lg:order-2">
+        <!-- 7-Day Sales Stats Card Summary -->
+        ${(() => {
+          const salesStats = store.getSalesStatsByDays ? store.getSalesStatsByDays(7) : null;
+          if (!salesStats || salesStats.summary.totalRevenue === 0) return '';
+          
+          const { summary } = salesStats;
+          return `
+            <section class="glass-card glass-sheen relative overflow-hidden rounded-lg p-3">
+              <div class="flex items-center justify-between mb-2">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-primary text-[18px]">monitoring</span>
+                  <span class="font-label-md text-xs font-bold text-on-surface">Ringkasan Penjualan 7 Hari</span>
+                </div>
+                <button type="button" data-nav="laporan" class="font-label-sm text-[10px] text-primary font-semibold hover:underline">Detail</button>
+              </div>
+              
+              <!-- Main Stats Grid -->
+              <div class="grid grid-cols-3 gap-2 mb-2.5">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Total Omzet</span>
+                  <span class="font-currency-item text-sm font-bold text-emerald-700 font-tabular">${formatRupiah(summary.totalRevenue, '')}</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Total Sepatu</span>
+                  <span class="font-title-ledger text-sm font-bold text-on-surface font-tabular">${summary.totalShoes} Pasang</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Transaksi</span>
+                  <span class="font-title-ledger text-sm font-bold text-on-surface font-tabular">${summary.totalTransactions}x</span>
+                </div>
+              </div>
+
+              <!-- Average Stats -->
+              <div class="bg-surface-container/50 rounded-lg p-2 mb-2.5">
+                <div class="flex items-center justify-between">
+                  <div class="flex flex-col">
+                    <span class="font-label-sm text-[9px] text-on-surface-variant">Rata-rata per Hari</span>
+                    <span class="font-currency-item text-xs font-bold text-primary font-tabular">${formatRupiah(summary.avgRevenue, '')}</span>
+                  </div>
+                  <div class="flex items-center gap-1 text-on-surface-variant text-[10px]">
+                    <span class="material-symbols-outlined text-[14px]">footprint</span>
+                    <span class="font-semibold">${summary.avgShoes.toFixed(1)} sepatu/hari</span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Best & Worst Day -->
+              <div class="grid grid-cols-2 gap-1.5">
+                ${summary.bestDay.revenue > 0 ? `
+                  <div class="bg-emerald-50/70 border border-emerald-200/50 rounded-lg p-1.5">
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                      <span class="material-symbols-outlined text-emerald-600 text-[12px]">trending_up</span>
+                      <span class="font-label-sm text-[9px] text-emerald-800 font-bold uppercase">Terbaik</span>
+                    </div>
+                    <span class="font-title-ledger text-[10px] font-semibold text-emerald-900">${summary.bestDay.dayName}</span>
+                    <div class="font-currency-item text-xs font-bold text-emerald-700 font-tabular">${formatRupiah(summary.bestDay.revenue, '')}</div>
+                    <span class="font-label-sm text-[9px] text-emerald-600">${summary.bestDay.shoeCount} sepatu</span>
+                  </div>
+                ` : ''}
+                ${summary.worstDay.revenue > 0 && summary.worstDay.revenue < summary.bestDay.revenue ? `
+                  <div class="bg-amber-50/70 border border-amber-200/50 rounded-lg p-1.5">
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                      <span class="material-symbols-outlined text-amber-600 text-[12px]">trending_down</span>
+                      <span class="font-label-sm text-[9px] text-amber-800 font-bold uppercase">Tersepi</span>
+                    </div>
+                    <span class="font-title-ledger text-[10px] font-semibold text-amber-900">${summary.worstDay.dayName}</span>
+                    <div class="font-currency-item text-xs font-bold text-amber-700 font-tabular">${formatRupiah(summary.worstDay.revenue, '')}</div>
+                    <span class="font-label-sm text-[9px] text-amber-600">${summary.worstDay.shoeCount} sepatu</span>
+                  </div>
+                ` : ''}
+              </div>
+            </section>
+          `;
+        })()}
+
         <!-- Smart Alerts (Stok Kritis & Pengiriman Aktif) -->
         <section class="flex flex-col gap-1.5">
           ${paymentStats && paymentStats.oldPending.count > 0 ? `

@@ -276,6 +276,87 @@ export function renderLaporanPage(store, period = 'bulan') {
         <!-- Dynamic Financial Overview Section -->
         <div id="laporan-dynamic-hero"></div>
 
+        <!-- 7-Day Sales Statistics with Bar Chart -->
+        ${(() => {
+          const salesStats = store.getSalesStatsByDays ? store.getSalesStatsByDays(7) : null;
+          if (!salesStats || salesStats.summary.totalRevenue === 0) return '';
+          
+          const { days, summary } = salesStats;
+          const maxRevenue = Math.max(...days.map(d => d.revenue));
+          
+          return `
+            <section class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-2">
+              <div class="flex items-center justify-between">
+                <div class="flex items-center gap-1.5">
+                  <span class="material-symbols-outlined text-primary text-[20px]">bar_chart</span>
+                  <div>
+                    <h3 class="font-headline-sm text-sm font-bold text-on-surface">Statistik Penjualan 7 Hari Terakhir</h3>
+                    <p class="text-[10px] text-on-surface-variant">Tren harian omzet & sepatu terjual</p>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Bar Chart -->
+              <div class="flex flex-col gap-1.5 bg-surface-container/30 rounded-lg p-2.5">
+                ${days.map(day => {
+                  const barWidth = maxRevenue > 0 ? (day.revenue / maxRevenue * 100) : 0;
+                  const isToday = day.date === new Date().toISOString().split('T')[0];
+                  const isBest = day.revenue === summary.bestDay.revenue && day.revenue > 0;
+                  
+                  return `
+                    <div class="flex items-center gap-2">
+                      <!-- Day Label -->
+                      <div class="w-9 text-right">
+                        <span class="font-label-sm text-[10px] font-bold ${isToday ? 'text-primary' : 'text-on-surface'}">${day.dayName}</span>
+                      </div>
+                      
+                      <!-- Bar Container -->
+                      <div class="flex-1 relative h-7 bg-surface-container rounded-md overflow-hidden">
+                        <!-- Bar Fill -->
+                        <div class="absolute left-0 top-0 h-full ${isBest ? 'bg-gradient-to-r from-emerald-500 to-emerald-600' : 'bg-gradient-to-r from-primary/70 to-primary'} transition-all duration-500 rounded-md"
+                          style="width: ${barWidth}%"></div>
+                        
+                        <!-- Label Inside Bar -->
+                        <div class="absolute left-0 top-0 w-full h-full flex items-center px-2 gap-2 justify-between">
+                          <span class="font-currency-item text-[11px] font-bold ${barWidth > 40 ? 'text-white' : 'text-on-surface'} font-tabular z-10">
+                            ${day.revenue > 0 ? formatRupiah(day.revenue, '') : '-'}
+                          </span>
+                          ${day.shoeCount > 0 ? `
+                            <div class="flex items-center gap-0.5">
+                              <span class="material-symbols-outlined text-[12px] ${barWidth > 40 ? 'text-white/80' : 'text-on-surface-variant'}">footprint</span>
+                              <span class="font-label-sm text-[10px] font-bold ${barWidth > 40 ? 'text-white/90' : 'text-on-surface-variant'}">${day.shoeCount}</span>
+                            </div>
+                          ` : ''}
+                          ${isBest ? `<span class="text-[10px]">⭐</span>` : ''}
+                        </div>
+                      </div>
+                    </div>
+                  `;
+                }).join('')}
+              </div>
+
+              <!-- Summary Footer -->
+              <div class="grid grid-cols-3 gap-2 pt-2 border-t border-surface-container-high/30">
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Rata-rata</span>
+                  <span class="font-currency-item text-xs font-bold text-primary font-tabular">${formatRupiah(summary.avgRevenue, '')}</span>
+                  <span class="font-label-sm text-[9px] text-on-surface-variant">${summary.avgShoes.toFixed(1)} sepatu/hari</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Total 7 Hari</span>
+                  <span class="font-currency-item text-xs font-bold text-emerald-600 font-tabular">${formatRupiah(summary.totalRevenue, '')}</span>
+                  <span class="font-label-sm text-[9px] text-on-surface-variant">${summary.totalShoes} sepatu terjual</span>
+                </div>
+                <div class="flex flex-col">
+                  <span class="font-label-sm text-[9px] text-on-surface-variant uppercase">Transaksi</span>
+                  <span class="font-title-ledger text-xs font-bold text-on-surface font-tabular">${summary.totalTransactions}x</span>
+                  <span class="font-label-sm text-[9px] text-on-surface-variant">${(summary.totalRevenue / summary.totalTransactions).toFixed(0)} per trx</span>
+                </div>
+              </div>
+            </section>
+          `;
+        })()}
+
         <!-- Grid 2-Kolom Desktop: Sepatu Laku (Kiri) & Sisa Stok Real Time (Kanan) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
           <!-- FITUR 1: Laporan Total Jumlah Sepatu Laku -->
