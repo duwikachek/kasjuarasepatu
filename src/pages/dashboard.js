@@ -278,7 +278,7 @@ export function renderDashboardPage(store, isAdmin = true) {
     <div class="grid grid-cols-1 lg:grid-cols-12 gap-3 md:gap-4 items-start">
       <!-- Kolom Peringatan & Status Toko (Mobile urutan pertama, Desktop di kanan) -->
       <div class="lg:col-span-5 flex flex-col gap-2.5 order-1 lg:order-2">
-        <!-- 7-Day Sales Stats Card Summary (Compact Version) -->
+        <!-- 7-Day Sales Stats Card Summary (Vertical Layout) -->
         ${(() => {
           const salesStats = store.getSalesStatsByDays ? store.getSalesStatsByDays(7) : null;
           if (!salesStats || salesStats.summary.totalRevenue === 0) return '';
@@ -298,62 +298,56 @@ export function renderDashboardPage(store, isAdmin = true) {
                 </button>
               </div>
               
-              <!-- Compact 2-Column Layout -->
-              <div class="grid grid-cols-2 gap-2">
-                <!-- Left: Main Stats -->
-                <div class="flex flex-col gap-1.5">
-                  <!-- Total Revenue -->
-                  <div class="bg-emerald-50/70 border border-emerald-200/40 rounded-lg p-1.5">
-                    <div class="flex items-center gap-1 mb-0.5">
-                      <span class="material-symbols-outlined text-emerald-600 text-[12px]">payments</span>
-                      <span class="font-label-sm text-[8px] text-emerald-800 font-bold uppercase tracking-wide">Total Omzet</span>
-                    </div>
-                    <div class="font-currency-item text-sm font-bold text-emerald-700 font-tabular leading-tight">${formatRupiah(summary.totalRevenue, '')}</div>
-                    <div class="flex items-center justify-between mt-0.5">
-                      <span class="font-label-sm text-[9px] text-emerald-600">${summary.totalShoes} sepatu</span>
-                      <span class="font-label-sm text-[9px] text-emerald-600">${summary.totalTransactions}x trx</span>
-                    </div>
+              <!-- Vertical Layout -->
+              <div class="flex flex-col gap-1.5">
+                <!-- Total Revenue -->
+                <div class="bg-emerald-50/70 border border-emerald-200/40 rounded-lg p-1.5">
+                  <div class="flex items-center gap-1 mb-0.5">
+                    <span class="material-symbols-outlined text-emerald-600 text-[12px]">payments</span>
+                    <span class="font-label-sm text-[8px] text-emerald-800 font-bold uppercase tracking-wide">Total Omzet 7 Hari</span>
                   </div>
-                  
-                  <!-- Average -->
-                  <div class="bg-surface-container/60 rounded-lg p-1.5">
-                    <span class="font-label-sm text-[8px] text-on-surface-variant uppercase tracking-wide">Rata-rata/Hari</span>
-                    <div class="font-currency-item text-xs font-bold text-primary font-tabular leading-tight mt-0.5">${formatRupiah(summary.avgRevenue, '')}</div>
-                    <span class="font-label-sm text-[9px] text-on-surface-variant">${summary.avgShoes.toFixed(1)} sepatu</span>
+                  <div class="font-currency-item text-sm font-bold text-emerald-700 font-tabular leading-tight">${formatRupiah(summary.totalRevenue, '')}</div>
+                  <div class="flex items-center justify-between mt-0.5">
+                    <span class="font-label-sm text-[9px] text-emerald-600">${summary.totalShoes} sepatu</span>
+                    <span class="font-label-sm text-[9px] text-emerald-600">${summary.totalTransactions}x transaksi</span>
                   </div>
+                </div>
+                
+                <!-- Average -->
+                <div class="bg-surface-container/60 rounded-lg p-1.5">
+                  <span class="font-label-sm text-[8px] text-on-surface-variant uppercase tracking-wide">Rata-rata per Hari</span>
+                  <div class="font-currency-item text-xs font-bold text-primary font-tabular leading-tight mt-0.5">${formatRupiah(summary.avgRevenue, '')}</div>
+                  <span class="font-label-sm text-[9px] text-on-surface-variant">${summary.avgShoes.toFixed(1)} sepatu/hari</span>
                 </div>
 
-                <!-- Right: Best & Worst -->
-                <div class="flex flex-col gap-1.5">
-                  ${summary.bestDay.revenue > 0 ? `
-                    <!-- Best Day -->
-                    <div class="bg-emerald-50/70 border border-emerald-200/40 rounded-lg p-1.5">
-                      <div class="flex items-center gap-0.5 mb-0.5">
-                        <span class="material-symbols-outlined text-emerald-600 text-[11px]">trending_up</span>
-                        <span class="font-label-sm text-[8px] text-emerald-800 font-bold uppercase tracking-wide">Terbaik</span>
-                      </div>
-                      <div class="flex items-baseline gap-1">
-                        <span class="font-title-ledger text-[11px] font-bold text-emerald-900">${summary.bestDay.dayName}</span>
-                        <span class="font-label-sm text-[9px] text-emerald-700">⭐</span>
-                      </div>
-                      <div class="font-currency-item text-xs font-bold text-emerald-700 font-tabular leading-tight">${formatRupiah(summary.bestDay.revenue, '')}</div>
-                      <span class="font-label-sm text-[9px] text-emerald-600">${summary.bestDay.shoeCount} sepatu</span>
+                ${summary.bestDay.revenue > 0 ? `
+                  <!-- Best Day -->
+                  <div class="bg-emerald-50/70 border border-emerald-200/40 rounded-lg p-1.5">
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                      <span class="material-symbols-outlined text-emerald-600 text-[11px]">trending_up</span>
+                      <span class="font-label-sm text-[8px] text-emerald-800 font-bold uppercase tracking-wide">Hari Terbaik</span>
                     </div>
-                  ` : ''}
-                  
-                  ${summary.worstDay.revenue > 0 && summary.worstDay.revenue < summary.bestDay.revenue ? `
-                    <!-- Worst Day -->
-                    <div class="bg-amber-50/70 border border-amber-200/40 rounded-lg p-1.5">
-                      <div class="flex items-center gap-0.5 mb-0.5">
-                        <span class="material-symbols-outlined text-amber-600 text-[11px]">trending_down</span>
-                        <span class="font-label-sm text-[8px] text-amber-800 font-bold uppercase tracking-wide">Tersepi</span>
-                      </div>
-                      <div class="font-title-ledger text-[11px] font-bold text-amber-900 leading-tight">${summary.worstDay.dayName}</div>
-                      <div class="font-currency-item text-xs font-bold text-amber-700 font-tabular leading-tight">${formatRupiah(summary.worstDay.revenue, '')}</div>
-                      <span class="font-label-sm text-[9px] text-amber-600">${summary.worstDay.shoeCount} sepatu</span>
+                    <div class="flex items-baseline gap-1">
+                      <span class="font-title-ledger text-[11px] font-bold text-emerald-900">${summary.bestDay.dayName}</span>
+                      <span class="font-label-sm text-[9px] text-emerald-700">⭐</span>
                     </div>
-                  ` : ''}
-                </div>
+                    <div class="font-currency-item text-xs font-bold text-emerald-700 font-tabular leading-tight">${formatRupiah(summary.bestDay.revenue, '')}</div>
+                    <span class="font-label-sm text-[9px] text-emerald-600">${summary.bestDay.shoeCount} sepatu terjual</span>
+                  </div>
+                ` : ''}
+                
+                ${summary.worstDay.revenue > 0 && summary.worstDay.revenue < summary.bestDay.revenue ? `
+                  <!-- Worst Day -->
+                  <div class="bg-amber-50/70 border border-amber-200/40 rounded-lg p-1.5">
+                    <div class="flex items-center gap-0.5 mb-0.5">
+                      <span class="material-symbols-outlined text-amber-600 text-[11px]">trending_down</span>
+                      <span class="font-label-sm text-[8px] text-amber-800 font-bold uppercase tracking-wide">Hari Tersepi</span>
+                    </div>
+                    <div class="font-title-ledger text-[11px] font-bold text-amber-900 leading-tight">${summary.worstDay.dayName}</div>
+                    <div class="font-currency-item text-xs font-bold text-amber-700 font-tabular leading-tight">${formatRupiah(summary.worstDay.revenue, '')}</div>
+                    <span class="font-label-sm text-[9px] text-amber-600">${summary.worstDay.shoeCount} sepatu terjual</span>
+                  </div>
+                ` : ''}
               </div>
             </section>
           `;
