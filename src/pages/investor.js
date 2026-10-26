@@ -940,9 +940,26 @@ export function initInvestorPage(router, store, isAdmin = true) {
         g('inv-name').focus();
         return;
       }
+      
+      // ✅ CRITICAL FIX: Comprehensive validation for investor amount
+      if (isNaN(amount) || !isFinite(amount)) {
+        showToast('❌ Jumlah modal tidak valid! Masukkan angka yang benar.', 'error', 4000);
+        g('inv-amount').focus();
+        g('inv-amount').select();
+        return;
+      }
+      
       if (amount <= 0) {
         showToast('Jumlah modal harus lebih dari Rp 0!', 'error');
         g('inv-amount').focus();
+        return;
+      }
+      
+      // Prevent unreasonably large values (> 10 billion)
+      if (amount > 10000000000) {
+        showToast('❌ Jumlah modal terlalu besar! Maksimal Rp 10 miliar.', 'error', 4000);
+        g('inv-amount').focus();
+        g('inv-amount').select();
         return;
       }
 

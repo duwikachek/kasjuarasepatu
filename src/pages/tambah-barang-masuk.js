@@ -1303,6 +1303,51 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
         }
         return;
       }
+      
+      // ✅ CRITICAL FIX: Validate buyPrice to prevent NaN/Infinity
+      const buyPrice = Number(it.buyPrice);
+      if (isNaN(buyPrice) || !isFinite(buyPrice)) {
+        showToast(`❌ Harga Beli Sepatu #${i + 1} "${it.name}" tidak valid! Masukkan angka yang benar.`, 'error', 4000);
+        const cardEl = container.querySelector(`[data-item-id="${it.id}"]`);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputBeli = cardEl.querySelector('.input-item-beli');
+          if (inputBeli) {
+            inputBeli.focus();
+            inputBeli.select();
+          }
+        }
+        return;
+      }
+      
+      if (buyPrice <= 0) {
+        showToast(`❌ Harga Beli Sepatu #${i + 1} "${it.name}" harus lebih dari Rp 0`, 'error', 4000);
+        const cardEl = container.querySelector(`[data-item-id="${it.id}"]`);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputBeli = cardEl.querySelector('.input-item-beli');
+          if (inputBeli) inputBeli.focus();
+        }
+        return;
+      }
+      
+      if (buyPrice > 50000000) {
+        showToast(`❌ Harga Beli Sepatu #${i + 1} terlalu besar! Maksimal Rp 50 juta.`, 'error', 4000);
+        const cardEl = container.querySelector(`[data-item-id="${it.id}"]`);
+        if (cardEl) {
+          cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+          const inputBeli = cardEl.querySelector('.input-item-beli');
+          if (inputBeli) inputBeli.focus();
+        }
+        return;
+      }
+      
+      // ✅ Validate qty (should always be positive integer)
+      const qty = Number(it.qty);
+      if (isNaN(qty) || !isFinite(qty) || qty < 1 || !Number.isInteger(qty)) {
+        showToast(`❌ Jumlah Sepatu #${i + 1} "${it.name}" tidak valid! Harus angka bulat positif.`, 'error', 4000);
+        return;
+      }
     }
 
     // 2. Validasi Anti-Barcode Dobel (Cek duplikasi barcode di sistem & form)
@@ -1333,8 +1378,26 @@ export function initTambahBarangMasukPage(router, store, params = {}) {
       }
     }
 
-    const totalAmount = items.reduce((sum, it) => sum + ((Number(it.buyPrice) || 0) * (Number(it.qty) || 1)), 0);
-    const totalCount = items.reduce((sum, it) => sum + (Number(it.qty) || 1), 0);
+    const totalAmount = items.reduce((sum, it) => {
+      const price = Number(it.buyPrice) || 0;
+      const quantity = Number(it.qty) || 1;
+      // ✅ Safety check for NaN/Infinity in calculations
+      const itemTotal = price * quantity;
+      if (isNaN(itemTotal) || !isFinite(itemTotal)) return sum;
+      return sum + itemTotal;
+    }, 0);
+    
+    const totalCount = items.reduce((sum, it) => {
+      const quantity = Number(it.qty) || 1;
+      if (isNaN(quantity) || !isFinite(quantity)) return sum;
+      return sum + quantity;
+    }, 0);
+    
+    // ✅ Final sanity check on totals
+    if (isNaN(totalAmount) || !isFinite(totalAmount) || totalAmount <= 0) {
+      showToast('❌ Total amount tidak valid! Ada kesalahan perhitungan.', 'error');
+      return;
+    }
 
     // KASUS 1: APPEND KE NOTA SUPLIER YANG SUDAH ADA
     if (isAppend && targetSupply) {

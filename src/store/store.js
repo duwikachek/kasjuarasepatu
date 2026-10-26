@@ -579,31 +579,56 @@ class Store {
    */
   saveState(newState) {
     const data = newState || this.state;
+    
     try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+      const stateStr = JSON.stringify(data);
+      const sizeBytes = new Blob([stateStr]).size;
+      const sizeKB = sizeBytes / 1024;
+      const sizeMB = sizeKB / 1024;
+      
+      // ✅ Warn if storage is getting full (approaching 8 MB)
+      if (sizeKB > 8000 && !this._storageWarningShown) {
+        this._storageWarningShown = true;
+        this._warnSaveOnce(
+          `⚠️ Data hampir penuh (${sizeMB.toFixed(1)} MB). Backup segera!`,
+          'warning',
+          8000
+        );
+      }
+      
+      localStorage.setItem(STORAGE_KEY, stateStr);
       this._saveErrorShown = false;
       return true;
+      
     } catch (e) {
-      console.error('Gagal menyimpan ke localStorage', e);
-
-      // Fallback: simpan tanpa foto agar data penting tetap tersimpan
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(this._stripPhotos(data)));
-        this._warnSaveOnce('Penyimpanan browser penuh. Foto tidak ikut tersimpan, tetapi data transaksi & stok tetap aman.');
-        return false;
-      } catch (e2) {
-        console.error('Gagal menyimpan versi ringkas', e2);
+      console.error('[Store] Save Error:', e);
+      
+      // ✅ Handle QuotaExceededError specifically
+      if (e.name === 'QuotaExceededError' || e.code === 22 || e.code === 1014) {
+        console.warn('[Store] localStorage quota exceeded! Attempting fallback...');
+        
+        // Fallback: simpan tanpa foto
+        try {
+          const stripped = this._stripPhotos(data);
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(stripped));
+          this._warnSaveOnce('💾 Storage penuh! Foto dihapus. Data aman. BACKUP SEGERA!', 'error', 10000);
+          return false;
+        } catch (e2) {
+          console.error('[Store] Fallback failed:', e2);
+          this._warnSaveOnce('🚨 Storage penuh! Data TIDAK tersimpan. BACKUP SEKARANG!', 'error', 15000);
+          return false;
+        }
       }
-
-      this._warnSaveOnce('GAGAL menyimpan data ke browser! Segera lakukan Backup (Ekspor JSON) atau sinkronkan ke Google Sheets.');
+      
+      this._warnSaveOnce('GAGAL menyimpan data! Backup sekarang.', 'error', 8000);
       return false;
     }
   }
 
-  _warnSaveOnce(message) {
+  _warnSaveOnce(message, type = 'error', duration = 6000) {
     if (this._saveErrorShown) return;
     this._saveErrorShown = true;
-    try { showToast(message, 'error', 6000); } catch (e) { /* ignore */ }
+    try { showToast(message, type, duration); } catch (e) { /* ignore */ }
   }
 
   /** Salinan state tanpa data foto (fallback saat kuota penyimpanan penuh). */

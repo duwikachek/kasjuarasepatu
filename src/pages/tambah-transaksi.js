@@ -1337,12 +1337,41 @@ export function initTambahTransaksiPage(router, store, params = {}) {
           }
         }
 
-        // Cek apakah ada sepatu yang barcode atau namanya sudah diisi tapi harga jualnya masih 0
+        // ✅ CRITICAL FIX: Validate price values to prevent NaN/Infinity
         for (let i = 0; i < saleItems.length; i++) {
           const it = saleItems[i];
+          const priceNum = Number(it.price);
+          
+          // Check for invalid numeric values
           if ((it.barcode && it.barcode.trim()) || (it.name && it.name.trim())) {
-            if ((Number(it.price) || 0) <= 0) {
+            if (isNaN(priceNum) || !isFinite(priceNum)) {
+              showToast(`❌ Harga Sepatu #${i + 1}${it.name ? ` (${it.name})` : ''} tidak valid! Masukkan angka yang benar.`, 'error', 4000);
+              const cardEl = document.querySelector(`.sale-item-card[data-sale-item-id="${it.id}"]`);
+              if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const priceInput = cardEl.querySelector('.sale-item-price');
+                if (priceInput) {
+                  priceInput.focus();
+                  priceInput.select();
+                }
+              }
+              return;
+            }
+            
+            if (priceNum <= 0) {
               showToast(`Sepatu #${i + 1}${it.name ? ` (${it.name})` : ''} belum memiliki harga jual. Silakan isi harga.`, 'error', 4000);
+              const cardEl = document.querySelector(`.sale-item-card[data-sale-item-id="${it.id}"]`);
+              if (cardEl) {
+                cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                const priceInput = cardEl.querySelector('.sale-item-price');
+                if (priceInput) priceInput.focus();
+              }
+              return;
+            }
+            
+            // Prevent unreasonably large values (> 100 million)
+            if (priceNum > 100000000) {
+              showToast(`❌ Harga Sepatu #${i + 1} terlalu besar! Maksimal Rp 100 juta.`, 'error', 4000);
               const cardEl = document.querySelector(`.sale-item-card[data-sale-item-id="${it.id}"]`);
               if (cardEl) {
                 cardEl.scrollIntoView({ behavior: 'smooth', block: 'center' });
@@ -1428,7 +1457,32 @@ export function initTambahTransaksiPage(router, store, params = {}) {
         }
       } else {
         const amount = parseRupiah(inputNominal ? inputNominal.value : '0');
-        if (amount <= 0) { showToast('Nominal pengeluaran harus lebih dari 0', 'error'); return; }
+        
+        // ✅ CRITICAL FIX: Comprehensive validation for kas keluar amount
+        if (isNaN(amount) || !isFinite(amount)) {
+          showToast('❌ Nominal pengeluaran tidak valid! Masukkan angka yang benar.', 'error', 4000);
+          if (inputNominal) {
+            inputNominal.focus();
+            inputNominal.select();
+          }
+          return;
+        }
+        
+        if (amount <= 0) { 
+          showToast('Nominal pengeluaran harus lebih dari 0', 'error'); 
+          if (inputNominal) inputNominal.focus();
+          return; 
+        }
+        
+        // Prevent unreasonably large values (> 1 billion)
+        if (amount > 1000000000) {
+          showToast('❌ Nominal terlalu besar! Maksimal Rp 1 miliar.', 'error', 4000);
+          if (inputNominal) {
+            inputNominal.focus();
+            inputNominal.select();
+          }
+          return;
+        }
         const keteranganKeluar = (document.getElementById('input-keluar-keterangan') && document.getElementById('input-keluar-keterangan').value.trim()) || selectedKategoriKeluar;
         const dateInputKeluar = document.getElementById('input-trx-date-keluar');
         const trxDate = (dateInputKeluar && dateInputKeluar.value) ? dateInputKeluar.value : getLocalDateString();
