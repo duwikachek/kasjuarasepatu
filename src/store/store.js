@@ -153,6 +153,9 @@ class Store {
         if (!parsed.investors) {
           parsed.investors = JSON.parse(JSON.stringify(INITIAL_DATA.investors || []));
         }
+        if (!parsed.debts) {
+          parsed.debts = [];
+        }
         if (!parsed.opnameRecords) {
           parsed.opnameRecords = [];
         }
@@ -187,6 +190,7 @@ class Store {
       supplies: [],
       products: [],
       investors: [],
+      debts: [],
       opnameRecords: []
     };
     this.saveState(fresh);
@@ -761,19 +765,24 @@ class Store {
   }
 
   addTransaction(trx) {
-    const isInvestor = trx.category === 'Dana Investor' || trx.category === 'Investasi Modal';
+    const isFunding = trx.category === 'Dana Investor' || 
+                      trx.category === 'Investasi Modal' || 
+                      trx.category === 'Pinjaman / Hutang' ||
+                      trx.category === 'Pencairan Pinjaman' ||
+                      trx.sourceType === 'investor' ||
+                      trx.sourceType === 'debt';
     
     const newTrx = {
       id: `TRX-${Date.now()}`,
       date: trx.date || getLocalDateString(),
       time: trx.time || new Date().toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB',
       nota: trx.nota || `#NOTA-${Math.floor(1000 + Math.random() * 9000)}`,
-      shippingStatus: trx.shippingStatus !== undefined ? trx.shippingStatus : (trx.type === 'masuk' && !isInvestor ? 'kemas' : null),
+      shippingStatus: trx.shippingStatus !== undefined ? trx.shippingStatus : (trx.type === 'masuk' && !isFunding ? 'kemas' : null),
       shippingCourier: trx.shippingCourier || null,
       shippingResi: trx.shippingResi || null,
       shippingNote: trx.shippingNote || null,
-      // Payment verification - SEMUA transaksi masuk perlu verifikasi
-      paymentVerification: trx.paymentVerification || (trx.type === 'masuk' && !isInvestor ? {
+      // Payment verification - SEMUA transaksi masuk penjualan perlu verifikasi
+      paymentVerification: trx.paymentVerification || (trx.type === 'masuk' && !isFunding ? {
         status: 'pending',      // pending | verified | problematic
         verifiedAt: null,
         verifiedBy: null,
@@ -809,6 +818,15 @@ class Store {
       this.state.investors.forEach((inv) => {
         if (inv.trxId === id || (trx && trx.investorId === inv.id)) {
           inv.trxId = null;
+        }
+      });
+    }
+
+    // Jika transaksi yang dihapus tertaut ke pinjaman / hutang, lepaskan referensinya
+    if (Array.isArray(this.state.debts)) {
+      this.state.debts.forEach((debt) => {
+        if (debt.trxId === id || (trx && trx.debtId === debt.id)) {
+          debt.trxId = null;
         }
       });
     }
@@ -2320,6 +2338,294 @@ class Store {
     this.state.opnameRecords = this.state.opnameRecords.filter((r) => r.id !== id);
     this.saveState();
     this.notify();
+  }
+
+  // =====================
+  // Hutang & Pinjaman Usaha (Bank / Luar)
+  // =====================
+
+  /** Ambil seluruh daftar hutang dan pinjaman usaha */
+  getDebts() {
+    if (!this.state.debts || !Array.isArray(this.state.debts)) {
+      this.state.debts = [];
+    }
+    return this.state.debts;
+  }
+
+  /** Cari hutang berdasarkan ID */
+  getDebtById(id) {
+    return this.getDebts().find((d) => d.id === id) || null;
+  }
+
+  /**
+   * Catat pinjaman baru:
+   * Otomatis menambah kas masuk ke buku kas utama toko (Kas Masuk bertambah)
+   */
+  addDebt(debtData) {
+    if (!this.state.debts) this.state.debts = [];
+    const id = `DEBT-${Date.now()}`;
+    const principal = Number(debtData.totalPrincipal) || 0;
+    const lenderName = (debtData.lenderName || '').trim();
+    const date = debtData.date || new Date().toISOString().split('T')[0];
+    const paymentMethod = debtData.paymentMethod || 'Transfer Bank BCA';
+
+    const newDebt = {
+      id,
+      lenderName,
+      lenderType: debtData.lenderType || 'bank', // 'bank' | 'pinjaman_luar' | 'pribadi'
+      accountNumber: (debtData.accountNumber || '').trim(),
+      date,
+      dueDate: debtData.dueDate || '',
+      totalPrincipal: principal,
+      tenorMonths: Number(debtData.tenorMonths) || 0,
+      monthlyInstallment: Number(debtData.monthlyInstallment) || 0,
+      interestTotal: Number(debtData.interestTotal) || 0,
+      interestType: debtData.interestType || 'tanpa_bunga',
+      paymentMethod,
+      status: 'aktif',
+      notes: (debtData.notes || '').trim(),
+      payments: [],
+      createdAt: new Date().toISOString()
+    };
+
+    // Uang pinjaman masuk otomatis menambah Saldo Kas Toko (Kas Masuk)
+    const trx = this.addTransaction({
+      type: 'masuk',
+      category: 'Pinjaman / Hutang',
+      amount: principal,
+      title: `Pencairan Hutang: ${newDebt.lenderName}`,
+      paymentMethod: newDebt.paymentMethod,
+      date: newDebt.date,
+      nota: `#DEBT-${Math.floor(1000 + Math.random() * 9000)}`,
+      shippingStatus: null,
+      debtId: id,
+      sourceType: 'debt',
+      paymentVerification: {
+        status: 'verified',
+        verifiedAt: new Date().toISOString(),
+        verifiedBy: 'System',
+        notes: 'Pencairan dana pinjaman'
+      }
+    });
+    newDebt.trxId = trx.id;
+
+    this.state.debts.unshift(newDebt);
+    this.saveState();
+    this.notify();
+    return newDebt;
+  }
+
+  /**
+   * Perbarui data pinjaman
+   */
+  updateDebt(id, data) {
+    if (!this.state.debts) return null;
+    const idx = this.state.debts.findIndex((d) => d.id === id);
+    if (idx === -1) return null;
+
+    const old = this.state.debts[idx];
+    const principal = data.totalPrincipal !== undefined ? Number(data.totalPrincipal) : old.totalPrincipal;
+    const lenderName = data.lenderName !== undefined ? data.lenderName.trim() : old.lenderName;
+
+    const updated = {
+      ...old,
+      ...data,
+      totalPrincipal: principal,
+      lenderName,
+      payments: old.payments || []
+    };
+
+    // Sinkronkan transaksi kas masuk terkait jika nominal atau keterangan berubah
+    let linkedTrx = null;
+    if (old.trxId) {
+      linkedTrx = this.getTransactionById(old.trxId);
+    }
+    if (!linkedTrx && Array.isArray(this.state.transactions)) {
+      linkedTrx = this.state.transactions.find((t) => t.debtId === id && t.type === 'masuk');
+    }
+
+    if (linkedTrx) {
+      updated.trxId = linkedTrx.id;
+      this.updateTransaction(linkedTrx.id, {
+        amount: principal,
+        title: `Pencairan Hutang: ${updated.lenderName}`,
+        date: updated.date || old.date,
+        paymentMethod: updated.paymentMethod || old.paymentMethod,
+        debtId: id,
+        sourceType: 'debt'
+      });
+    }
+
+    this.state.debts[idx] = updated;
+    this.saveState();
+    this.notify();
+    return updated;
+  }
+
+  /**
+   * Hapus pinjaman & bersihkan transaksi kas terkait (masuk & keluar)
+   */
+  deleteDebt(id) {
+    if (!this.state.debts) return;
+    const debt = this.state.debts.find((d) => d.id === id);
+    if (debt) {
+      const linkedTrxIds = new Set();
+      if (debt.trxId) linkedTrxIds.add(debt.trxId);
+      if (Array.isArray(debt.payments)) {
+        debt.payments.forEach((p) => {
+          if (p.trxId) linkedTrxIds.add(p.trxId);
+        });
+      }
+
+      if (Array.isArray(this.state.transactions)) {
+        this.state.transactions.forEach((t) => {
+          if (t.debtId === id) {
+            linkedTrxIds.add(t.id);
+          }
+        });
+        if (linkedTrxIds.size > 0) {
+          this.state.transactions = this.state.transactions.filter((t) => !linkedTrxIds.has(t.id));
+        }
+      }
+    }
+
+    this.state.debts = this.state.debts.filter((d) => d.id !== id);
+    this.saveState();
+    this.notify();
+  }
+
+  /**
+   * Bayar cicilan / pelunasan hutang:
+   * Otomatis memotong Saldo Kas Toko (Kas Keluar)
+   */
+  addDebtPayment(debtId, paymentData) {
+    if (!this.state.debts) return null;
+    const debt = this.state.debts.find((d) => d.id === debtId);
+    if (!debt) return null;
+    if (!Array.isArray(debt.payments)) debt.payments = [];
+
+    const amount = Number(paymentData.amount) || 0;
+    const date = paymentData.date || new Date().toISOString().split('T')[0];
+    const paymentMethod = paymentData.paymentMethod || 'Transfer Bank BCA';
+    const notes = (paymentData.notes || '').trim();
+
+    // Catat ke Buku Kas Toko sebagai Kas Keluar
+    const trx = this.addTransaction({
+      type: 'keluar',
+      category: 'Cicilan / Pelunasan Hutang',
+      amount,
+      title: `Cicilan Hutang: ${debt.lenderName}${notes ? ' (' + notes + ')' : ''}`,
+      paymentMethod,
+      date,
+      nota: `#PAY-DEBT-${Math.floor(1000 + Math.random() * 9000)}`,
+      debtId,
+      sourceType: 'debt_payment',
+      notes
+    });
+
+    const payment = {
+      id: `PAY-DEBT-${Date.now()}`,
+      amount,
+      date,
+      paymentMethod,
+      notes,
+      trxId: trx.id,
+      createdAt: new Date().toISOString()
+    };
+
+    debt.payments.unshift(payment);
+
+    // Hitung total terbayar apakah sudah lunas
+    const totalPaid = debt.payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    if (totalPaid >= (Number(debt.totalPrincipal) || 0)) {
+      debt.status = 'lunas';
+    } else {
+      debt.status = 'aktif';
+    }
+
+    this.saveState();
+    this.notify();
+    return payment;
+  }
+
+  /**
+   * Hapus cicilan pembayaran hutang
+   */
+  deleteDebtPayment(debtId, paymentId) {
+    if (!this.state.debts) return false;
+    const debt = this.state.debts.find((d) => d.id === debtId);
+    if (!debt || !Array.isArray(debt.payments)) return false;
+
+    const pIdx = debt.payments.findIndex((p) => p.id === paymentId);
+    if (pIdx === -1) return false;
+
+    const payment = debt.payments[pIdx];
+    // Hapus transaksi kas keluar terkait agar saldo kas kembali
+    if (payment.trxId && Array.isArray(this.state.transactions)) {
+      this.state.transactions = this.state.transactions.filter((t) => t.id !== payment.trxId);
+    }
+
+    debt.payments.splice(pIdx, 1);
+
+    // Evaluasi ulang status lunas
+    const totalPaid = debt.payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+    if (totalPaid >= (Number(debt.totalPrincipal) || 0)) {
+      debt.status = 'lunas';
+    } else {
+      debt.status = 'aktif';
+    }
+
+    this.saveState();
+    this.notify();
+    return true;
+  }
+
+  /**
+   * Ringkasan agregat hutang usaha
+   */
+  getDebtSummary() {
+    const list = this.getDebts();
+    let totalPrincipalBorrowed = 0;
+    let totalRepaid = 0;
+    let totalOutstanding = 0;
+    let countActive = 0;
+    let countLunas = 0;
+    const upcomingDue = [];
+    const today = new Date().toISOString().split('T')[0];
+
+    list.forEach((d) => {
+      const principal = Number(d.totalPrincipal) || 0;
+      totalPrincipalBorrowed += principal;
+
+      const paid = Array.isArray(d.payments)
+        ? d.payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0)
+        : 0;
+      totalRepaid += paid;
+
+      const sisa = Math.max(0, principal - paid);
+      if (sisa <= 0 || d.status === 'lunas') {
+        countLunas++;
+      } else {
+        countActive++;
+        totalOutstanding += sisa;
+        if (d.dueDate) {
+          const diffDays = Math.ceil((new Date(d.dueDate) - new Date(today)) / (1000 * 60 * 60 * 24));
+          if (diffDays <= 30) {
+            upcomingDue.push({ ...d, sisa, diffDays });
+          }
+        }
+      }
+    });
+
+    return {
+      totalPrincipalBorrowed,
+      totalRepaid,
+      totalOutstanding,
+      countActive,
+      countLunas,
+      countTotal: list.length,
+      upcomingDue: upcomingDue.sort((a, b) => a.diffDays - b.diffDays)
+    };
   }
 }
 

@@ -266,5 +266,6 @@ export const INITIAL_DATA = {
       createdAt: "2026-02-15T10:00:00.000Z"
     }
   ],
+  debts: [],
   opnameRecords: []
 };

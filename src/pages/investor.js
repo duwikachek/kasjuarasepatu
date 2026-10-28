@@ -11,17 +11,25 @@ function formatDate(d) {
   }
 }
 
+let currentActiveSubTab = 'sesi'; // 'sesi' | 'pemodal' | 'hutang'
+
 export function renderInvestorPage(store, isAdmin = true) {
   const summary = store.getInvestorSummary ? store.getInvestorSummary() : {};
   const reports = store.getInvestmentSessionReport ? store.getInvestmentSessionReport() : [];
   const supplies = store.getSupplies ? store.getSupplies() : [];
+  const debts = store.getDebts ? store.getDebts() : [];
+  const debtSummary = store.getDebtSummary ? store.getDebtSummary() : { totalPrincipalBorrowed: 0, totalRepaid: 0, totalOutstanding: 0, countActive: 0, countLunas: 0, countTotal: 0, upcomingDue: [] };
+
+  const isHutangTab = currentActiveSubTab === 'hutang';
+  const isPemodalTab = currentActiveSubTab === 'pemodal';
+  const isSesiTab = currentActiveSubTab === 'sesi';
 
   return `
     <div class="page-fade-in flex-1 flex flex-col w-full bg-surface pb-28">
       ${renderHeader({
-        title: 'Investasi & Modal',
-        badge: 'BAGI HASIL 60:40',
-        subtitle: 'Sesi Belanja, Target 50% & Laba Bersih',
+        title: 'Permodalan & Hutang',
+        badge: 'MODAL & PINJAMAN',
+        subtitle: 'Bagi Hasil 60:40 & Hutang Bank/Luar',
         showBack: true,
         backRoute: 'dashboard'
       })}
@@ -40,14 +48,14 @@ export function renderInvestorPage(store, isAdmin = true) {
               <span class="text-[9px] px-1.5 py-0.2 rounded-full bg-blue-500/20 text-blue-300 font-bold">READ ONLY</span>
             </div>
             <p class="text-[11px] text-neutral-300 mt-0.5 leading-relaxed">
-              Anda dapat memantau seluruh progres penjualan sesi, capaian target 50%, pembagian laba bersih 60:40, dan mutasi kas tanpa dapat mengubah data.
+              Anda dapat memantau seluruh progres penjualan sesi, capaian target 50%, pembagian laba bersih 60:40, kewajiban hutang, dan mutasi kas tanpa dapat mengubah data.
             </p>
           </div>
         </div>
         ` : ''}
 
-        <!-- KPI 4 Cards: Ringkasan Investasi & Bagi Hasil (Investor 60% & Pengelola 40%) -->
-        <div class="grid grid-cols-2 gap-2">
+        <!-- KPI 4 Cards: INVESTASI & BAGI HASIL (Aktif di tab Sesi & Pemodal) -->
+        <div id="kpi-container-investor" class="${isHutangTab ? 'hidden' : 'grid'} grid-cols-2 gap-2">
           <!-- Total Modal Diterima -->
           <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
             <div class="flex items-center justify-between text-neutral-400">
@@ -117,9 +125,78 @@ export function renderInvestorPage(store, isAdmin = true) {
           </div>
         </div>
 
-        <!-- Action Buttons (Khusus Admin) -->
+        <!-- KPI 4 Cards: HUTANG & PINJAMAN BANK (Aktif di tab Hutang) -->
+        <div id="kpi-container-debt" class="${isHutangTab ? 'grid' : 'hidden'} grid-cols-2 gap-2">
+          <!-- Total Pinjaman Diterima -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-cyan-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-cyan-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">account_balance</span>
+                Pinjaman Masuk
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate">
+                ${formatRupiah(debtSummary.totalPrincipalBorrowed || 0)}
+              </span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countTotal || 0} Pinjaman Tercatat</span>
+            </div>
+          </div>
+
+          <!-- Sisa Pokok Hutang -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-rose-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-rose-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">pending_actions</span>
+                Sisa Kewajiban
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-rose-300 font-tabular block truncate">
+                ${formatRupiah(debtSummary.totalOutstanding || 0)}
+              </span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countActive || 0} Pinjaman Belum Lunas</span>
+            </div>
+          </div>
+
+          <!-- Sudah Dicicil / Terbayar -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-emerald-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">check_circle</span>
+                Sudah Dicicil
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-emerald-300 font-tabular block truncate">
+                ${formatRupiah(debtSummary.totalRepaid || 0)}
+              </span>
+              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countLunas || 0} Pinjaman Sudah Lunas</span>
+            </div>
+          </div>
+
+          <!-- Status Pinjaman Aktif & Jatuh Tempo -->
+          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-amber-500">
+            <div class="flex items-center justify-between text-neutral-400">
+              <span class="font-bold text-[10px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
+                <span class="material-symbols-outlined text-[15px]">event_upcoming</span>
+                Jatuh Tempo
+              </span>
+            </div>
+            <div class="mt-1.5">
+              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate">
+                ${debtSummary.countActive || 0} Pinjaman
+              </span>
+              <span class="text-[10px] ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? 'text-rose-400 font-bold' : 'text-neutral-400'} block mt-0.5">
+                ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? `⚠️ ${debtSummary.upcomingDue.length} Jatuh Tempo Dekat` : '✓ Jadwal Teratur'}
+              </span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Action Buttons Investor (Khusus Admin) -->
         ${isAdmin ? `
-        <div class="grid grid-cols-2 gap-2">
+        <div id="action-buttons-investor" class="${isHutangTab ? 'hidden' : 'grid'} grid-cols-2 gap-2">
           <button type="button" id="btn-tambah-investor"
             class="glass-primary glass-btn glass-sheen h-11 py-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
             <span class="material-symbols-outlined text-[18px]">add_circle</span>
@@ -132,10 +209,25 @@ export function renderInvestorPage(store, isAdmin = true) {
             <span>Bayar / Cairkan Bagi Hasil</span>
           </button>
         </div>
+
+        <!-- Action Buttons Hutang (Khusus Admin) -->
+        <div id="action-buttons-debt" class="${isHutangTab ? 'grid' : 'hidden'} grid-cols-2 gap-2">
+          <button type="button" id="btn-tambah-debt-top"
+            class="glass-primary glass-btn glass-sheen h-11 py-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">add_circle</span>
+            <span>+ Catat Pinjaman Baru</span>
+          </button>
+
+          <button type="button" id="btn-bayar-debt-top"
+            class="glass-emerald glass-btn glass-sheen h-11 py-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px]">payments</span>
+            <span>Bayar Cicilan Hutang</span>
+          </button>
+        </div>
         ` : ''}
 
-        <!-- Aturan Skema Info Box -->
-        <div class="glass-sheet rounded-xl p-3 border border-amber-500/20 flex flex-col gap-1.5">
+        <!-- Aturan Skema Info Box: Investasi -->
+        <div id="info-box-investor" class="${isHutangTab ? 'hidden' : 'flex'} glass-sheet rounded-xl p-3 border border-amber-500/20 flex-col gap-1.5">
           <div class="flex items-center gap-1.5 text-amber-400 font-bold text-xs">
             <span class="material-symbols-outlined text-[16px]">info</span>
             <span>Ketentuan Skema Kerjasama Sesi:</span>
@@ -145,24 +237,40 @@ export function renderInvestorPage(store, isAdmin = true) {
           </p>
         </div>
 
-        <!-- Tab Navigasi: Sesi Bagi Hasil vs Daftar Pemodal -->
+        <!-- Info Box: Hutang Usaha -->
+        <div id="info-box-debt" class="${isHutangTab ? 'flex' : 'hidden'} glass-sheet rounded-xl p-3 border border-cyan-500/25 flex-col gap-1.5">
+          <div class="flex items-center gap-1.5 text-cyan-400 font-bold text-xs">
+            <span class="material-symbols-outlined text-[16px]">account_balance</span>
+            <span>Ketentuan Arus Kas Pinjaman Bank & Luar:</span>
+          </div>
+          <p class="text-[11px] text-neutral-300 leading-relaxed">
+            Dana pinjaman yang masuk akan <strong>otomatis menambah Saldo Kas Masuk toko</strong>. Saat Anda membayar cicilan atau melunasi pinjaman, transaksi tersebut <strong>otomatis memotong Saldo Kas Keluar toko</strong> serta mengurangi sisa pokok kewajiban hutang secara realtime.
+          </p>
+        </div>
+
+        <!-- Tab Navigasi: 3 Sub-Tab (Sesi vs Pemodal vs Hutang) -->
         <div class="flex items-center justify-between pt-1">
           <div class="glass-track inline-flex p-0.5 rounded-lg text-xs w-full">
             <button type="button" id="tab-btn-sesi"
-              class="flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1">
+              class="flex-1 py-1.5 rounded-md ${isSesiTab ? 'font-bold glass-seg-active text-primary' : 'font-semibold text-on-surface-variant hover:text-on-surface'} transition-all flex items-center justify-center gap-1">
               <span class="material-symbols-outlined text-[15px]">analytics</span>
-              <span>Sesi & Bagi Hasil (60:40)</span>
+              <span class="truncate">Sesi 60:40</span>
             </button>
             <button type="button" id="tab-btn-pemodal"
-              class="flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1">
+              class="flex-1 py-1.5 rounded-md ${isPemodalTab ? 'font-bold glass-seg-active text-primary' : 'font-semibold text-on-surface-variant hover:text-on-surface'} transition-all flex items-center justify-center gap-1">
               <span class="material-symbols-outlined text-[15px]">people</span>
-              <span>Daftar Pemodal (${summary.countTotal || 0})</span>
+              <span class="truncate">Pemodal (${summary.countTotal || 0})</span>
+            </button>
+            <button type="button" id="tab-btn-hutang"
+              class="flex-1 py-1.5 rounded-md ${isHutangTab ? 'font-bold glass-seg-active text-cyan-400' : 'font-semibold text-on-surface-variant hover:text-on-surface'} transition-all flex items-center justify-center gap-1">
+              <span class="material-symbols-outlined text-[15px]">account_balance</span>
+              <span class="truncate">Hutang Bank (${debtSummary.countActive || 0})</span>
             </button>
           </div>
         </div>
 
         <!-- Tab 1: Daftar Sesi & Bagi Hasil 60:40 -->
-        <div id="tab-content-sesi" class="flex flex-col gap-3">
+        <div id="tab-content-sesi" class="${isSesiTab ? 'flex' : 'hidden'} flex-col gap-3">
           ${reports.length === 0 ? `
             <div class="glass-sheet rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-2">
               <div class="w-14 h-14 rounded-full bg-neutral-800 text-neutral-400 flex items-center justify-center">
@@ -391,7 +499,7 @@ export function renderInvestorPage(store, isAdmin = true) {
         </div>
 
         <!-- Tab 2: Daftar Pemodal & Mutasi Modal -->
-        <div id="tab-content-pemodal" class="hidden flex flex-col gap-3">
+        <div id="tab-content-pemodal" class="${isPemodalTab ? 'flex' : 'hidden'} flex-col gap-3">
           ${reports.length === 0 ? `
             <div class="glass-sheet rounded-2xl p-6 text-center text-xs text-neutral-400">
               Belum ada data pemodal. Klik tombol "+ Terima Modal Baru" untuk menambahkan pemodal.
@@ -439,6 +547,181 @@ export function renderInvestorPage(store, isAdmin = true) {
               ` : ''}
             </div>
           `).join('')}
+        </div>
+
+        <!-- Tab 3: Daftar Hutang & Pinjaman Usaha (Bank / Luar) -->
+        <div id="tab-content-hutang" class="${isHutangTab ? 'flex' : 'hidden'} flex-col gap-3">
+          
+          <!-- Alert Jatuh Tempo Mendekat (Jika ada pinjaman jatuh tempo dalam 30 hari) -->
+          ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? `
+          <div class="glass-sheet rounded-xl p-3 border border-rose-500/40 bg-rose-950/20 flex items-start gap-2.5">
+            <div class="w-8 h-8 rounded-lg bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0 mt-0.5">
+              <span class="material-symbols-outlined text-[18px] animate-pulse">notification_important</span>
+            </div>
+            <div class="flex-1 min-w-0">
+              <span class="text-xs font-bold text-rose-300 block">Peringatan Jatuh Tempo Hutang Dekat:</span>
+              <div class="mt-1 flex flex-col gap-1">
+                ${debtSummary.upcomingDue.map((d) => `
+                  <div class="flex items-center justify-between text-[11px] text-neutral-300 bg-black/40 px-2 py-1 rounded-md border border-rose-500/20">
+                    <span class="font-semibold text-white truncate">${d.lenderName}</span>
+                    <span class="${d.diffDays <= 3 ? 'text-rose-400 font-bold' : 'text-amber-300'} text-[10px] shrink-0 font-tabular">
+                      ${d.diffDays <= 0 ? '⚠️ Jatuh Tempo Lewat / Hari Ini' : `⏳ Sisa ${d.diffDays} hari`} (${formatRupiah(d.sisa)})
+                    </span>
+                  </div>
+                `).join('')}
+              </div>
+            </div>
+          </div>
+          ` : ''}
+
+          <!-- Daftar Pinjaman Kosong -->
+          ${debts.length === 0 ? `
+            <div class="glass-sheet rounded-2xl p-8 flex flex-col items-center justify-center text-center gap-2">
+              <div class="w-14 h-14 rounded-full bg-neutral-800 text-cyan-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-3xl">account_balance</span>
+              </div>
+              <p class="text-sm font-bold text-white mt-1">Belum Ada Hutang / Pinjaman Bank Tercatat</p>
+              <p class="text-xs text-neutral-400 max-w-[290px]">
+                Catat dana pinjaman yang masuk dari Bank (KUR, BRI, BCA, Mandiri) atau pinjaman luar untuk memantau arus kas masuk dan jadwal cicilan.
+              </p>
+              ${isAdmin ? `
+              <button type="button" id="btn-empty-add-debt" class="mt-2 px-4 py-2 rounded-xl glass-primary font-bold text-xs text-primary-btn">
+                + Catat Pinjaman Pertama
+              </button>
+              ` : ''}
+            </div>
+          ` : debts.map((d) => {
+            const payments = Array.isArray(d.payments) ? d.payments : [];
+            const paid = payments.reduce((sum, p) => sum + (Number(p.amount) || 0), 0);
+            const principal = Number(d.totalPrincipal) || 0;
+            const sisa = Math.max(0, principal - paid);
+            const pct = principal > 0 ? Math.min(100, Math.round((paid / principal) * 100)) : 100;
+            const isLunas = sisa <= 0 || d.status === 'lunas';
+
+            const lenderTypeLabel = d.lenderType === 'bank' ? 'Bank' : (d.lenderType === 'pinjaman_luar' ? 'Pinjaman Luar' : 'Pribadi');
+            const lenderTypeIcon = d.lenderType === 'bank' ? 'account_balance' : (d.lenderType === 'pinjaman_luar' ? 'handshake' : 'person');
+
+            return `
+              <div class="glass-card glass-sheen rounded-2xl p-3.5 flex flex-col gap-3 border ${isLunas ? 'border-emerald-500/30' : 'border-neutral-800'}">
+                
+                <!-- Header Kartu Hutang -->
+                <div class="flex items-start justify-between gap-2">
+                  <div class="flex items-center gap-2.5 min-w-0">
+                    <div class="w-9 h-9 rounded-xl ${isLunas ? 'bg-emerald-500/20 text-emerald-400' : 'bg-cyan-500/20 text-cyan-400'} flex items-center justify-center shrink-0">
+                      <span class="material-symbols-outlined text-[20px]">${lenderTypeIcon}</span>
+                    </div>
+                    <div class="flex flex-col min-w-0">
+                      <div class="flex items-center gap-1.5">
+                        <h4 class="font-bold text-sm text-white truncate">${d.lenderName}</h4>
+                        <span class="text-[9px] px-1.5 py-0.2 rounded bg-neutral-800 text-neutral-300 font-semibold uppercase">${lenderTypeLabel}</span>
+                      </div>
+                      <span class="text-[10px] text-neutral-400 truncate">
+                        Pencairan: <strong class="text-white">${formatDate(d.date)}</strong> • Ke: ${d.paymentMethod || 'Kas Bank'}
+                      </span>
+                    </div>
+                  </div>
+                  <span class="px-2 py-0.5 rounded-full text-[10px] font-bold shrink-0 ${isLunas ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'bg-amber-500/20 text-amber-300 border border-amber-500/40'}">
+                    ${isLunas ? 'LUNAS' : 'AKTIF'}
+                  </span>
+                </div>
+
+                <!-- Metrics Grid: Pokok, Sisa, Terbayar, Jatuh Tempo -->
+                <div class="grid grid-cols-2 gap-2 text-xs bg-neutral-900/60 p-2.5 rounded-xl border border-neutral-800">
+                  <div>
+                    <span class="text-[10px] text-neutral-400 block">Total Pokok Pinjaman</span>
+                    <span class="font-bold text-white font-tabular">${formatRupiah(principal)}</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-neutral-400 block">Sisa Hutang Pokok</span>
+                    <span class="font-bold ${isLunas ? 'text-emerald-400' : 'text-rose-400'} font-tabular">
+                      ${formatRupiah(sisa)}
+                    </span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-neutral-400 block">Sudah Dicicil</span>
+                    <span class="font-bold text-cyan-300 font-tabular">${formatRupiah(paid)} (${pct}%)</span>
+                  </div>
+                  <div>
+                    <span class="text-[10px] text-neutral-400 block">Jatuh Tempo Akhir</span>
+                    <span class="font-bold text-neutral-200 font-tabular">${formatDate(d.dueDate)}</span>
+                  </div>
+                </div>
+
+                <!-- Progress Bar Pelunasan -->
+                <div class="flex flex-col gap-1">
+                  <div class="flex items-center justify-between text-[10px] text-neutral-400">
+                    <span>Progress Pembayaran Hutang</span>
+                    <span class="font-bold text-white">${pct}% Terbayar</span>
+                  </div>
+                  <div class="w-full h-2 rounded-full bg-neutral-800 overflow-hidden">
+                    <div class="h-full rounded-full transition-all duration-500 ${isLunas ? 'bg-emerald-500' : 'bg-gradient-to-r from-cyan-500 to-blue-500'}" style="width: ${pct}%"></div>
+                  </div>
+                </div>
+
+                <!-- Detail Tenor & No Kontrak (jika ada) -->
+                ${(d.accountNumber || d.tenorMonths || d.monthlyInstallment || d.notes) ? `
+                <div class="glass-panel rounded-lg p-2 text-[11px] text-neutral-300 flex flex-col gap-1">
+                  ${d.accountNumber ? `<div><span class="text-neutral-400">No. Rek / Kontrak:</span> <strong class="text-white font-mono">${d.accountNumber}</strong></div>` : ''}
+                  ${d.tenorMonths ? `<div><span class="text-neutral-400">Tenor & Cicilan:</span> <strong class="text-white">${d.tenorMonths} Bulan</strong> ${d.monthlyInstallment ? `(Est. ${formatRupiah(d.monthlyInstallment)}/bln)` : ''}</div>` : ''}
+                  ${d.notes ? `<div><span class="text-neutral-400">Catatan:</span> <span class="text-neutral-200">${d.notes}</span></div>` : ''}
+                </div>
+                ` : ''}
+
+                <!-- Riwayat Pembayaran Cicilan (Accordion) -->
+                <div class="flex flex-col gap-1 pt-1 border-t border-neutral-800/80">
+                  <button type="button" data-toggle-debt-payments="${d.id}"
+                    class="flex items-center justify-between text-xs text-neutral-400 hover:text-white py-1">
+                    <span class="flex items-center gap-1 font-semibold">
+                      <span class="material-symbols-outlined text-[15px] text-cyan-400">history</span>
+                      Riwayat Pembayaran Cicilan (${payments.length})
+                    </span>
+                    <span class="material-symbols-outlined text-[16px] transition-transform" id="arrow-debt-${d.id}">expand_more</span>
+                  </button>
+
+                  <div id="payments-list-${d.id}" class="hidden flex flex-col gap-1.5 pt-1.5">
+                    ${payments.length === 0 ? `
+                      <span class="text-[11px] text-neutral-500 italic py-1">Belum ada pembayaran cicilan tercatat.</span>
+                    ` : payments.map((p, pIdx) => `
+                      <div class="flex items-center justify-between text-xs bg-black/40 px-2.5 py-1.5 rounded-lg border border-neutral-800">
+                        <div class="flex flex-col min-w-0">
+                          <span class="font-bold text-white font-tabular">${formatRupiah(p.amount)}</span>
+                          <span class="text-[10px] text-neutral-400 truncate">
+                            ${formatDate(p.date)} • ${p.paymentMethod || 'Kas'} ${p.notes ? `• ${p.notes}` : ''}
+                          </span>
+                        </div>
+                        ${isAdmin ? `
+                        <button type="button" data-delete-debt-payment="${p.id}" data-debt-id="${d.id}"
+                          class="p-1 rounded text-neutral-500 hover:text-rose-400 active:scale-95" title="Hapus catatan cicilan ini">
+                          <span class="material-symbols-outlined text-[15px]">delete</span>
+                        </button>
+                        ` : ''}
+                      </div>
+                    `).join('')}
+                  </div>
+                </div>
+
+                <!-- Action Bar (Admin) -->
+                ${isAdmin ? `
+                <div class="flex items-center justify-end gap-2 pt-1 border-t border-neutral-800">
+                  ${!isLunas ? `
+                  <button type="button" data-pay-debt="${d.id}"
+                    class="glass-emerald glass-btn px-3 py-1.5 rounded-lg text-xs font-bold text-emerald-950 flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[14px]">payments</span> Bayar Cicilan
+                  </button>
+                  ` : ''}
+                  <button type="button" data-edit-debt="${d.id}"
+                    class="glass-chip-btn px-3 py-1.5 rounded-lg text-xs font-bold text-white flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[14px]">edit</span> Edit
+                  </button>
+                  <button type="button" data-delete-debt="${d.id}"
+                    class="glass-rose glass-btn px-3 py-1.5 rounded-lg text-xs font-bold text-rose-300 flex items-center gap-1 active:scale-95">
+                    <span class="material-symbols-outlined text-[14px]">delete</span> Hapus
+                  </button>
+                </div>
+                ` : ''}
+              </div>
+            `;
+          }).join('')}
         </div>
 
       </div>
@@ -733,6 +1016,282 @@ export function renderInvestorPage(store, isAdmin = true) {
         </div>
       </div>
 
+      <!-- ============================================== -->
+      <!-- MODAL HUTANG: TAMBAH / EDIT PINJAMAN BANK      -->
+      <!-- ============================================== -->
+      <div id="debt-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="debt-modal-backdrop"></div>
+        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-8 flex flex-col gap-3.5 max-h-[92%] overflow-y-auto z-10 border-t border-cyan-500/30">
+          
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full bg-cyan-500/20 text-cyan-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">account_balance</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white" id="debt-modal-title">Catat Pinjaman Bank / Luar Baru</h3>
+                <p class="text-[11px] text-cyan-300">Uang pencairan otomatis menambah Kas Masuk toko</p>
+              </div>
+            </div>
+            <button id="btn-close-debt-modal" class="p-1.5 rounded-full glass-chip-btn text-neutral-400 hover:text-white">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <input type="hidden" id="debt-edit-id" value="" />
+
+          <div class="flex flex-col gap-3 text-xs">
+            <!-- Nama Bank / Kreditur -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-cyan-400 text-[14px]">account_balance</span> Nama Bank / Kreditur
+              </label>
+              <input type="text" id="debt-name" placeholder="Contoh: Bank BRI (KUR Mikro), Bank BCA, Pinjaman Luar..."
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400" />
+            </div>
+
+            <!-- Tipe Sumber Pinjaman -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">category</span> Kategori Sumber Pinjaman
+              </label>
+              <select id="debt-type"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="bank">Bank Resmi (KUR / Kredit Usaha / Pinjaman Bank)</option>
+                <option value="pinjaman_luar">Pinjaman Pihak Luar (Lembaga / Pihak Ketiga)</option>
+                <option value="pribadi">Pinjaman Pribadi / Perorangan</option>
+              </select>
+            </div>
+
+            <!-- Tanggal Pencairan & Nominal Pokok -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Pencairan
+                </label>
+                <input type="date" id="debt-date"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Pokok Masuk (Rp)
+                </label>
+                <input type="number" id="debt-amount" placeholder="0" min="0"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+              </div>
+            </div>
+
+            <!-- Rekening Kas Toko Penerima -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">account_balance_wallet</span> Masuk ke Kas Toko
+              </label>
+              <select id="debt-payment"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="Transfer Bank BCA">Transfer Bank BCA (Kas Bank Toko)</option>
+                <option value="Transfer Bank Mandiri">Transfer Bank Mandiri (Kas Bank Toko)</option>
+                <option value="Transfer Bank BRI">Transfer Bank BRI (Kas Bank Toko)</option>
+                <option value="Tunai (Laci)">Tunai / Cash (Kas Laci Toko)</option>
+              </select>
+            </div>
+
+            <!-- Tenor & Perkiraan Cicilan per Bulan -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">timelapse</span> Tenor (Bulan)
+                </label>
+                <input type="number" id="debt-tenor" placeholder="Contoh: 12" min="1"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">event_repeat</span> Cicilan / Bulan (Rp)
+                </label>
+                <input type="number" id="debt-installment" placeholder="0 (Opsional)" min="0"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+            </div>
+
+            <!-- Tanggal Jatuh Tempo Akhir & No Kontrak -->
+            <div class="grid grid-cols-2 gap-2">
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-rose-400 text-[14px]">event</span> Jatuh Tempo Akhir
+                </label>
+                <input type="date" id="debt-due-date"
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-rose-400" />
+              </div>
+              <div class="flex flex-col gap-1">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-primary text-[14px]">tag</span> No. Rek / Kontrak
+                </label>
+                <input type="text" id="debt-account-no" placeholder="No. kontrak / rekening..."
+                  class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white font-mono focus:outline-none focus:ring-2 focus:ring-primary" />
+              </div>
+            </div>
+
+            <!-- Catatan / Keterangan -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">description</span> Catatan Pinjaman
+              </label>
+              <textarea id="debt-notes" rows="2" placeholder="Tujuan pinjaman, syarat, atau catatan lain..."
+                class="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary resize-none"></textarea>
+            </div>
+
+            <!-- Notice Box -->
+            <div class="glass-blue rounded-xl p-2.5 flex items-start gap-2 border border-blue-500/20">
+              <span class="material-symbols-outlined text-blue-400 text-[16px] shrink-0 mt-0.5">info</span>
+              <p class="text-[10.5px] text-blue-200">
+                Uang pinjaman yang dicairkan akan <strong>otomatis menambah Saldo Kas Toko</strong> (tercatat sebagai Kas Masuk kategori <em>"Pinjaman / Hutang"</em>).
+              </p>
+            </div>
+
+            <button type="button" id="btn-save-debt"
+              class="w-full h-11 glass-primary glass-btn glass-sheen text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 mt-1 active:scale-98">
+              <span class="material-symbols-outlined text-[18px]">save</span>
+              <span id="btn-save-debt-label">Simpan & Tambah ke Kas Toko</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- MODAL BAYAR CICILAN / PELUNASAN HUTANG         -->
+      <!-- ============================================== -->
+      <div id="debt-payment-modal" class="hidden fixed inset-0 z-50 flex items-end justify-center overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="debt-payment-modal-backdrop"></div>
+        <div class="relative w-full max-w-[430px] glass-sheet rounded-t-3xl p-4 pb-8 flex flex-col gap-3.5 max-h-[92%] overflow-y-auto z-10 border-t border-emerald-500/30">
+          
+          <div class="flex items-center justify-between border-b border-white/10 pb-3">
+            <div class="flex items-center gap-2.5">
+              <div class="w-8 h-8 rounded-full bg-emerald-500/20 text-emerald-400 flex items-center justify-center">
+                <span class="material-symbols-outlined text-[18px]">payments</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-sm text-white">Bayar Cicilan / Pelunasan Hutang</h3>
+                <p class="text-[11px] text-rose-300">Otomatis memotong Saldo Kas Keluar toko</p>
+              </div>
+            </div>
+            <button id="btn-close-debt-payment-modal" class="p-1.5 rounded-full glass-chip-btn text-neutral-400 hover:text-white">
+              <span class="material-symbols-outlined text-[18px]">close</span>
+            </button>
+          </div>
+
+          <div class="flex flex-col gap-3 text-xs">
+            <!-- Pilih Pinjaman -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-cyan-400 text-[14px]">account_balance</span> Pilih Hutang / Bank
+              </label>
+              <select id="debt-pay-target-id"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-cyan-400">
+                ${debts.map((d) => {
+                  const paid = (d.payments || []).reduce((s, p) => s + (Number(p.amount) || 0), 0);
+                  const sisa = Math.max(0, (Number(d.totalPrincipal) || 0) - paid);
+                  return `
+                    <option value="${d.id}" data-sisa="${sisa}" data-installment="${d.monthlyInstallment || 0}">
+                      ${d.lenderName} (Sisa Pokok: ${formatRupiah(sisa)})
+                    </option>
+                  `;
+                }).join('')}
+              </select>
+            </div>
+
+            <!-- Tanggal Bayar -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">calendar_today</span> Tanggal Pembayaran
+              </label>
+              <input type="date" id="debt-pay-date"
+                class="w-full px-3 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+
+            <!-- Nominal Pembayaran -->
+            <div class="flex flex-col gap-1">
+              <div class="flex items-center justify-between">
+                <label class="font-bold text-white flex items-center gap-1">
+                  <span class="material-symbols-outlined text-emerald-400 text-[14px]">payments</span> Nominal Pembayaran (Rp)
+                </label>
+                <div class="flex items-center gap-2">
+                  <button type="button" id="btn-fill-installment" class="text-[10px] text-cyan-400 hover:underline font-bold">
+                    Isi Cicilan
+                  </button>
+                  <button type="button" id="btn-fill-debt-sisa" class="text-[10px] text-emerald-400 hover:underline font-bold">
+                    Pelunasan Penuh
+                  </button>
+                </div>
+              </div>
+              <input type="number" id="debt-pay-amount" placeholder="0" min="0"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white font-mono font-bold focus:outline-none focus:ring-2 focus:ring-emerald-400" />
+            </div>
+
+            <!-- Sumber Kas Toko Pembayar -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">account_balance_wallet</span> Bayar Memotong Kas Toko
+              </label>
+              <select id="debt-pay-payment-method"
+                class="w-full px-3.5 py-2.5 rounded-xl glass-input text-sm text-white focus:outline-none focus:ring-2 focus:ring-primary">
+                <option value="Transfer Bank BCA">Transfer Bank BCA (Potong Kas Bank)</option>
+                <option value="Transfer Bank Mandiri">Transfer Bank Mandiri (Potong Kas Bank)</option>
+                <option value="Transfer Bank BRI">Transfer Bank BRI (Potong Kas Bank)</option>
+                <option value="Tunai (Laci)">Tunai / Cash (Potong Kas Laci Toko)</option>
+              </select>
+            </div>
+
+            <!-- Catatan / No Referensi -->
+            <div class="flex flex-col gap-1">
+              <label class="font-bold text-white flex items-center gap-1">
+                <span class="material-symbols-outlined text-primary text-[14px]">description</span> Keterangan Cicilan
+              </label>
+              <input type="text" id="debt-pay-notes" placeholder="Contoh: Cicilan ke-1, Pelunasan sisa pokok..."
+                class="w-full px-3.5 py-2 rounded-xl glass-input text-xs text-white focus:outline-none focus:ring-2 focus:ring-primary" />
+            </div>
+
+            <!-- Warning Potong Kas -->
+            <div class="glass-rose rounded-xl p-2.5 flex items-start gap-2 border border-rose-500/30">
+              <span class="material-symbols-outlined text-rose-400 text-[16px] shrink-0 mt-0.5">warning</span>
+              <p class="text-[10.5px] text-rose-200">
+                Peringatan: Transaksi ini <strong>otomatis dicatat sebagai KAS KELUAR</strong> di buku kas utama toko, memotong saldo kas toko serta mengurangi sisa pokok hutang.
+              </p>
+            </div>
+
+            <button type="button" id="btn-submit-debt-pay"
+              class="w-full h-11 glass-emerald glass-btn glass-sheen text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 mt-1 active:scale-98">
+              <span class="material-symbols-outlined text-[18px]">check_circle</span>
+              <span>Konfirmasi & Potong Saldo Kas</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      <!-- ============================================== -->
+      <!-- MODAL KONFIRMASI HAPUS PINJAMAN                -->
+      <!-- ============================================== -->
+      <div id="debt-delete-modal" class="hidden fixed inset-0 z-50 flex items-center justify-center p-6 overflow-hidden">
+        <div class="absolute inset-0 bg-black/70 backdrop-blur-xs" id="debt-delete-backdrop"></div>
+        <div class="relative w-full max-w-[360px] glass-sheet rounded-2xl p-5 flex flex-col gap-3 z-10 border border-rose-500/40">
+          <div class="flex items-center gap-2.5">
+            <div class="w-10 h-10 rounded-full bg-rose-500/20 text-rose-400 flex items-center justify-center shrink-0">
+              <span class="material-symbols-outlined text-[22px]">delete_forever</span>
+            </div>
+            <div>
+              <h3 class="font-bold text-sm text-white">Hapus Data Pinjaman?</h3>
+              <p class="text-[11px] text-neutral-400">Seluruh mutasi pencairan & cicilan terkait.</p>
+            </div>
+          </div>
+          <p class="text-xs text-neutral-300 glass-panel rounded-xl p-3 border border-neutral-800">
+            Transaksi kas masuk pencairan dan seluruh kas keluar cicilan terkait pinjaman ini <strong>akan otomatis ikut dibersihkan</strong> agar buku kas toko tetap seimbang.
+          </p>
+          <div class="flex items-center gap-2.5 mt-1">
+            <button id="btn-cancel-delete-debt" class="glass-chip-btn flex-1 h-10 rounded-xl text-white text-xs font-bold">Batal</button>
+            <button id="btn-confirm-delete-debt" class="glass-rose glass-btn flex-1 h-10 rounded-xl text-rose-200 text-xs font-bold">Ya, Hapus</button>
+          </div>
+        </div>
+      </div>
+
     </div>
   `;
 }
@@ -751,27 +1310,70 @@ export function initInvestorPage(router, store, isAdmin = true) {
   if (g('inv-date')) g('inv-date').value = todayStr;
   if (g('payout-date')) g('payout-date').value = todayStr;
 
-  // Tab switching
+  // 3 Sub-Tab switching (Sesi, Pemodal, Hutang Bank)
   const tabBtnSesi = g('tab-btn-sesi');
   const tabBtnPemodal = g('tab-btn-pemodal');
+  const tabBtnHutang = g('tab-btn-hutang');
+
   const tabContentSesi = g('tab-content-sesi');
   const tabContentPemodal = g('tab-content-pemodal');
+  const tabContentHutang = g('tab-content-hutang');
 
-  if (tabBtnSesi && tabBtnPemodal) {
-    tabBtnSesi.addEventListener('click', () => {
-      tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
-      tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+  const kpiInvestor = g('kpi-container-investor');
+  const kpiDebt = g('kpi-container-debt');
+
+  const actionInvestor = g('action-buttons-investor');
+  const actionDebt = g('action-buttons-debt');
+
+  const infoInvestor = g('info-box-investor');
+  const infoDebt = g('info-box-debt');
+
+  function switchTab(target) {
+    currentActiveSubTab = target;
+
+    // Reset styles tab buttons
+    if (tabBtnSesi) tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+    if (tabBtnPemodal) tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+    if (tabBtnHutang) tabBtnHutang.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+
+    // Hide all tab contents
+    if (tabContentSesi) tabContentSesi.classList.add('hidden');
+    if (tabContentPemodal) tabContentPemodal.classList.add('hidden');
+    if (tabContentHutang) tabContentHutang.classList.add('hidden');
+
+    if (target === 'sesi') {
+      if (tabBtnSesi) tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
       if (tabContentSesi) tabContentSesi.classList.remove('hidden');
-      if (tabContentPemodal) tabContentPemodal.classList.add('hidden');
-    });
-
-    tabBtnPemodal.addEventListener('click', () => {
-      tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
-      tabBtnSesi.className = 'flex-1 py-1.5 rounded-md font-semibold transition-all text-on-surface-variant hover:text-on-surface flex items-center justify-center gap-1';
+      if (kpiInvestor) kpiInvestor.classList.remove('hidden');
+      if (kpiDebt) kpiDebt.classList.add('hidden');
+      if (actionInvestor) actionInvestor.classList.remove('hidden');
+      if (actionDebt) actionDebt.classList.add('hidden');
+      if (infoInvestor) infoInvestor.classList.remove('hidden');
+      if (infoDebt) infoDebt.classList.add('hidden');
+    } else if (target === 'pemodal') {
+      if (tabBtnPemodal) tabBtnPemodal.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-primary flex items-center justify-center gap-1';
       if (tabContentPemodal) tabContentPemodal.classList.remove('hidden');
-      if (tabContentSesi) tabContentSesi.classList.add('hidden');
-    });
+      if (kpiInvestor) kpiInvestor.classList.remove('hidden');
+      if (kpiDebt) kpiDebt.classList.add('hidden');
+      if (actionInvestor) actionInvestor.classList.remove('hidden');
+      if (actionDebt) actionDebt.classList.add('hidden');
+      if (infoInvestor) infoInvestor.classList.remove('hidden');
+      if (infoDebt) infoDebt.classList.add('hidden');
+    } else if (target === 'hutang') {
+      if (tabBtnHutang) tabBtnHutang.className = 'flex-1 py-1.5 rounded-md font-bold transition-all glass-seg-active text-cyan-400 flex items-center justify-center gap-1';
+      if (tabContentHutang) tabContentHutang.classList.remove('hidden');
+      if (kpiInvestor) kpiInvestor.classList.add('hidden');
+      if (kpiDebt) kpiDebt.classList.remove('hidden');
+      if (actionInvestor) actionInvestor.classList.add('hidden');
+      if (actionDebt) actionDebt.classList.remove('hidden');
+      if (infoInvestor) infoInvestor.classList.add('hidden');
+      if (infoDebt) infoDebt.classList.remove('hidden');
+    }
   }
+
+  if (tabBtnSesi) tabBtnSesi.addEventListener('click', () => switchTab('sesi'));
+  if (tabBtnPemodal) tabBtnPemodal.addEventListener('click', () => switchTab('pemodal'));
+  if (tabBtnHutang) tabBtnHutang.addEventListener('click', () => switchTab('hutang'));
 
   // Open Modal Tambah Pemodal
   function openAddModal() {
@@ -1161,4 +1763,286 @@ export function initInvestorPage(router, store, isAdmin = true) {
       }
     });
   }
+
+  // ============================================
+  // HUTANG / PINJAMAN BANK — Event Handlers
+  // ============================================
+
+  let deletingDebtId = null;
+  let isDebtEditMode = false;
+
+  // Set default dates for debt forms
+  if (g('debt-date')) g('debt-date').value = todayStr;
+  if (g('debt-pay-date')) g('debt-pay-date').value = todayStr;
+
+  // ---- Open Debt Modal (Add New) ----
+  function openDebtAddModal() {
+    isDebtEditMode = false;
+    if (g('debt-modal-title')) g('debt-modal-title').textContent = 'Catat Pinjaman Bank / Luar Baru';
+    if (g('btn-save-debt-label')) g('btn-save-debt-label').textContent = 'Simpan & Tambah ke Kas Toko';
+    if (g('debt-edit-id')) g('debt-edit-id').value = '';
+    if (g('debt-name')) g('debt-name').value = '';
+    if (g('debt-type')) g('debt-type').value = 'bank';
+    if (g('debt-date')) g('debt-date').value = todayStr;
+    if (g('debt-amount')) g('debt-amount').value = '';
+    if (g('debt-payment')) g('debt-payment').value = 'Transfer Bank BCA';
+    if (g('debt-tenor')) g('debt-tenor').value = '';
+    if (g('debt-installment')) g('debt-installment').value = '';
+    if (g('debt-due-date')) g('debt-due-date').value = '';
+    if (g('debt-account-no')) g('debt-account-no').value = '';
+    if (g('debt-notes')) g('debt-notes').value = '';
+    if (g('debt-modal')) g('debt-modal').classList.remove('hidden');
+  }
+
+  // ---- Open Debt Modal (Edit) ----
+  function openDebtEditModal(id) {
+    const debt = store.getDebtById ? store.getDebtById(id) : null;
+    if (!debt) return;
+
+    isDebtEditMode = true;
+    if (g('debt-modal-title')) g('debt-modal-title').textContent = 'Edit Data Pinjaman';
+    if (g('btn-save-debt-label')) g('btn-save-debt-label').textContent = 'Simpan Perubahan';
+    if (g('debt-edit-id')) g('debt-edit-id').value = id;
+    if (g('debt-name')) g('debt-name').value = debt.lenderName || '';
+    if (g('debt-type')) g('debt-type').value = debt.lenderType || 'bank';
+    if (g('debt-date')) g('debt-date').value = debt.date || todayStr;
+    if (g('debt-amount')) g('debt-amount').value = debt.totalPrincipal || 0;
+    if (g('debt-payment')) g('debt-payment').value = debt.paymentMethod || 'Transfer Bank BCA';
+    if (g('debt-tenor')) g('debt-tenor').value = debt.tenorMonths || '';
+    if (g('debt-installment')) g('debt-installment').value = debt.monthlyInstallment || '';
+    if (g('debt-due-date')) g('debt-due-date').value = debt.dueDate || '';
+    if (g('debt-account-no')) g('debt-account-no').value = debt.accountNumber || '';
+    if (g('debt-notes')) g('debt-notes').value = debt.notes || '';
+    if (g('debt-modal')) g('debt-modal').classList.remove('hidden');
+  }
+
+  // ---- Open Debt Payment Modal ----
+  function openDebtPaymentModal(targetDebtId = null) {
+    if (g('debt-pay-date')) g('debt-pay-date').value = todayStr;
+    if (g('debt-pay-amount')) g('debt-pay-amount').value = '';
+    if (g('debt-pay-notes')) g('debt-pay-notes').value = '';
+    if (g('debt-pay-payment-method')) g('debt-pay-payment-method').value = 'Transfer Bank BCA';
+
+    // Select the target debt
+    const select = g('debt-pay-target-id');
+    if (targetDebtId && select) {
+      select.value = targetDebtId;
+    }
+
+    if (g('debt-payment-modal')) g('debt-payment-modal').classList.remove('hidden');
+  }
+
+  // ---- Bind "Add Debt" Buttons ----
+  if (g('btn-tambah-debt-top')) {
+    g('btn-tambah-debt-top').addEventListener('click', openDebtAddModal);
+  }
+  if (g('btn-empty-add-debt')) {
+    g('btn-empty-add-debt').addEventListener('click', openDebtAddModal);
+  }
+
+  // ---- Bind "Bayar Cicilan" top button ----
+  if (g('btn-bayar-debt-top')) {
+    g('btn-bayar-debt-top').addEventListener('click', () => openDebtPaymentModal());
+  }
+
+  // ---- Debt Modal Closers ----
+  if (g('btn-close-debt-modal')) {
+    g('btn-close-debt-modal').addEventListener('click', () => g('debt-modal').classList.add('hidden'));
+  }
+  if (g('debt-modal-backdrop')) {
+    g('debt-modal-backdrop').addEventListener('click', () => g('debt-modal').classList.add('hidden'));
+  }
+  if (g('btn-close-debt-payment-modal')) {
+    g('btn-close-debt-payment-modal').addEventListener('click', () => g('debt-payment-modal').classList.add('hidden'));
+  }
+  if (g('debt-payment-modal-backdrop')) {
+    g('debt-payment-modal-backdrop').addEventListener('click', () => g('debt-payment-modal').classList.add('hidden'));
+  }
+
+  // ---- Delete Debt Modal Closers ----
+  if (g('btn-cancel-delete-debt')) {
+    g('btn-cancel-delete-debt').addEventListener('click', () => g('debt-delete-modal').classList.add('hidden'));
+  }
+  if (g('debt-delete-backdrop')) {
+    g('debt-delete-backdrop').addEventListener('click', () => g('debt-delete-modal').classList.add('hidden'));
+  }
+
+  // ---- Save Debt (Add / Edit) ----
+  if (g('btn-save-debt')) {
+    g('btn-save-debt').addEventListener('click', () => {
+      const lenderName = (g('debt-name')?.value || '').trim();
+      const lenderType = g('debt-type')?.value || 'bank';
+      const date = g('debt-date')?.value || todayStr;
+      const totalPrincipal = Number(g('debt-amount')?.value) || 0;
+      const paymentMethod = g('debt-payment')?.value || 'Transfer Bank BCA';
+      const tenorMonths = Number(g('debt-tenor')?.value) || 0;
+      const monthlyInstallment = Number(g('debt-installment')?.value) || 0;
+      const dueDate = g('debt-due-date')?.value || '';
+      const accountNumber = (g('debt-account-no')?.value || '').trim();
+      const notes = (g('debt-notes')?.value || '').trim();
+
+      // Validasi
+      if (!lenderName) {
+        showToast('Nama bank / kreditur wajib diisi!', 'error');
+        g('debt-name')?.focus();
+        return;
+      }
+      if (isNaN(totalPrincipal) || !isFinite(totalPrincipal) || totalPrincipal <= 0) {
+        showToast('Nominal pokok pinjaman harus lebih dari Rp 0!', 'error');
+        g('debt-amount')?.focus();
+        return;
+      }
+      if (totalPrincipal > 100000000000) {
+        showToast('❌ Nominal pinjaman terlalu besar! Maksimal Rp 100 miliar.', 'error', 4000);
+        g('debt-amount')?.focus();
+        return;
+      }
+
+      const debtData = {
+        lenderName,
+        lenderType,
+        date,
+        totalPrincipal,
+        paymentMethod,
+        tenorMonths: tenorMonths || null,
+        monthlyInstallment: monthlyInstallment || null,
+        dueDate: dueDate || null,
+        accountNumber: accountNumber || null,
+        notes
+      };
+
+      const editId = g('debt-edit-id')?.value;
+      if (isDebtEditMode && editId) {
+        store.updateDebt(editId, debtData);
+        showToast('Data pinjaman berhasil diperbarui!', 'success');
+      } else {
+        store.addDebt(debtData);
+        showToast('Pinjaman berhasil dicatat & saldo kas toko bertambah!', 'success', 3500);
+      }
+
+      g('debt-modal').classList.add('hidden');
+      router.render();
+    });
+  }
+
+  // ---- Fill Installment & Full Payment Buttons ----
+  if (g('btn-fill-installment')) {
+    g('btn-fill-installment').addEventListener('click', () => {
+      const select = g('debt-pay-target-id');
+      if (!select) return;
+      const opt = select.options[select.selectedIndex];
+      const installment = Number(opt?.getAttribute('data-installment')) || 0;
+      if (installment > 0 && g('debt-pay-amount')) {
+        g('debt-pay-amount').value = installment;
+      } else {
+        showToast('Tidak ada estimasi cicilan per bulan yang tercatat.', 'info');
+      }
+    });
+  }
+  if (g('btn-fill-debt-sisa')) {
+    g('btn-fill-debt-sisa').addEventListener('click', () => {
+      const select = g('debt-pay-target-id');
+      if (!select) return;
+      const opt = select.options[select.selectedIndex];
+      const sisa = Number(opt?.getAttribute('data-sisa')) || 0;
+      if (sisa > 0 && g('debt-pay-amount')) {
+        g('debt-pay-amount').value = sisa;
+      } else {
+        showToast('Hutang ini sudah lunas / sisa pokok Rp 0.', 'info');
+      }
+    });
+  }
+
+  // ---- Submit Debt Payment ----
+  if (g('btn-submit-debt-pay')) {
+    g('btn-submit-debt-pay').addEventListener('click', () => {
+      const debtId = g('debt-pay-target-id')?.value;
+      const date = g('debt-pay-date')?.value || todayStr;
+      const amount = Number(g('debt-pay-amount')?.value) || 0;
+      const paymentMethod = g('debt-pay-payment-method')?.value || 'Transfer Bank BCA';
+      const notes = (g('debt-pay-notes')?.value || '').trim();
+
+      if (!debtId) {
+        showToast('Pilih pinjaman yang akan dicicil terlebih dahulu!', 'error');
+        return;
+      }
+      if (isNaN(amount) || !isFinite(amount) || amount <= 0) {
+        showToast('Nominal cicilan harus lebih dari Rp 0!', 'error');
+        g('debt-pay-amount')?.focus();
+        return;
+      }
+
+      store.addDebtPayment(debtId, { amount, date, paymentMethod, notes });
+      showToast('Cicilan berhasil dicatat! Saldo kas toko telah dipotong.', 'success', 3500);
+      g('debt-payment-modal').classList.add('hidden');
+      router.render();
+    });
+  }
+
+  // ---- Confirm Delete Debt ----
+  if (g('btn-confirm-delete-debt')) {
+    g('btn-confirm-delete-debt').addEventListener('click', () => {
+      if (deletingDebtId) {
+        store.deleteDebt(deletingDebtId);
+        showToast('Data pinjaman & seluruh mutasi terkait berhasil dihapus.', 'info');
+        deletingDebtId = null;
+        g('debt-delete-modal').classList.add('hidden');
+        router.render();
+      }
+    });
+  }
+
+  // ---- Delegasi Event: Edit Debt, Delete Debt, Pay Debt, Toggle Payments, Delete Payment ----
+  document.addEventListener('click', (e) => {
+    // Edit Debt
+    const editDebtBtn = e.target.closest('[data-edit-debt]');
+    if (editDebtBtn) {
+      const debtId = editDebtBtn.getAttribute('data-edit-debt');
+      openDebtEditModal(debtId);
+      return;
+    }
+
+    // Delete Debt (open confirmation modal)
+    const delDebtBtn = e.target.closest('[data-delete-debt]');
+    if (delDebtBtn) {
+      deletingDebtId = delDebtBtn.getAttribute('data-delete-debt');
+      if (g('debt-delete-modal')) g('debt-delete-modal').classList.remove('hidden');
+      return;
+    }
+
+    // Pay Debt (open payment modal with pre-selected debt)
+    const payDebtBtn = e.target.closest('[data-pay-debt]');
+    if (payDebtBtn) {
+      const debtId = payDebtBtn.getAttribute('data-pay-debt');
+      openDebtPaymentModal(debtId);
+      return;
+    }
+
+    // Toggle Debt Payment History
+    const toggleDebtPayBtn = e.target.closest('[data-toggle-debt-payments]');
+    if (toggleDebtPayBtn) {
+      const debtId = toggleDebtPayBtn.getAttribute('data-toggle-debt-payments');
+      const paymentsList = g(`payments-list-${debtId}`);
+      const arrow = g(`arrow-debt-${debtId}`);
+      if (paymentsList) paymentsList.classList.toggle('hidden');
+      if (arrow) {
+        arrow.style.transform = paymentsList && !paymentsList.classList.contains('hidden')
+          ? 'rotate(180deg)' : 'rotate(0deg)';
+      }
+      return;
+    }
+
+    // Delete Single Debt Payment
+    const delDebtPayBtn = e.target.closest('[data-delete-debt-payment]');
+    if (delDebtPayBtn) {
+      const payId = delDebtPayBtn.getAttribute('data-delete-debt-payment');
+      const debtId = delDebtPayBtn.getAttribute('data-debt-id');
+      if (confirm('Hapus catatan cicilan ini? Saldo kas toko yang sebelumnya terpotong akan dikembalikan.')) {
+        store.deleteDebtPayment(debtId, payId);
+        showToast('Cicilan dihapus & saldo kas dikembalikan.', 'info');
+        router.render();
+      }
+      return;
+    }
+  });
 }
