@@ -583,3 +583,24 @@ header.app-header,
   }
 }
 
+/* 2-Column KPI & Action Buttons Grid - Pastikan tata letak 2 kolom selalu rapi dengan sepasi lega */
+.kpi-grid-2col {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 12px !important;
+  width: 100% !important;
+}
+.kpi-grid-2col.hidden {
+  display: none !important;
+}
+
+.action-grid-2col {
+  display: grid !important;
+  grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+  gap: 10px !important;
+  width: 100% !important;
+}
+.action-grid-2col.hidden {
+  display: none !important;
+}
+

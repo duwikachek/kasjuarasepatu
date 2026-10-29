@@ -55,139 +55,139 @@ export function renderInvestorPage(store, isAdmin = true) {
         ` : ''}
 
         <!-- KPI 4 Cards: INVESTASI & BAGI HASIL (Aktif di tab Sesi & Pemodal) -->
-        <div id="kpi-container-investor" class="${isHutangTab ? 'hidden' : 'grid'} grid-cols-2 gap-2">
+        <div id="kpi-container-investor" class="kpi-grid-2col grid grid-cols-2 gap-3 ${isHutangTab ? 'hidden' : ''}">
           <!-- Total Modal Diterima -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-emerald-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">account_balance_wallet</span>
-                Modal Masuk
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">account_balance_wallet</span>
+                <span class="truncate">Modal Masuk</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate leading-tight">
                 ${formatRupiah(summary.totalInvested || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">Sisa Pokok: ${formatRupiah(summary.totalPokokSisa || 0, '')}</span>
+              <span class="text-[10px] text-neutral-400 block mt-1 truncate">Sisa Pokok: ${formatRupiah(summary.totalPokokSisa || 0, '')}</span>
             </div>
           </div>
 
           <!-- Sisa Pokok Modal -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-blue-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-blue-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-blue-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">savings</span>
-                Pokok Dikembalikan
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-blue-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">savings</span>
+                <span class="truncate">Pokok Kembali</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-blue-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-blue-300 font-tabular block truncate leading-tight">
                 ${formatRupiah(summary.totalPokokDikembalikan || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">${summary.countTotal || 0} Pemodal Terdaftar</span>
+              <span class="text-[10px] text-neutral-400 block mt-1 truncate">${summary.countTotal || 0} Pemodal Terdaftar</span>
             </div>
           </div>
 
           <!-- Hak Investor 60% -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-amber-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-amber-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">pie_chart</span>
-                Hak Investor (60%)
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-amber-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">pie_chart</span>
+                <span class="truncate">Hak Investor (60%)</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate leading-tight">
                 ${formatRupiah(summary.totalHakInvestor60 || 0)}
               </span>
-              <span class="text-[10px] text-rose-400 block mt-0.5">
+              <span class="text-[10px] text-rose-400 block mt-1 truncate">
                 Sisa Bayar: ${formatRupiah(summary.totalSisaBagiHasil || 0, '')}
               </span>
             </div>
           </div>
 
           <!-- Hak Pengelola 40% -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-cyan-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-cyan-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">store</span>
-                Hak Pengelola (40%)
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-cyan-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">store</span>
+                <span class="truncate">Hak Pengelola (40%)</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-cyan-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-cyan-300 font-tabular block truncate leading-tight">
                 ${formatRupiah(summary.totalHakPengelola40 || 0)}
               </span>
-              <span class="text-[10px] text-cyan-400/90 block mt-0.5">
-                Sisa Belum Ditarik: ${formatRupiah(summary.totalSisaHakPengelola || 0, '')}
+              <span class="text-[10px] text-cyan-400/90 block mt-1 truncate">
+                Sisa: ${formatRupiah(summary.totalSisaHakPengelola || 0, '')}
               </span>
             </div>
           </div>
         </div>
 
         <!-- KPI 4 Cards: HUTANG & PINJAMAN BANK (Aktif di tab Hutang) -->
-        <div id="kpi-container-debt" class="${isHutangTab ? 'grid' : 'hidden'} grid-cols-2 gap-2">
+        <div id="kpi-container-debt" class="kpi-grid-2col grid grid-cols-2 gap-3 ${isHutangTab ? '' : 'hidden'}">
           <!-- Total Pinjaman Diterima -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-cyan-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-cyan-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-cyan-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">account_balance</span>
-                Pinjaman Masuk
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-cyan-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">account_balance</span>
+                <span class="truncate">Pinjaman Masuk</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-white font-tabular block truncate leading-tight">
                 ${formatRupiah(debtSummary.totalPrincipalBorrowed || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countTotal || 0} Pinjaman Tercatat</span>
+              <span class="text-[10px] text-neutral-400 block mt-1 truncate">${debtSummary.countTotal || 0} Pinjaman Tercatat</span>
             </div>
           </div>
 
           <!-- Sisa Pokok Hutang -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-rose-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-rose-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-rose-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">pending_actions</span>
-                Sisa Kewajiban
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-rose-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">pending_actions</span>
+                <span class="truncate">Sisa Kewajiban</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-rose-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-rose-300 font-tabular block truncate leading-tight">
                 ${formatRupiah(debtSummary.totalOutstanding || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countActive || 0} Pinjaman Belum Lunas</span>
+              <span class="text-[10px] text-neutral-400 block mt-1 truncate">${debtSummary.countActive || 0} Pinjaman Belum Lunas</span>
             </div>
           </div>
 
           <!-- Sudah Dicicil / Terbayar -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-emerald-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-emerald-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-emerald-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">check_circle</span>
-                Sudah Dicicil
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-emerald-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">check_circle</span>
+                <span class="truncate">Sudah Dicicil</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-emerald-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-emerald-300 font-tabular block truncate leading-tight">
                 ${formatRupiah(debtSummary.totalRepaid || 0)}
               </span>
-              <span class="text-[10px] text-neutral-400 block mt-0.5">${debtSummary.countLunas || 0} Pinjaman Sudah Lunas</span>
+              <span class="text-[10px] text-neutral-400 block mt-1 truncate">${debtSummary.countLunas || 0} Pinjaman Sudah Lunas</span>
             </div>
           </div>
 
           <!-- Status Pinjaman Aktif & Jatuh Tempo -->
-          <div class="glass-dark glass-sheen rounded-xl p-3 flex flex-col justify-between border-t-2 border-amber-500">
+          <div class="glass-dark glass-sheen rounded-2xl p-3 sm:p-3.5 flex flex-col justify-between border-t-2 border-amber-500 shadow-sm min-h-[96px]">
             <div class="flex items-center justify-between text-neutral-400">
-              <span class="font-bold text-[10px] uppercase tracking-wider text-amber-400 flex items-center gap-1">
-                <span class="material-symbols-outlined text-[15px]">event_upcoming</span>
-                Jatuh Tempo
+              <span class="font-bold text-[10.5px] uppercase tracking-wider text-amber-400 flex items-center gap-1.5 truncate">
+                <span class="material-symbols-outlined text-[16px] shrink-0">event_upcoming</span>
+                <span class="truncate">Jatuh Tempo</span>
               </span>
             </div>
-            <div class="mt-1.5">
-              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate">
+            <div class="mt-2">
+              <span class="font-bold text-base sm:text-lg text-amber-300 font-tabular block truncate leading-tight">
                 ${debtSummary.countActive || 0} Pinjaman
               </span>
-              <span class="text-[10px] ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? 'text-rose-400 font-bold' : 'text-neutral-400'} block mt-0.5">
+              <span class="text-[10px] ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? 'text-rose-400 font-bold' : 'text-neutral-400'} block mt-1 truncate">
                 ${debtSummary.upcomingDue && debtSummary.upcomingDue.length > 0 ? `⚠️ ${debtSummary.upcomingDue.length} Jatuh Tempo Dekat` : '✓ Jadwal Teratur'}
               </span>
             </div>
@@ -196,32 +196,32 @@ export function renderInvestorPage(store, isAdmin = true) {
 
         <!-- Action Buttons Investor (Khusus Admin) -->
         ${isAdmin ? `
-        <div id="action-buttons-investor" class="${isHutangTab ? 'hidden' : 'grid'} grid-cols-2 gap-2">
+        <div id="action-buttons-investor" class="action-grid-2col grid grid-cols-2 gap-2.5 ${isHutangTab ? 'hidden' : ''}">
           <button type="button" id="btn-tambah-investor"
-            class="glass-primary glass-btn glass-sheen h-11 py-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>+ Terima Modal Baru</span>
+            class="glass-primary glass-btn glass-sheen w-full h-11 py-2 px-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px] shrink-0">add_circle</span>
+            <span class="truncate">+ Terima Modal Baru</span>
           </button>
 
           <button type="button" id="btn-bayar-payout"
-            class="glass-emerald glass-btn glass-sheen h-11 py-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[18px]">payments</span>
-            <span>Bayar / Cairkan Bagi Hasil</span>
+            class="glass-emerald glass-btn glass-sheen w-full h-11 py-2 px-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px] shrink-0">payments</span>
+            <span class="truncate">Cairkan Bagi Hasil</span>
           </button>
         </div>
 
         <!-- Action Buttons Hutang (Khusus Admin) -->
-        <div id="action-buttons-debt" class="${isHutangTab ? 'grid' : 'hidden'} grid-cols-2 gap-2">
+        <div id="action-buttons-debt" class="action-grid-2col grid grid-cols-2 gap-2.5 ${isHutangTab ? '' : 'hidden'}">
           <button type="button" id="btn-tambah-debt-top"
-            class="glass-primary glass-btn glass-sheen h-11 py-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[18px]">add_circle</span>
-            <span>+ Catat Pinjaman Baru</span>
+            class="glass-primary glass-btn glass-sheen w-full h-11 py-2 px-2 text-primary-btn rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px] shrink-0">add_circle</span>
+            <span class="truncate">+ Catat Pinjaman Baru</span>
           </button>
 
           <button type="button" id="btn-bayar-debt-top"
-            class="glass-emerald glass-btn glass-sheen h-11 py-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
-            <span class="material-symbols-outlined text-[18px]">payments</span>
-            <span>Bayar Cicilan Hutang</span>
+            class="glass-emerald glass-btn glass-sheen w-full h-11 py-2 px-2 text-emerald-950 rounded-xl font-bold text-xs flex items-center justify-center gap-1.5 active:scale-[0.98]">
+            <span class="material-symbols-outlined text-[18px] shrink-0">payments</span>
+            <span class="truncate">Bayar Cicilan Hutang</span>
           </button>
         </div>
         ` : ''}
