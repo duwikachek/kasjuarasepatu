@@ -9,7 +9,59 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
 - **Storage:** LocalStorage (untuk data lokal & foto produk)
 - **Barcode Scanner:** `html5-qrcode`
 
-## Konteks Terakhir (Update 21 Oktober 2026)
+## Konteks Terakhir (Update 29 Oktober 2026)
+
+### Fitur Pencatatan Hutang & Pinjaman Bank, Desain Tata Letak 2 Kolom, Pemisahan Kategori Pemasukan (Penjualan vs Hutang), dan Isolasi Skema 60:40
+**Waktu:** 29 Oktober 2026  
+**Tujuan:** (1) Membangun fitur pencatatan hutang & pinjaman dari bank (KUR, BRI, BCA, Mandiri) atau pihak luar yang terintegrasi di Menu Permodalan, (2) Memperbaiki tata letak kartu KPI & aksi tombol menjadi 2 kolom dengan sepasi lega di mobile, (3) Memisahkan kategori pemasukan secara ketat dalam akuntansi (omset penjualan murni vs pencairan hutang pendanaan), dan (4) Mengisolasi skema perhitungan bagi hasil 60:40 agar murni dihitung dari penjualan sepatu dan tidak terdistorsi oleh pinjaman maupun cicilan hutang bank.
+
+**Poin-Poin Perbaikan & Implementasi:**
+
+1. **Fitur Pencatatan Hutang & Pinjaman Bank/Luar (Tab ke-3 di Permodalan):**
+   - **Struktur Data (`store.js`):** Menambahkan array `debts: []` dalam state aplikasi yang tersinkronisasi ke Supabase & LocalStorage.
+     - Properti: `id`, `lenderName`, `lenderType` (`bank`, `pinjaman_luar`, `pribadi`), `accountNumber`, `date`, `dueDate`, `totalPrincipal`, `tenorMonths`, `monthlyInstallment`, `interestTotal`, `interestType`, `paymentMethod`, `status` (`aktif`, `lunas`), `notes`, dan array `payments: []`.
+   - **Integrasi Arus Kas Otomatis:**
+     - **Pencairan Dana Masuk:** Otomatis mencatat transaksi Kas Masuk toko berlabel `Pinjaman / Hutang` dengan tag `sourceType: 'debt'` & `incomeType: 'debt'`.
+     - **Pembayaran Cicilan:** Otomatis mencatat transaksi Kas Keluar toko berlabel `Cicilan / Pelunasan Hutang` dengan tag `sourceType: 'debt_payment'` & `expenseType: 'debt_repayment'`.
+     - **Penghapusan Pinjaman:** Menghapus pinjaman otomatis membersihkan (*cascade cleanup*) seluruh riwayat transaksi kas masuk dan keluar terkait dari buku kas toko.
+   - **Antarmuka UI Lengkap (`src/pages/investor.js`):**
+     - Sub-tab navigasi 3 opsi: `[ Sesi 60:40 | Pemodal (X) | Hutang Bank (Y) ]`.
+     - 4 Kartu KPI Hutang: *Pinjaman Masuk*, *Sisa Kewajiban Pokok*, *Sudah Dicicil*, dan *Jatuh Tempo*.
+     - Kotak peringatan (*Alert*) otomatis jika terdapat pinjaman yang mendekati jatuh tempo ($\le 30$ hari).
+     - Tombol aksi `+ Pinjaman Baru` dan `Bayar Cicilan` beserta modal popup interaktif dengan tombol auto-fill nominal (Cicilan Bulanan / Pelunasan Penuh).
+     - Kartu daftar hutang dengan progress bar pelunasan, status lunas/aktif, dan accordion riwayat cicilan.
+
+2. **Perbaikan Tata Letak 2 Kolom & Spasi Card (`src/styles/app.css` & `src/pages/investor.js`):**
+   - Menambahkan aturan CSS native `.kpi-grid-2col` dan `.action-grid-2col` di `src/styles/app.css` dengan `display: grid !important; grid-template-columns: repeat(2, minmax(0, 1fr)) !important; gap: 12px !important;`.
+   - Mengatasi isu kartu KPI bertumpuk 1 kolom vertikal (*display: block*) akibat konflik class toggling saat pergantian sub-tab.
+   - Jarak antar-card ditingkatkan menjadi 12px (`gap-3`) dengan padding `p-3.5` dan radius sudut `rounded-2xl` (`min-h-[96px]`) sehingga tata letak seimbang, simetris, dan tidak berdempetan di layar smartphone.
+   - Tombol aksi tersusun rapi berdampingan dalam 2 kolom dengan lebar penuh (`w-full`) dan jarak 10px.
+
+3. **Pemisahan Kategori Pemasukan (Omset Penjualan vs Pinjaman Hutang):**
+   - **Prinsip Akuntansi:** Dana pinjaman bank menambah saldo kas fisik toko (*Financing Cash Inflow*), tetapi **BUKAN** Omset Penjualan (*Revenue*) dan **BUKAN** Keuntungan Usaha.
+   - **Di `src/store/store.js`:**
+     - `getBalanceSummary()` memisahkan `totalMasukPenjualan` (omset murni) dan `totalMasukHutang` (pencairan hutang).
+     - Laba Bersih Usaha (`netProfit` / `netOperatingProfit`) dihitung murni:
+       $$\text{Laba Bersih} = \text{Omset Penjualan Sepatu} - \text{Biaya Operasional Toko}$$
+       *Uang pinjaman bank 100% diblokir dari kalkulasi laba toko.*
+     - `getSalesStatsByDays(7)` otomatis mengecualikan transaksi hutang agar grafik tren harian murni menyajikan omset penjualan sepatu.
+     - `getShipments()` memfilter transaksi hutang agar tidak muncul di modul pengiriman/ekspedisi sepatu.
+   - **Di `src/pages/dashboard.js`:**
+     - Sub-stats kartu saldo kas menampilkan breakdown: `Jual: Rp X • Hutang: Rp Y` jika terdapat mutasi pencairan hutang aktif.
+   - **Di `src/pages/laporan.js`:**
+     - Hero card menyajikan **Laba Bersih Operasional Penjualan** dengan perbandingan 4 pos: *Omset Penjualan*, *Pinjaman/Hutang*, *Biaya Operasional*, dan *Cicilan Hutang*, serta *Total Kas Masuk Fisik Riil*.
+     - Menambahkan seksi baru **Pemasukan per Kategori & Sumber Dana** lengkap dengan filter pills `[Semua] | [Penjualan Sepatu] | [Pinjaman/Hutang]`, highlight box, visual progress bar, dan daftar mutasi bertag `🛒 PENJUALAN` vs `🏦 PINJAMAN (Non-Omset)`.
+
+4. **Isolasi Skema Bagi Hasil 60:40 Sesi Investasi:**
+   - **Di `src/store/store.js` (`getInvestmentSessionReport`):**
+     - `omzetPenjualan` sesi investasi murni dihitung dari produk sepatu yang laku terjual dalam sesi tersebut. Dikecualikan mutlak dari pencairan hutang dan modal investor.
+     - `totalOmzetToko` (penyebut rasio pembagian biaya operasional sesi) murni menjumlahkan omset penjualan sepatu.
+     - `totalBiayaOperasionalToko` mengecualikan transaksi pembayaran cicilan hutang bank (`expenseType: 'debt_repayment'`). Pembayaran cicilan pokok hutang diperlakukan murni sebagai pembayaran liabilitas kas, sehingga **tidak memotong keuntungan bersih investor**.
+   - Teks panduan skema di halaman Permodalan dan template ekspor WhatsApp dipertegas bahwa bagi hasil 60:40 dihitung murni dari keuntungan bersih penjualan sepatu.
+
+---
+
+## Konteks Sebelumnya (Update 21 Oktober 2026)
 
 ### Refactoring, Keamanan PIN, Penyimpanan Browser & Perapian Repositori
 **Waktu:** 21 Oktober 2026  
@@ -312,7 +364,11 @@ Aplikasi buku kas digital untuk toko sepatu yang mengelola transaksi penjualan, 
       - Menghapus atribut `lineStyle: dashType` yang sebelumnya menyebabkan respons 400 Bad Request dari Google Sheets API, sehingga batch update grafik kini 100% sukses terpasang.
 
 ## File Kunci
-- `src/store/store.js`: Logika bisnis utama, perhitungan stok, dan sinkronisasi Supabase.
+- `src/store/store.js`: Logika bisnis utama, perhitungan stok, pemisahan omset vs hutang, skema 60:40, dan sinkronisasi Supabase.
+- `src/pages/investor.js`: Halaman Permodalan & Hutang Bank (Sesi 60:40, Pemodal, dan Hutang Usaha).
+- `src/pages/laporan.js`: Laporan keuangan, pemisahan pos omset penjualan vs pinjaman hutang, rincian kategori pemasukan/pengeluaran, dan stok.
+- `src/pages/dashboard.js`: Dashboard utama toko, rincian kas masuk (penjualan vs hutang), dan kas keluar.
+- `src/styles/app.css`: Sistem desain, dark glassmorphism, dan grid 2 kolom (`.kpi-grid-2col`, `.action-grid-2col`).
 - `src/pages/tambah-transaksi.js`: Logika input penjualan dan validasi barcode.
 - `src/pages/tambah-barang-masuk.js`: Logika input stok barang.
 - `src/utils/barcode-scanner-config.js`: Konfigurasi kamera, filter video, dan utility scanner.
