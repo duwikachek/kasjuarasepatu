@@ -2138,7 +2138,10 @@ class Store {
 
       transactions.forEach((t) => {
         if (t.type !== 'masuk') return;
-        if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang') return;
+        // Pengecualian mutlak: Hanya hitung penjualan riil sepatu (TIDAK MASUK pinjaman hutang atau modal investor)
+        const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || (t.debtId && t.type === 'masuk');
+        const isCapital = t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang' || t.incomeType === 'capital';
+        if (isDebt || isCapital) return;
 
         // Cek apakah item transaksi cocok dengan produk dalam sesi belanja ini
         if (t.items && Array.isArray(t.items) && t.items.length > 0) {
@@ -2193,19 +2196,31 @@ class Store {
       const isEligible50 = persentaseTerjual >= 50;
 
       // 4. Biaya Operasional & Biaya Lain Toko Sesi
-      // Mengambil total pengeluaran non-belanja & non-investor
+      // Mengambil total pengeluaran operasional murni (tanpa belanja kulakan, tanpa investor payout, dan TANPA cicilan hutang bank)
       let totalBiayaOperasionalToko = 0;
       transactions.forEach((t) => {
         if (t.type === 'keluar') {
           const cat = (t.category || '').toLowerCase();
-          if (!cat.includes('belanja') && !cat.includes('investor') && !cat.includes('pengelola') && !cat.includes('pasok')) {
+          const isBelanja = cat.includes('belanja') || cat.includes('pasok') || cat.includes('kulakan');
+          const isInvestor = cat.includes('investor') || cat.includes('pengelola') || cat.includes('bagi hasil') || cat.includes('pokok modal');
+          const isDebtPayment = t.expenseType === 'debt_repayment' || t.sourceType === 'debt_payment' || cat.includes('hutang') || cat.includes('pinjaman') || (t.debtId && t.type === 'keluar');
+
+          if (!isBelanja && !isInvestor && !isDebtPayment) {
             totalBiayaOperasionalToko += Number(t.amount) || 0;
           }
         }
       });
 
-      // Proporsi biaya operasional yang dialokasikan ke sesi ini (berdasarkan rasio omzet sesi vs total omzet)
-      const totalOmzetToko = transactions.filter((t) => t.type === 'masuk' && t.category !== 'Dana Investor').reduce((s, t) => s + (Number(t.amount) || 0), 0) || 1;
+      // Proporsi biaya operasional yang dialokasikan ke sesi ini (berdasarkan rasio omzet sesi vs total omzet penjualan murni toko)
+      const totalOmzetToko = transactions
+        .filter((t) => {
+          if (t.type !== 'masuk') return false;
+          const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || t.debtId;
+          const isCapital = t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.incomeType === 'capital';
+          return !isDebt && !isCapital;
+        })
+        .reduce((s, t) => s + (Number(t.amount) || 0), 0) || 1;
+
       const rasioSesi = Math.min(1, Math.max(0, omzetPenjualan / totalOmzetToko));
       const biayaOpsSesi = Math.round(totalBiayaOperasionalToko * rasioSesi);
 

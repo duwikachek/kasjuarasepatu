@@ -233,7 +233,7 @@ export function renderInvestorPage(store, isAdmin = true) {
             <span>Ketentuan Skema Kerjasama Sesi:</span>
           </div>
           <p class="text-[11px] text-neutral-300 leading-relaxed">
-            Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah <strong>laku terjual ≥ 50%</strong>, maka <strong>keuntungan bersih</strong> (setelah dipotong modal HPP & biaya operasional) dibagi: <strong>60% untuk Investor</strong> dan <strong>40% untuk Pengelola</strong>. Hak keduanya langsung dapat dicairkan dan memotong kas toko.
+            Dalam 1 sesi pembelanjaan, saat total pasang sepatu sudah <strong>laku terjual ≥ 50%</strong>, maka <strong>keuntungan bersih murni dari penjualan sepatu</strong> (omzet penjualan sepatu dikurangi modal HPP & biaya operasional toko, <em>tanpa memasukkan dana hutang bank/luar</em>) dibagi: <strong>60% untuk Investor</strong> dan <strong>40% untuk Pengelola</strong>. Hak keduanya langsung dapat dicairkan dan memotong kas toko.
           </p>
         </div>
 
