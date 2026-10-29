@@ -1509,7 +1509,7 @@ class Store {
       .sort((a, b) => a.stock - b.stock);
   }
 
-  // Financial Calculations & Aggregates
+  // Financial Calculations & Aggregates (Pemisahan Penjualan vs Hutang/Pendanaan)
   getBalanceSummary() {
     const trxs = this.getTransactions();
     let totalMasuk = 0;
@@ -1517,14 +1517,49 @@ class Store {
     let countMasuk = 0;
     let countKeluar = 0;
 
+    // Pos Penjualan Murni (Operasional Toko)
+    let totalMasukPenjualan = 0;
+    let countMasukPenjualan = 0;
+    let totalKeluarOperasional = 0;
+
+    // Pos Pendanaan / Hutang Bank & Luar (Non-Omset)
+    let totalMasukHutang = 0;
+    let countMasukHutang = 0;
+    let totalKeluarHutang = 0;
+
+    // Pos Permodalan Investor
+    let totalMasukModal = 0;
+    let totalKeluarModal = 0;
+
     trxs.forEach((t) => {
       const amt = Number(t.amount) || 0;
+      const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || (t.debtId && t.type === 'masuk');
+      const isDebtPayment = t.expenseType === 'debt_repayment' || t.sourceType === 'debt_payment' || t.category === 'Cicilan / Pelunasan Hutang' || (t.debtId && t.type === 'keluar');
+      const isCapital = t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.incomeType === 'capital';
+      const isCapitalPayout = t.category === 'Bagi Hasil Investor' || t.category === 'Bagi Hasil Pengelola' || t.category === 'Pengembalian Pokok Modal';
+
       if (t.type === 'masuk') {
         totalMasuk += amt;
         countMasuk++;
+        if (isDebt) {
+          totalMasukHutang += amt;
+          countMasukHutang++;
+        } else if (isCapital) {
+          totalMasukModal += amt;
+        } else {
+          totalMasukPenjualan += amt;
+          countMasukPenjualan++;
+        }
       } else {
         totalKeluar += amt;
         countKeluar++;
+        if (isDebtPayment) {
+          totalKeluarHutang += amt;
+        } else if (isCapitalPayout) {
+          totalKeluarModal += amt;
+        } else {
+          totalKeluarOperasional += amt;
+        }
       }
     });
 
@@ -1537,13 +1572,32 @@ class Store {
       totalKeluar,
       countMasuk,
       countKeluar,
-      netProfit: totalMasuk - totalKeluar
+      // Pos Penjualan Murni (Omset Toko)
+      totalMasukPenjualan,
+      countMasukPenjualan,
+      totalKeluarOperasional,
+      netOperatingProfit: totalMasukPenjualan - totalKeluarOperasional,
+      // Pos Hutang / Pinjaman Bank
+      totalMasukHutang,
+      countMasukHutang,
+      totalKeluarHutang,
+      // Pos Modal Investor
+      totalMasukModal,
+      totalKeluarModal,
+      // Laba Bersih Usaha (Murni dari Penjualan - Beban Operasional, TIDAK tercemar hutang)
+      netProfit: totalMasukPenjualan - totalKeluarOperasional
     };
   }
 
   // Shipments (Pengiriman Sepatu Terjual: Kemas, Kirim, Hold, Selesai)
   getShipments(filterStatus = null) {
-    const allMasuk = (this.state.transactions || []).filter((t) => t.type === 'masuk');
+    // Hanya transaksi PENJUALAN yang masuk antrean ekspedisi pengiriman (Bukan pencairan hutang atau modal)
+    const allMasuk = (this.state.transactions || []).filter((t) => {
+      if (t.type !== 'masuk') return false;
+      if (t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || t.debtId) return false;
+      if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.incomeType === 'capital') return false;
+      return true;
+    });
     const withStatus = allMasuk.map((t) => ({
       ...t,
       shippingStatus: t.shippingStatus || 'kemas'
@@ -1613,13 +1667,14 @@ class Store {
       date.setDate(date.getDate() - i);
       const dateStr = getLocalDateString(date);
 
-      // Filter sales transactions for this date (exclude investor)
+      // Filter sales transactions for this date (exclude investor & debt/pinjaman)
       const dayTrxs = trxs.filter(t => {
         if (t.type !== 'masuk') return false;
         if (!t.date) return false;
-        // Exclude investor transactions
+        // Exclude investor & debt/pinjaman transactions
         const isInvestor = t.category && t.category.toLowerCase().includes('investor');
-        if (isInvestor) return false;
+        const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || (t.category && (t.category.toLowerCase().includes('hutang') || t.category.toLowerCase().includes('pinjaman'))) || t.debtId;
+        if (isInvestor || isDebt) return false;
         return t.date === dateStr;
       });
 
@@ -2388,10 +2443,11 @@ class Store {
       createdAt: new Date().toISOString()
     };
 
-    // Uang pinjaman masuk otomatis menambah Saldo Kas Toko (Kas Masuk)
+    // Uang pinjaman masuk otomatis menambah Saldo Kas Toko (Kas Masuk bertipe Hutang/Pendanaan)
     const trx = this.addTransaction({
       type: 'masuk',
       category: 'Pinjaman / Hutang',
+      incomeType: 'debt',
       amount: principal,
       title: `Pencairan Hutang: ${newDebt.lenderName}`,
       paymentMethod: newDebt.paymentMethod,
@@ -2509,10 +2565,11 @@ class Store {
     const paymentMethod = paymentData.paymentMethod || 'Transfer Bank BCA';
     const notes = (paymentData.notes || '').trim();
 
-    // Catat ke Buku Kas Toko sebagai Kas Keluar
+    // Catat ke Buku Kas Toko sebagai Kas Keluar bertipe Cicilan Hutang
     const trx = this.addTransaction({
       type: 'keluar',
       category: 'Cicilan / Pelunasan Hutang',
+      expenseType: 'debt_repayment',
       amount,
       title: `Cicilan Hutang: ${debt.lenderName}${notes ? ' (' + notes + ')' : ''}`,
       paymentMethod,

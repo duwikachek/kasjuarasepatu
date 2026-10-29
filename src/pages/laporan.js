@@ -5,7 +5,7 @@ import { showToast } from '../components/toast.js';
 // Helper: Menghitung jumlah sepatu laku dari sebuah transaksi
 function getShoeCountFromTransaction(t) {
   if (t.type !== 'masuk') return 0;
-  if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang') return 0;
+  if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang' || t.category === 'Pinjaman / Hutang' || t.sourceType === 'debt' || t.incomeType === 'debt' || t.debtId) return 0;
 
   if (t.items && Array.isArray(t.items) && t.items.length > 0) {
     return t.items.length;
@@ -37,7 +37,7 @@ function extractSoldShoesList(transactions) {
   const list = [];
   transactions.forEach((t) => {
     if (t.type !== 'masuk') return;
-    if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang') return;
+    if (t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.category === 'Pelunasan Piutang' || t.category === 'Pinjaman / Hutang' || t.sourceType === 'debt' || t.incomeType === 'debt' || t.debtId) return;
 
     if (t.items && Array.isArray(t.items) && t.items.length > 0) {
       t.items.forEach((it, idx) => {
@@ -548,6 +548,66 @@ export function renderLaporanPage(store, period = 'bulan') {
           </button>
         </section>
 
+        <!-- FITUR KHUSUS: Analisis Pemasukan Berdasarkan Kategori & Pos (Penjualan vs Hutang) -->
+        <section class="glass-card glass-sheen rounded-xl p-3 flex flex-col gap-2" id="section-kategori-pemasukan">
+          <div class="flex items-center justify-between">
+            <div class="flex items-center gap-2">
+              <div class="w-7 h-7 rounded-lg glass-emerald text-emerald-800 flex items-center justify-center shrink-0">
+                <span class="material-symbols-outlined text-[16px]">account_balance_wallet</span>
+              </div>
+              <div>
+                <h3 class="font-bold text-xs text-on-surface">Pemasukan per Kategori & Sumber Dana</h3>
+                <p class="text-[10px] text-on-surface-variant">Pisahkan Omset Penjualan vs Pinjaman / Hutang</p>
+              </div>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-emerald text-emerald-900 text-[10px] font-bold">
+              Kas Masuk
+            </span>
+          </div>
+
+          <!-- Horizontal Filter Kategori Pills Pemasukan -->
+          <div class="flex items-center gap-1.5 overflow-x-auto pb-1 pt-0.5 no-scrollbar" id="income-category-filters">
+            <!-- Populated via JS -->
+          </div>
+
+          <!-- Highlight Kategori Terpilih Pemasukan -->
+          <div class="glass-emerald rounded-xl p-2.5 flex items-center justify-between border border-emerald-500/25" id="income-category-highlight">
+            <div class="flex flex-col min-w-0 pr-2">
+              <div class="flex items-center gap-1.5">
+                <span class="w-2.5 h-2.5 rounded-full bg-emerald-600 shrink-0" id="selected-income-cat-dot"></span>
+                <span class="font-bold text-xs text-emerald-950 truncate" id="selected-income-cat-name">Semua Pemasukan</span>
+              </div>
+              <span class="text-[10px] text-emerald-800 mt-0.5" id="selected-income-cat-meta">0 transaksi</span>
+            </div>
+            <div class="flex flex-col items-end shrink-0">
+              <span class="text-sm font-extrabold text-emerald-900 font-tabular" id="selected-income-cat-total">+Rp 0</span>
+              <span class="text-[9px] font-semibold text-emerald-800" id="selected-income-cat-percent">100% total</span>
+            </div>
+          </div>
+
+          <!-- Visual Bar Breakdown Proporsi Pemasukan -->
+          <div class="flex flex-col gap-1 mt-0.5">
+            <div class="h-2.5 w-full glass-panel bg-white/35 rounded-full overflow-hidden flex" id="income-progress-bar">
+              <!-- Colored segments populated by JS -->
+            </div>
+            <div class="flex items-center justify-between text-[10px] text-on-surface-variant">
+              <span>Proporsi Kas Masuk</span>
+              <span id="income-total-label" class="font-bold text-emerald-800 font-tabular">Total: +Rp 0</span>
+            </div>
+          </div>
+
+          <!-- Daftar Rincian Transaksi Pemasukan Sesuai Filter -->
+          <div class="flex flex-col gap-1.5 pt-2 border-t border-white/45">
+            <div class="flex items-center justify-between">
+              <span class="text-xs font-bold text-on-surface">Rincian Transaksi Pemasukan</span>
+              <span class="text-[10px] text-on-surface-variant" id="income-list-count">0 catatan</span>
+            </div>
+            <div id="income-transaction-list" class="flex flex-col gap-1.5 max-h-60 overflow-y-auto pr-0.5">
+              <!-- Populated via JS -->
+            </div>
+          </div>
+        </section>
+
         <!-- Grid 2-Kolom Desktop: Beban Pengeluaran (Kiri) & Tren Arus Kas + Pengadaan (Kanan) -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-2.5 items-start">
           <!-- FITUR 3: Filter Total Pengeluaran Berdasarkan Kategori -->
@@ -698,6 +758,7 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
 
   let currentPeriod = initialPeriod;
   let selectedExpenseCategory = 'all';
+  let selectedIncomeCategory = 'all';
   let currentFaktur = 'all';
   let isSepatuListExpanded = false;
   let isSisaStockExpanded = false;
@@ -737,45 +798,142 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
     const allTrxs = store.getTransactions();
     const periodTrxs = filterTransactionsByPeriod(allTrxs, currentPeriod, customDate, customMonth);
 
-    // 1. Hitung Hero Net Profit
+    // 1. Hitung Hero Net Profit & Pemisahan Pos Penjualan vs Hutang
     let totalMasuk = 0;
+    let totalMasukPenjualan = 0;
+    let totalMasukHutang = 0;
+    let totalMasukModal = 0;
+    let countMasukPenjualan = 0;
+    let countMasukHutang = 0;
+
     let totalKeluar = 0;
+    let totalKeluarOperasional = 0;
+    let totalKeluarHutang = 0;
+    let totalKeluarModal = 0;
+
     periodTrxs.forEach((t) => {
       const amt = Number(t.amount) || 0;
-      if (t.type === 'masuk') totalMasuk += amt;
-      else totalKeluar += amt;
+      const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || (t.debtId && t.type === 'masuk');
+      const isDebtPayment = t.expenseType === 'debt_repayment' || t.sourceType === 'debt_payment' || t.category === 'Cicilan / Pelunasan Hutang' || (t.debtId && t.type === 'keluar');
+      const isCapital = t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.incomeType === 'capital';
+      const isCapitalPayout = t.category === 'Bagi Hasil Investor' || t.category === 'Bagi Hasil Pengelola' || t.category === 'Pengembalian Pokok Modal';
+
+      if (t.type === 'masuk') {
+        totalMasuk += amt;
+        if (isDebt) {
+          totalMasukHutang += amt;
+          countMasukHutang++;
+        } else if (isCapital) {
+          totalMasukModal += amt;
+        } else {
+          totalMasukPenjualan += amt;
+          countMasukPenjualan++;
+        }
+      } else {
+        totalKeluar += amt;
+        if (isDebtPayment) {
+          totalKeluarHutang += amt;
+        } else if (isCapitalPayout) {
+          totalKeluarModal += amt;
+        } else {
+          totalKeluarOperasional += amt;
+        }
+      }
     });
-    const netProfit = totalMasuk - totalKeluar;
+
+    // Laba Bersih Operasional Penjualan (Murni Penjualan dikurangi Beban Toko, TIDAK tercampur hutang)
+    const netOperatingProfit = totalMasukPenjualan - totalKeluarOperasional;
+    const netCashFlow = totalMasuk - totalKeluar;
 
     const heroEl = g('laporan-dynamic-hero');
     if (heroEl) {
       heroEl.innerHTML = `
-        <section class="glass-dark glass-sheen rounded-xl p-3 text-surface-container-lowest">
-          <div class="flex items-center justify-between mb-1">
-            <span class="font-label-md text-xs text-primary-fixed-dim tracking-wider uppercase font-semibold">
-              Surplus / Arus Kas Bersih
-            </span>
-            <span class="inline-flex items-center px-2 py-0.5 rounded-full glass-chip ${netProfit >= 0 ? 'text-emerald-300' : 'text-rose-300'} text-[10px] font-semibold">
-              ${netProfit >= 0 ? 'Arus Kas Positif' : 'Arus Kas Defisit'}
+        <section class="glass-dark glass-sheen rounded-2xl p-3.5 text-surface-container-lowest flex flex-col gap-3">
+          <!-- Header Laba Operasional Penjualan (Murni) -->
+          <div class="flex items-start justify-between">
+            <div class="flex flex-col">
+              <span class="font-label-md text-xs text-primary-fixed-dim tracking-wider uppercase font-semibold flex items-center gap-1.5">
+                <span class="material-symbols-outlined text-[16px] text-emerald-400">payments</span>
+                Laba Bersih Operasional Penjualan
+              </span>
+              <span class="font-currency-display text-2xl text-surface-bright font-bold tracking-tight font-tabular mt-0.5">
+                ${netOperatingProfit >= 0 ? '+' : ''}${formatRupiah(netOperatingProfit)}
+              </span>
+              <span class="text-[10px] text-neutral-300 mt-0.5">
+                Omset Penjualan (${formatRupiah(totalMasukPenjualan, '')}) dikurangi Beban Toko (${formatRupiah(totalKeluarOperasional, '')}) • ${getPeriodDesc()}
+              </span>
+            </div>
+            <span class="inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold ${netOperatingProfit >= 0 ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/30' : 'bg-rose-500/20 text-rose-300 border border-rose-500/30'}">
+              ${netOperatingProfit >= 0 ? '✓ Usaha Laba' : '⚠️ Defisit'}
             </span>
           </div>
 
-          <div class="flex items-baseline gap-2 my-1">
-            <span class="font-currency-display text-2xl text-surface-bright font-bold tracking-tight font-tabular">
-              ${netProfit >= 0 ? '+' : ''}${formatRupiah(netProfit)}
-            </span>
-          </div>
-          <p class="font-body-sm text-[11px] text-primary-fixed-dim/80 mb-2">Selisih total kas masuk dikurangi kas keluar (${getPeriodDesc()})</p>
+          <!-- Perbandingan Pos Pemasukan & Pengeluaran (2 Kolom Rapi) -->
+          <div class="grid grid-cols-2 gap-2.5 pt-2 border-t border-white/15">
+            <!-- Pos 1: Pemasukan Penjualan Sepatu (Omset Murni) -->
+            <div class="glass-panel p-2.5 rounded-xl flex flex-col justify-between border-t-2 border-emerald-500">
+              <div class="flex items-center justify-between text-neutral-400">
+                <span class="text-[10px] font-bold uppercase text-emerald-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">storefront</span>
+                  Omset Penjualan
+                </span>
+                <span class="text-[9px] px-1 py-0.2 rounded bg-emerald-500/20 text-emerald-300 font-bold">Murni</span>
+              </div>
+              <div class="mt-1">
+                <span class="font-bold text-sm text-white font-tabular block">+${formatRupiah(totalMasukPenjualan)}</span>
+                <span class="text-[9px] text-neutral-400 block mt-0.5">${countMasukPenjualan} Transaksi Kasir</span>
+              </div>
+            </div>
 
-          <div class="grid grid-cols-2 gap-1.5 pt-1.5 border-t border-white/20">
-            <div class="flex flex-col">
-              <span class="text-[10px] text-emerald-300 font-bold uppercase">Total Kas Masuk</span>
-              <span class="font-bold text-xs text-surface-bright font-tabular">+${formatRupiah(totalMasuk, '')}</span>
+            <!-- Pos 2: Pemasukan Hutang / Pinjaman Bank (Pendanaan) -->
+            <div class="glass-panel p-2.5 rounded-xl flex flex-col justify-between border-t-2 border-cyan-500">
+              <div class="flex items-center justify-between text-neutral-400">
+                <span class="text-[10px] font-bold uppercase text-cyan-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">account_balance</span>
+                  Pinjaman / Hutang
+                </span>
+                <span class="text-[9px] px-1 py-0.2 rounded bg-cyan-500/20 text-cyan-300 font-bold">Pendanaan</span>
+              </div>
+              <div class="mt-1">
+                <span class="font-bold text-sm text-cyan-300 font-tabular block">+${formatRupiah(totalMasukHutang)}</span>
+                <span class="text-[9px] text-neutral-400 block mt-0.5">${countMasukHutang > 0 ? `${countMasukHutang} Pencairan Dana` : 'Tidak Ada Pencairan'}</span>
+              </div>
             </div>
-            <div class="flex flex-col">
-              <span class="text-[10px] text-rose-300 font-bold uppercase">Total Kas Keluar</span>
-              <span class="font-bold text-xs text-surface-bright font-tabular">-${formatRupiah(totalKeluar, '')}</span>
+
+            <!-- Pos 3: Biaya Operasional Toko -->
+            <div class="glass-panel p-2.5 rounded-xl flex flex-col justify-between border-t-2 border-rose-500">
+              <div class="flex items-center justify-between text-neutral-400">
+                <span class="text-[10px] font-bold uppercase text-rose-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">shopping_cart</span>
+                  Biaya Operasional
+                </span>
+              </div>
+              <div class="mt-1">
+                <span class="font-bold text-sm text-rose-300 font-tabular block">-${formatRupiah(totalKeluarOperasional)}</span>
+                <span class="text-[9px] text-neutral-400 block mt-0.5">Belanja Kulakan & Operasional</span>
+              </div>
             </div>
+
+            <!-- Pos 4: Cicilan & Pelunasan Hutang -->
+            <div class="glass-panel p-2.5 rounded-xl flex flex-col justify-between border-t-2 border-amber-500">
+              <div class="flex items-center justify-between text-neutral-400">
+                <span class="text-[10px] font-bold uppercase text-amber-400 flex items-center gap-1">
+                  <span class="material-symbols-outlined text-[14px]">receipt_long</span>
+                  Cicilan Hutang
+                </span>
+                <span class="text-[9px] px-1 py-0.2 rounded bg-amber-500/20 text-amber-300 font-bold">Kewajiban</span>
+              </div>
+              <div class="mt-1">
+                <span class="font-bold text-sm text-amber-300 font-tabular block">-${formatRupiah(totalKeluarHutang)}</span>
+                <span class="text-[9px] text-neutral-400 block mt-0.5">Bayar Pokok / Bunga Bank</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Total Kas Masuk & Saldo Kas Fisik -->
+          <div class="flex items-center justify-between pt-2 border-t border-white/10 text-xs">
+            <span class="text-[11px] text-neutral-300">Total Kas Masuk Fisik (Penjualan + Pinjaman):</span>
+            <span class="font-bold font-tabular text-emerald-400 text-xs">+${formatRupiah(totalMasuk)}</span>
           </div>
         </section>
       `;
@@ -960,6 +1118,194 @@ export function initLaporanPage(router, store, initialPeriod = 'bulan') {
           </div>
         `
           )
+          .join('');
+      }
+    }
+
+    // 3.5. FITUR KHUSUS: Filter Total Pemasukan Berdasarkan Kategori & Pos (Penjualan vs Hutang)
+    const incomeTrxs = periodTrxs.filter((t) => t.type === 'masuk');
+
+    function classifyIncome(t) {
+      const isDebt = t.sourceType === 'debt' || t.incomeType === 'debt' || t.category === 'Pinjaman / Hutang' || (t.debtId && t.type === 'masuk');
+      const isCapital = t.category === 'Dana Investor' || t.category === 'Investasi Modal' || t.incomeType === 'capital';
+      if (isDebt) return 'Pinjaman / Hutang';
+      if (isCapital) return 'Modal Investor';
+      return 'Penjualan Sepatu';
+    }
+
+    const incomeCategoryTotals = {
+      'Penjualan Sepatu': 0,
+      'Pinjaman / Hutang': 0
+    };
+    const incomeCategoryCounts = {
+      'Penjualan Sepatu': 0,
+      'Pinjaman / Hutang': 0
+    };
+
+    incomeTrxs.forEach((t) => {
+      const cat = classifyIncome(t);
+      incomeCategoryTotals[cat] = (incomeCategoryTotals[cat] || 0) + (Number(t.amount) || 0);
+      incomeCategoryCounts[cat] = (incomeCategoryCounts[cat] || 0) + 1;
+    });
+
+    const incomeCategoryKeys = Object.keys(incomeCategoryTotals).filter(
+      (k) => incomeCategoryTotals[k] > 0 || k === 'Penjualan Sepatu' || k === 'Pinjaman / Hutang'
+    );
+
+    // Filter pills Pemasukan
+    const incomeFilterPillsContainer = g('income-category-filters');
+    if (incomeFilterPillsContainer) {
+      const pills = [
+        {
+          key: 'all',
+          label: 'Semua Pemasukan',
+          total: totalMasuk,
+          count: incomeTrxs.length
+        },
+        ...incomeCategoryKeys.map((cat) => ({
+          key: cat,
+          label: cat,
+          total: incomeCategoryTotals[cat] || 0,
+          count: incomeCategoryCounts[cat] || 0
+        }))
+      ];
+
+      incomeFilterPillsContainer.innerHTML = pills
+        .map((p) => {
+          const isActive = selectedIncomeCategory === p.key;
+          const isDebtPill = p.key === 'Pinjaman / Hutang';
+          return `
+          <button type="button" data-income-cat="${p.key}"
+            class="income-cat-pill shrink-0 px-3 py-1.5 rounded-xl font-label-md text-xs font-bold transition-all flex items-center gap-1.5 ${
+              isActive
+                ? (isDebtPill ? 'glass-dark text-cyan-300 border border-cyan-500/50' : 'glass-dark text-emerald-300 border border-emerald-500/50')
+                : 'glass-chip-btn text-on-surface-variant'
+            }">
+            <span>${p.label}</span>
+            <span class="text-[10px] px-1.5 py-0.2 rounded-full font-tabular glass-chip ${
+              isActive ? 'text-surface-bright' : 'text-on-surface-variant'
+            }">
+              ${formatRupiah(p.total, '')}
+            </span>
+          </button>
+        `;
+        })
+        .join('');
+
+      incomeFilterPillsContainer.querySelectorAll('[data-income-cat]').forEach((btn) => {
+        btn.addEventListener('click', () => {
+          selectedIncomeCategory = btn.getAttribute('data-income-cat');
+          updatePage();
+        });
+      });
+    }
+
+    // Detail Highlight Kategori Pemasukan Terpilih
+    let activeIncomeCatTotal = totalMasuk;
+    let activeIncomeCatCount = incomeTrxs.length;
+    let activeIncomeCatName = 'Semua Pemasukan';
+
+    if (selectedIncomeCategory !== 'all') {
+      activeIncomeCatTotal = incomeCategoryTotals[selectedIncomeCategory] || 0;
+      activeIncomeCatCount = incomeCategoryCounts[selectedIncomeCategory] || 0;
+      activeIncomeCatName = selectedIncomeCategory;
+    }
+
+    const incomePct = totalMasuk > 0 ? ((activeIncomeCatTotal / totalMasuk) * 100).toFixed(1) : '0';
+
+    const elIncomeCatName = g('selected-income-cat-name');
+    if (elIncomeCatName) elIncomeCatName.textContent = activeIncomeCatName;
+
+    const elIncomeCatMeta = g('selected-income-cat-meta');
+    if (elIncomeCatMeta) elIncomeCatMeta.textContent = `${activeIncomeCatCount} transaksi pemasukan`;
+
+    const elIncomeCatTotal = g('selected-income-cat-total');
+    if (elIncomeCatTotal) elIncomeCatTotal.textContent = `+${formatRupiah(activeIncomeCatTotal)}`;
+
+    const elIncomeCatPercent = g('selected-income-cat-percent');
+    if (elIncomeCatPercent) {
+      elIncomeCatPercent.textContent =
+        selectedIncomeCategory === 'all'
+          ? '100% total pemasukan'
+          : `${incomePct}% dari total kas masuk (${formatRupiah(totalMasuk, '')})`;
+    }
+
+    // Visual Progress Bar Pemasukan (Perbandingan Penjualan vs Hutang)
+    const incomeBarEl = g('income-progress-bar');
+    if (incomeBarEl) {
+      if (totalMasuk === 0) {
+        incomeBarEl.innerHTML = `<div class="w-full h-full bg-white/40"></div>`;
+      } else {
+        const salesW = (((incomeCategoryTotals['Penjualan Sepatu'] || 0) / totalMasuk) * 100).toFixed(1);
+        const debtW = (((incomeCategoryTotals['Pinjaman / Hutang'] || 0) / totalMasuk) * 100).toFixed(1);
+        const capitalW = (((incomeCategoryTotals['Modal Investor'] || 0) / totalMasuk) * 100).toFixed(1);
+
+        incomeBarEl.innerHTML = `
+          ${salesW > 0 ? `<div class="h-full bg-emerald-500" style="width: ${salesW}%" title="Penjualan: ${formatRupiah(incomeCategoryTotals['Penjualan Sepatu'] || 0)} (${salesW}%)"></div>` : ''}
+          ${debtW > 0 ? `<div class="h-full bg-cyan-500" style="width: ${debtW}%" title="Hutang: ${formatRupiah(incomeCategoryTotals['Pinjaman / Hutang'] || 0)} (${debtW}%)"></div>` : ''}
+          ${capitalW > 0 ? `<div class="h-full bg-amber-500" style="width: ${capitalW}%" title="Modal: ${formatRupiah(incomeCategoryTotals['Modal Investor'] || 0)} (${capitalW}%)"></div>` : ''}
+        `;
+      }
+    }
+
+    const elTotalIncLabel = g('income-total-label');
+    if (elTotalIncLabel) {
+      elTotalIncLabel.textContent = `Total Pemasukan: +${formatRupiah(totalMasuk)}`;
+    }
+
+    // Rincian Daftar Transaksi Pemasukan Terfilter
+    const filteredIncomeList =
+      selectedIncomeCategory === 'all'
+        ? incomeTrxs
+        : incomeTrxs.filter((t) => classifyIncome(t) === selectedIncomeCategory);
+
+    const elIncCount = g('income-list-count');
+    if (elIncCount) {
+      elIncCount.textContent = `${filteredIncomeList.length} transaksi`;
+    }
+
+    const incomeListContainer = g('income-transaction-list');
+    if (incomeListContainer) {
+      if (filteredIncomeList.length === 0) {
+        incomeListContainer.innerHTML = `
+          <div class="py-3 text-center text-xs text-on-surface-variant glass-panel rounded-lg">
+            Tidak ada transaksi pemasukan pada kategori ini.
+          </div>
+        `;
+      } else {
+        incomeListContainer.innerHTML = filteredIncomeList
+          .map((t) => {
+            const cat = classifyIncome(t);
+            const isDebt = cat === 'Pinjaman / Hutang';
+            const isCapital = cat === 'Modal Investor';
+            let badgeBg = 'bg-emerald-500/20 text-emerald-800 border-emerald-500/40';
+            if (isDebt) badgeBg = 'bg-cyan-500/20 text-cyan-800 border-cyan-500/40 font-bold';
+            else if (isCapital) badgeBg = 'bg-amber-500/20 text-amber-800 border-amber-500/40';
+
+            return `
+            <div class="glass-panel rounded-lg p-2 flex items-center justify-between gap-2 border border-white/20">
+              <div class="flex flex-col min-w-0 pr-1">
+                <div class="flex items-center gap-1.5 flex-wrap">
+                  <span class="font-bold text-[11px] text-on-surface truncate">${t.title || 'Pemasukan Kas'}</span>
+                  <span class="text-[9px] px-1.5 py-0.2 rounded border font-semibold ${badgeBg}">
+                    ${isDebt ? '🏦 PINJAMAN' : (isCapital ? '🤝 MODAL' : '🛒 PENJUALAN')}
+                  </span>
+                </div>
+                <div class="flex items-center gap-1 text-[9px] text-on-surface-variant mt-0.5">
+                  <span>${t.date || '-'}</span>
+                  ${t.nota ? `<span>• ${t.nota}</span>` : ''}
+                  ${t.paymentMethod ? `<span>• ${t.paymentMethod}</span>` : ''}
+                </div>
+              </div>
+              <div class="flex flex-col items-end shrink-0">
+                <span class="font-bold text-xs ${isDebt ? 'text-cyan-700' : 'text-emerald-700'} font-tabular">
+                  +${formatRupiah(t.amount)}
+                </span>
+                ${isDebt ? `<span class="text-[8px] text-cyan-600 font-bold">Non-Omset</span>` : ''}
+              </div>
+            </div>
+          `;
+          })
           .join('');
       }
     }

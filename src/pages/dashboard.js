@@ -135,7 +135,9 @@ export function renderDashboardPage(store, isAdmin = true) {
               <span class="font-currency-item text-sm font-bold text-surface-bright truncate font-tabular">
                 +${formatRupiah(summary.totalMasuk, '')}
               </span>
-              <span class="font-label-sm text-[10px] text-primary-fixed-dim/90 mt-0.5">${summary.countMasuk} Transaksi</span>
+              <span class="font-label-sm text-[10px] text-primary-fixed-dim/90 mt-0.5 truncate" title="${summary.totalMasukHutang > 0 ? `Penjualan: ${formatRupiah(summary.totalMasukPenjualan || 0)} | Pinjaman: ${formatRupiah(summary.totalMasukHutang || 0)}` : `${summary.countMasuk} Transaksi`}">
+                ${summary.totalMasukHutang > 0 ? `Jual: ${formatRupiah(summary.totalMasukPenjualan || 0, '')} • Hutang: ${formatRupiah(summary.totalMasukHutang, '')}` : `${summary.countMasuk} Transaksi`}
+              </span>
             </div>
 
             <!-- Pengeluaran -->
@@ -147,7 +149,9 @@ export function renderDashboardPage(store, isAdmin = true) {
               <span class="font-currency-item text-sm font-bold text-surface-bright truncate font-tabular">
                 -${formatRupiah(summary.totalKeluar, '')}
               </span>
-              <span class="font-label-sm text-[10px] text-primary-fixed-dim/90 mt-0.5">${summary.countKeluar} Transaksi</span>
+              <span class="font-label-sm text-[10px] text-primary-fixed-dim/90 mt-0.5 truncate" title="${summary.totalKeluarHutang > 0 ? `Operasional: ${formatRupiah(summary.totalKeluarOperasional || 0)} | Cicilan: ${formatRupiah(summary.totalKeluarHutang || 0)}` : `${summary.countKeluar} Transaksi`}">
+                ${summary.totalKeluarHutang > 0 ? `Ops: ${formatRupiah(summary.totalKeluarOperasional || 0, '')} • Cicilan: ${formatRupiah(summary.totalKeluarHutang, '')}` : `${summary.countKeluar} Transaksi`}
+              </span>
             </div>
           </div>
         </section>
